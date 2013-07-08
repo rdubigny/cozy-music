@@ -6,5 +6,4 @@ module.exports = class AppView extends BaseView
     template: require('./templates/home')
 
     afterRender: ->
-        console.log "write more code here !"
-
+        #console.log "write more code here !"

@@ -82,11 +82,23 @@
 window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
-      var Router;
-
+      var Router, inlinePlayer;
       Router = require('router');
       this.router = new Router();
       Backbone.history.start();
+      inlinePlayer = null;
+      soundManager.setup({
+        debugMode: true,
+        preferFlash: false,
+        useFlashBlock: true,
+        url: "../../swf/",
+        flashVersion: 9
+      });
+      soundManager.onready(function() {
+        var InlinePlayer;
+        InlinePlayer = require('views/inlineplayer');
+        return inlinePlayer = new InlinePlayer();
+      });
       if (typeof Object.freeze === 'function') {
         return Object.freeze(this);
       }
@@ -109,7 +121,6 @@ window.require.register("lib/app_helpers", function(exports, require, module) {
   (function() {
     return (function() {
       var console, dummy, method, methods, _results;
-
       console = window.console = window.console || {};
       method = void 0;
       dummy = function() {};
@@ -144,7 +155,6 @@ window.require.register("lib/base_view", function(exports, require, module) {
 
     BaseView.prototype.getRenderData = function() {
       var _ref1;
-
       return {
         model: (_ref1 = this.model) != null ? _ref1.toJSON() : void 0
       };
@@ -186,7 +196,8 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     function ViewCollection() {
       this.removeItem = __bind(this.removeItem, this);
-      this.addItem = __bind(this.addItem, this);    _ref = ViewCollection.__super__.constructor.apply(this, arguments);
+      this.addItem = __bind(this.addItem, this);
+      _ref = ViewCollection.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -212,7 +223,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.initialize = function() {
       var collectionEl;
-
       ViewCollection.__super__.initialize.apply(this, arguments);
       this.views = {};
       this.listenTo(this.collection, "reset", this.onReset);
@@ -225,7 +235,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.render = function() {
       var id, view, _ref1;
-
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
@@ -236,7 +245,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.afterRender = function() {
       var id, view, _ref1;
-
       this.$collectionEl = $(this.collectionEl);
       _ref1 = this.views;
       for (id in _ref1) {
@@ -254,7 +262,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.onReset = function(newcollection) {
       var id, view, _ref1;
-
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
@@ -265,7 +272,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.addItem = function(model) {
       var options, view;
-
       options = _.extend({}, {
         model: model
       }, this.itemViewOptions(model));
@@ -307,7 +313,6 @@ window.require.register("router", function(exports, require, module) {
 
     Router.prototype.main = function() {
       var mainView;
-
       mainView = new AppView();
       return mainView.render();
     };
@@ -336,13 +341,254 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.template = require('./templates/home');
 
-    AppView.prototype.afterRender = function() {
-      return console.log("write more code here !");
-    };
+    AppView.prototype.afterRender = function() {};
 
     return AppView;
 
   })(BaseView);
+  
+});
+window.require.register("views/inlineplayer", function(exports, require, module) {
+  
+  /*
+  SoundManager 2 Demo: Play MP3 links "in-place"
+  ----------------------------------------------
+
+  http://schillmania.com/projects/soundmanager2/
+
+  A simple demo making MP3s playable "inline"
+  and easily styled/customizable via CSS.
+
+  Requires SoundManager 2 Javascript API.
+  */
+  var InlinePlayer;
+
+  module.exports = InlinePlayer = (function() {
+    function InlinePlayer() {
+      var isIE, pl, self, sm;
+      self = this;
+      pl = this;
+      sm = soundManager;
+      isIE = navigator.userAgent.match(/msie/i);
+      this.playableClass = "inline-playable";
+      this.excludeClass = "inline-exclude";
+      this.links = [];
+      this.sounds = [];
+      this.soundsByURL = [];
+      this.indexByURL = [];
+      this.lastSound = null;
+      this.soundCount = 0;
+      this.config = {
+        playNext: false,
+        autoPlay: false
+      };
+      this.css = {
+        sDefault: "sm2_link",
+        sLoading: "sm2_loading",
+        sPlaying: "sm2_playing",
+        sPaused: "sm2_paused"
+      };
+      this.addEventHandler = (typeof window.addEventListener !== "undefined" ? function(o, evtName, evtHandler) {
+        return o.addEventListener(evtName, evtHandler, false);
+      } : function(o, evtName, evtHandler) {
+        return o.attachEvent("on" + evtName, evtHandler);
+      });
+      this.removeEventHandler = (typeof window.removeEventListener !== "undefined" ? function(o, evtName, evtHandler) {
+        return o.removeEventListener(evtName, evtHandler, false);
+      } : function(o, evtName, evtHandler) {
+        return o.detachEvent("on" + evtName, evtHandler);
+      });
+      this.classContains = function(o, cStr) {
+        if (typeof o.className !== "undefined") {
+          return o.className.match(new RegExp("(\\s|^)" + cStr + "(\\s|$)"));
+        } else {
+          return false;
+        }
+      };
+      this.addClass = function(o, cStr) {
+        if (!o || !cStr || self.classContains(o, cStr)) {
+          return false;
+        }
+        return o.className = (o.className ? o.className + " " : "") + cStr;
+      };
+      this.removeClass = function(o, cStr) {
+        if (!o || !cStr || !self.classContains(o, cStr)) {
+          return false;
+        }
+        return o.className = o.className.replace(new RegExp("( " + cStr + ")|(" + cStr + ")", "g"), "");
+      };
+      this.getSoundByURL = function(sURL) {
+        if (typeof self.soundsByURL[sURL] !== "undefined") {
+          return self.soundsByURL[sURL];
+        } else {
+          return null;
+        }
+      };
+      this.isChildOfNode = function(o, sNodeName) {
+        if (!o || !o.parentNode) {
+          return false;
+        }
+        sNodeName = sNodeName.toLowerCase();
+        while (true) {
+          o = o.parentNode;
+          if (!(o && o.parentNode && o.nodeName.toLowerCase() !== sNodeName)) {
+            break;
+          }
+        }
+        if (o.nodeName.toLowerCase() === sNodeName) {
+          return o;
+        } else {
+          return null;
+        }
+      };
+      this.events = {
+        play: function() {
+          pl.removeClass(this._data.oLink, this._data.className);
+          this._data.className = pl.css.sPlaying;
+          return pl.addClass(this._data.oLink, this._data.className);
+        },
+        stop: function() {
+          pl.removeClass(this._data.oLink, this._data.className);
+          return this._data.className = "";
+        },
+        pause: function() {
+          pl.removeClass(this._data.oLink, this._data.className);
+          this._data.className = pl.css.sPaused;
+          return pl.addClass(this._data.oLink, this._data.className);
+        },
+        resume: function() {
+          pl.removeClass(this._data.oLink, this._data.className);
+          this._data.className = pl.css.sPlaying;
+          return pl.addClass(this._data.oLink, this._data.className);
+        },
+        finish: function() {
+          var nextLink;
+          pl.removeClass(this._data.oLink, this._data.className);
+          this._data.className = "";
+          if (pl.config.playNext) {
+            nextLink = pl.indexByURL[this._data.oLink.href] + 1;
+            if (nextLink < pl.links.length) {
+              return pl.handleClick({
+                target: pl.links[nextLink]
+              });
+            }
+          }
+        }
+      };
+      this.stopEvent = function(e) {
+        if (typeof e !== "undefined" && typeof e.preventDefault !== "undefined") {
+          e.preventDefault();
+        } else {
+          if (typeof event !== "undefined" && typeof event.returnValue !== "undefined") {
+            event.returnValue = false;
+          }
+        }
+        return false;
+      };
+      this.getTheDamnLink = (isIE ? function(e) {
+        if (e && e.target) {
+          return e.target;
+        } else {
+          return window.event.srcElement;
+        }
+      } : function(e) {
+        return e.target;
+      });
+      this.handleClick = function(e) {
+        var o, sURL, soundURL, thisSound;
+        if (typeof e.button !== "undefined" && e.button > 1) {
+          return true;
+        }
+        o = self.getTheDamnLink(e);
+        if (o.nodeName.toLowerCase() !== "a") {
+          o = self.isChildOfNode(o, "a");
+          if (!o) {
+            return true;
+          }
+        }
+        sURL = o.getAttribute("href");
+        if (!o.href || (!sm.canPlayLink(o) && !self.classContains(o, self.playableClass)) || self.classContains(o, self.excludeClass)) {
+          return true;
+        }
+        soundURL = o.href;
+        thisSound = self.getSoundByURL(soundURL);
+        if (thisSound) {
+          if (thisSound === self.lastSound) {
+            thisSound.togglePause();
+          } else {
+            sm._writeDebug("sound different than last sound: " + self.lastSound.id);
+            if (self.lastSound) {
+              self.stopSound(self.lastSound);
+            }
+            thisSound.togglePause();
+          }
+        } else {
+          if (self.lastSound) {
+            self.stopSound(self.lastSound);
+          }
+          thisSound = sm.createSound({
+            id: "inlineMP3Sound" + (self.soundCount++),
+            url: soundURL,
+            onplay: self.events.play,
+            onstop: self.events.stop,
+            onpause: self.events.pause,
+            onresume: self.events.resume,
+            onfinish: self.events.finish,
+            type: o.type || null
+          });
+          thisSound._data = {
+            oLink: o,
+            className: self.css.sPlaying
+          };
+          self.soundsByURL[soundURL] = thisSound;
+          self.sounds.push(thisSound);
+          thisSound.play();
+        }
+        self.lastSound = thisSound;
+        if (typeof e !== "undefined" && typeof e.preventDefault !== "undefined") {
+          e.preventDefault();
+        } else {
+          event.returnValue = false;
+        }
+        return false;
+      };
+      this.stopSound = function(oSound) {
+        soundManager.stop(oSound.id);
+        return soundManager.unload(oSound.id);
+      };
+      this.init = function() {
+        var foundItems, i, j, oLinks;
+        sm._writeDebug("inlinePlayer.init()");
+        oLinks = document.getElementsByTagName("a");
+        foundItems = 0;
+        i = 0;
+        j = oLinks.length;
+        while (i < j) {
+          if ((sm.canPlayLink(oLinks[i]) || self.classContains(oLinks[i], self.playableClass)) && !self.classContains(oLinks[i], self.excludeClass)) {
+            self.addClass(oLinks[i], self.css.sDefault);
+            self.links[foundItems] = oLinks[i];
+            self.indexByURL[oLinks[i].href] = foundItems;
+            foundItems++;
+          }
+          i++;
+        }
+        if (foundItems > 0) {
+          self.addEventHandler(document, "click", self.handleClick);
+          if (self.config.autoPlay) {
+            self.handleClick({
+              target: self.links[0],
+              preventDefault: function() {}
+            });
+          }
+        }
+        return sm._writeDebug("inlinePlayer.init(): Found " + foundItems + " relevant items.");
+      };
+      this.init();
+    }
+
+    return InlinePlayer;
+
+  })();
   
 });
 window.require.register("views/templates/home", function(exports, require, module) {
@@ -351,7 +597,7 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><h1>Cozy template</h1><h2>Welcome</h2><ul><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki">Documentation</a></li><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki/Getting-started">Getting Started</a></li><li> <a href="https://github.com/mycozycloud">Github</a></li></ul></div>');
+  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><ul class="graphic"><li> <a href="music/Air France - Joris Delacroix.mp3">Joris</a></li><li> <a href="music/COMA - Hoooooray.mp3">Coma</a></li><li> <a href="music/Rone - Bye Bye Macadam.mp3">Rone</a></li></ul><h2>Here are some links</h2><ul><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki">Documentation</a></li><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki/Getting-started"></a>Getting Started</li><li> <a href="https://github.com/mycozycloud">Github</a></li></ul></div>');
   }
   return buf.join("");
   };

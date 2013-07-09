@@ -10,6 +10,7 @@ module.exports =
         Backbone.history.start()
 
         inlinePlayer = null
+        player = null
 
         soundManager.setup  
             # disable or enable debug output
@@ -26,7 +27,9 @@ module.exports =
         soundManager.onready ->
             # soundManager.createSound() etc. may now be called
             InlinePlayer = require 'views/inlineplayer'
-            inlinePlayer = new InlinePlayer()
-            
+            @inlinePlayer = new InlinePlayer()
+            Player = require 'views/player'
+            @player = new Player()
+
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'

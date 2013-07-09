@@ -82,11 +82,12 @@
 window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
-      var Router, inlinePlayer;
+      var Router, inlinePlayer, player;
       Router = require('router');
       this.router = new Router();
       Backbone.history.start();
       inlinePlayer = null;
+      player = null;
       soundManager.setup({
         debugMode: true,
         preferFlash: false,
@@ -95,9 +96,11 @@ window.require.register("application", function(exports, require, module) {
         flashVersion: 9
       });
       soundManager.onready(function() {
-        var InlinePlayer;
+        var InlinePlayer, Player;
         InlinePlayer = require('views/inlineplayer');
-        return inlinePlayer = new InlinePlayer();
+        this.inlinePlayer = new InlinePlayer();
+        Player = require('views/player');
+        return this.player = new Player();
       });
       if (typeof Object.freeze === 'function') {
         return Object.freeze(this);
@@ -587,6 +590,21 @@ window.require.register("views/inlineplayer", function(exports, require, module)
     }
 
     return InlinePlayer;
+
+  })();
+  
+});
+window.require.register("views/player", function(exports, require, module) {
+  
+  /*
+  Here is the player with some freaking awesome features like play and pause...
+  */
+  var Player;
+
+  module.exports = Player = (function() {
+    function Player() {}
+
+    return Player;
 
   })();
   

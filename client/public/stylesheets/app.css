@@ -869,39 +869,6 @@ cursor not-allowed {
     width: 1170px;
   }
 }
-ul.flat {
-  list-style-type: none;
-  padding-left: 0px;
-}
-ul.flat li a {
-  display: inline-block;
-  padding: 2px 4px 2px 4px;
-}
-ul.flat a.sm2_link {
-  border-left: 6px solid #999;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-ul.flat a.sm2_link:hover {
-  border-left-color: #333;
-}
-ul.flat a.sm2_playing {
-  border-left-color: #66f;
-  background-color: #000;
-  color: #fff;
-  text-decoration: none;
-}
-ul.flat a.sm2_playing:hover {
-  border-left-color: #c33;
-}
-ul.flat a.sm2_paused {
-  background-color: #666;
-  color: #fff;
-  text-decoration: none;
-}
-ul.flat a.sm2_paused:hover {
-  border-left-color: #3c3;
-}
 ul.graphic {
   list-style-type: none;
   padding-left: 0px;
@@ -912,6 +879,7 @@ ul.graphic {
 }
 ul.graphic li {
   margin-bottom: 2px;
+  padding-bottom: 1px;
 }
 ul.graphic li a.sm2_link {
   -webkit-transition-property: hover;
@@ -919,29 +887,10 @@ ul.graphic li a.sm2_link {
   -moz-transition: background-color 0.15s linear 0s;
   -o-transition-property: background-color;
   -o-transition-duration: 0.15s;
-}
-ul.graphic li a.sm2_link:hover {
-  background-color: #036;
-  color: #fff;
-}
-ul.graphic li a.sm2_paused {
-  background-color: #999;
-}
-ul.graphic li a.sm2_paused:hover {
-  background: #036 url("../images/icon_play.png") no-repeat 3px 50%;
-  _background-image: url("../images/icon_play.gif");
-}
-ul.flat li,
-ul.graphic li {
-  padding-bottom: 1px;
-}
-ul.graphic li a,
-ul.graphic li a.sm2_link {
   display: inline-block;
   padding-left: 22px;
   min-height: 16px;
   vertical-align: middle;
-  background-color: #369;
   -webkit-border-radius: 3px;
   border-radius: 3px;
   padding: 3px 3px 3px 25px;
@@ -950,20 +899,24 @@ ul.graphic li a.sm2_link {
   text-decoration: none;
   font-weight: normal;
   color: #f6f9ff;
-}
-ul.graphic li a,
-ul.graphic li a.sm2_paused:hover,
-ul.graphic li a.sm2_link:hover {
-  background-image: url("../images/icon_play.png");
-  background-position: 3px 50%;
-  background-repeat: no-repeat;
+  background: #369 url("../images/icon_play.png") no-repeat 3px 50%;
   _background-image: url("../images/icon_play.gif");
 }
-ul.graphic li a.sm2_playing,
-ul.graphic li a.sm2_playing:hover {
+ul.graphic li a.sm2_link:hover {
+  background-color: #036;
+}
+ul.graphic li a.sm2_link.sm2_playing {
   background: #036 url("../images/icon_pause.png") no-repeat 3px 50%;
   _background-image: url("../images/icon_pause.gif");
   text-decoration: none;
+}
+ul.graphic li a.sm2_link.sm2_paused {
+  background-color: #999;
+}
+ul.graphic li a.sm2_playing,
+ul.graphic li a.sm2_paused,
+ul.graphic li a:hover {
+  color: #fff;
 }
 body #sm2-container object,
 body #sm2-container embed {

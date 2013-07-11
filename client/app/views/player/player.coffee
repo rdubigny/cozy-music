@@ -15,32 +15,23 @@ module.exports = class Player extends BaseView
         "click .button.play": "onClickPlay"
 
     afterRender: =>
-        #@playButton = new VolumeManager()
-        #$('.player').append @volumeManager.render().$el
         @volumeManager = new VolumeManager()
         @volumeManager.render()
-        #@$('.player').append @volumeManager.$el
-        #console.debug @$el
         @$el.append @volumeManager.$el
 
         @currentTrack = app.soundManager.createSound
-            id: "DaSound"
+            id: "DaSound#{(Math.random()*1000).toFixed(0)}"
             url: "music/COMA - Hoooooray.mp3"
-            duration: 5000
             onfinish: @stopTrack
             onstop: @stopTrack
-            #whileplaying: ->
-            #    soundManager._writeDebug "whileplaying(): #{@position}/#{@duration}"
         @isStopped = true
         @isPaused = false
         @isPlayable = soundManager.canPlayLink("music/COMA - Hoooooray.mp3")
         @playButton = @$(".button.play")
         @playButton.addClass("stopped")
 
-    onClickPlay: (event)->
-        event.preventDefault()
+    onClickPlay: ->
         if @isStopped
-            #setTimeout(@currentTrack.stop, 5000);
             @currentTrack.play()
             @playButton.removeClass("stopped")
             @isStopped = false
@@ -48,7 +39,7 @@ module.exports = class Player extends BaseView
             @currentTrack.play()
             @playButton.removeClass("paused")
             @isPaused = false
-        else if not @isPaused and not @isStopped
+        else if not @isPaused and not @isStopped # <=> isPlaying
             @currentTrack.pause()
             @playButton.addClass("paused")
             @isPaused = true

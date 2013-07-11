@@ -347,7 +347,7 @@ window.require.register("views/app_view", function(exports, require, module) {
     AppView.prototype.afterRender = function() {
       this.player = new Player();
       this.player.render();
-      return this.$('.player').append(this.player.$el);
+      return this.$('#player').append(this.player.$el);
     };
 
     return AppView;
@@ -639,9 +639,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.volumeManager.render();
       this.$el.append(this.volumeManager.$el);
       this.currentTrack = app.soundManager.createSound({
-        id: "DaSound",
+        id: "DaSound" + ((Math.random() * 1000).toFixed(0)),
         url: "music/COMA - Hoooooray.mp3",
-        duration: 5000,
         onfinish: this.stopTrack,
         onstop: this.stopTrack
       });
@@ -652,8 +651,7 @@ window.require.register("views/player/player", function(exports, require, module
       return this.playButton.addClass("stopped");
     };
 
-    Player.prototype.onClickPlay = function(event) {
-      event.preventDefault();
+    Player.prototype.onClickPlay = function() {
       if (this.isStopped) {
         this.currentTrack.play();
         this.playButton.removeClass("stopped");
@@ -793,7 +791,7 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><ul class="graphic"><li><a href="music/Air France - Joris Delacroix.mp3">Joris</a></li><li><a href="music/COMA - Hoooooray.mp3">Coma</a></li><li><a href="music/Rone - Bye Bye Macadam.mp3">Rone</a></li></ul><div class="player"></div><h2>Here are some links</h2><ul><li><a href="https://github.com/mycozycloud/cozy-setup/wiki">Documentation</a></li><li><a href="https://github.com/mycozycloud/cozy-setup/wiki/Getting-started"></a>Getting Started</li><li><a href="https://github.com/mycozycloud">Github</a></li></ul></div>');
+  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><ul class="graphic"><li><a href="music/Air France - Joris Delacroix.mp3">Joris</a></li><li><a href="music/COMA - Hoooooray.mp3">Coma</a></li><li><a href="music/Rone - Bye Bye Macadam.mp3">Rone</a></li></ul><div id="player"></div></div>');
   }
   return buf.join("");
   };

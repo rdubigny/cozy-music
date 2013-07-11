@@ -7,13 +7,10 @@ module.exports = class AppView extends BaseView
     el: 'body.application'
     template: require('./templates/home')
 
-    #inlinePlayer: null
     player: null
 
     afterRender: ->
-        # soundManager.createSound() etc. may now be called
-        #@inlinePlayer = new InlinePlayer()
+        # soundManager is ready to be called here (cf. application.coffee)
         @player = new Player()
         @player.render()
-        @$('.player').append @player.$el
-        #console.log "write more code here !"
+        @$('#player').append @player.$el

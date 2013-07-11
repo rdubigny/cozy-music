@@ -704,171 +704,190 @@ a:hover,
 a:visited:hover {
   text-decoration: underline;
 }
-.ui-button,
-a.ui-button,
-button.ui-button {
-  background-color: #eee;
-  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fafafa), color-stop(1, #eaeaea));
-  background-image: -webkit-linear-gradient(top, #fafafa 0%, #eaeaea 100%);
-  background-image: -moz-linear-gradient(top, #fafafa 0%, #eaeaea 100%);
-  background-image: -o-linear-gradient(top, #fafafa 0%, #eaeaea 100%);
-  background-image: -ms-linear-gradient(top, #fafafa 0%, #eaeaea 100%);
-  background-image: linear-gradient(top, #fafafa 0%, #eaeaea 100%);
-  background-repeat: repeat-x;
-  border: 1px solid #c9c9c9;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.1);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.1);
-  color: #777;
-  font-weight: bold;
-  cursor: pointer;
+.player {
+  background-color: #444;
+  margin: 10 10px;
+  padding: 5px;
+  border: 1px solid #f00;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+}
+.player .volume {
   display: inline-block;
-  font-size: 14px;
-  line-height: 18px;
-  text-align: center;
-  text-decoration: none;
-  text-shadow: -1px -1px 0 #fff;
-  -webkit-transition: all 0.1s linear;
-  -moz-transition: all 0.1s linear;
-  -o-transition: all 0.1s linear;
-  -ms-transition: all 0.1s linear;
-  transition: all 0.1s linear;
-  padding: 5px 10px;
   vertical-align: middle;
+  margin: 0 10px;
+  width: 100px;
+  height: 20px;
+  cursor: pointer;
 }
-.ui-button:hover,
-a.ui-button:hover,
-button.ui-button:hover {
-  color: #777;
-  text-decoration: none;
-}
-.ui-button:active,
-a.ui-button:active,
-button.ui-button:active,
-.ui-button[data-state="selected"],
-a.ui-button[data-state="selected"],
-button.ui-button[data-state="selected"] {
-  -webkit-box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
-  box-shadow: inset 0 1px 10px rgba(0,0,0,0.2);
-}
-.ui-list,
-.ui-grid {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ui-grid li {
+.player .volume .volume-switch {
+  width: 24px;
+  height: 20px;
   display: inline-block;
-  margin-right: -1px;
+  top: 0px;
+  left: 0px;
+  position: relative;
+  background-image: url("../images/glyphicons-halflings-white.png");
+  background-position: -405px 138px;
 }
-.ui-grid li:last-child {
-  margin-right: 0;
+.player .volume .volume-switch.mute {
+  background-position: -357px 138px;
 }
-[data-state~="default"],
-[data-state~="enabled"] {
-  cursor: inherit;
-  opacity: 1;
-  -ms-filter: none;
-  filter: none;
-  -webkit-transition: opacity 0.2s linear;
-  -moz-transition: opacity 0.2s linear;
-  -o-transition: opacity 0.2s linear;
-  -ms-transition: opacity 0.2s linear;
-  transition: opacity 0.2s linear;
+.player .volume .slider {
+  width: 75%;
+  height: 100%;
+  display: inline-block;
 }
-[data-state~="disabled"],
-cursor not-allowed {
-  opacity: 0.5;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
-  filter: alpha(opacity=50);
-  -webkit-transition: opacity 0.2s linear;
-  -moz-transition: opacity 0.2s linear;
-  -o-transition: opacity 0.2s linear;
-  -ms-transition: opacity 0.2s linear;
-  transition: opacity 0.2s linear;
+.player .volume .slider .slider-container {
+  width: 100%;
+  height: 50%;
+  border: 1px solid #000;
+  -webkit-border-radius: 7px;
+  border-radius: 7px;
+  top: 25%;
+  left: 0%;
+  position: relative;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fff), color-stop(1, #eee));
+  background: -webkit-linear-gradient(top, #fff 0%, #eee 100%);
+  background: -moz-linear-gradient(top, #fff 0%, #eee 100%);
+  background: -o-linear-gradient(top, #fff 0%, #eee 100%);
+  background: -ms-linear-gradient(top, #fff 0%, #eee 100%);
+  background: linear-gradient(top, #fff 0%, #eee 100%);
 }
-[data-state~="hidden"] {
-  display: none;
+.player .volume .slider .slider-container .slider-filler {
+  height: 100%;
+  -webkit-border-radius: 7px;
+  border-radius: 7px;
+  top: 0px;
+  left: 0px;
+  position: absolute;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #eee), color-stop(1, #aaa));
+  background: -webkit-linear-gradient(top, #eee 0%, #aaa 100%);
+  background: -moz-linear-gradient(top, #eee 0%, #aaa 100%);
+  background: -o-linear-gradient(top, #eee 0%, #aaa 100%);
+  background: -ms-linear-gradient(top, #eee 0%, #aaa 100%);
+  background: linear-gradient(top, #eee 0%, #aaa 100%);
 }
-[data-state~="visible"] {
-  visibility: visible;
+.player .volume .slider .slider-container .slider-filler .slider-handle {
+  width: 16px;
+  height: 15px;
+  border: 1px solid #444;
+  -webkit-border-radius: 7px;
+  border-radius: 7px;
+  top: -40%;
+  right: -9px;
+  position: absolute;
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0, #eee), color-stop(1, #aaa));
+  background: -webkit-linear-gradient(top left, #eee 0%, #aaa 100%);
+  background: -moz-linear-gradient(top left, #eee 0%, #aaa 100%);
+  background: -o-linear-gradient(top left, #eee 0%, #aaa 100%);
+  background: -ms-linear-gradient(top left, #eee 0%, #aaa 100%);
+  background: linear-gradient(top left, #eee 0%, #aaa 100%);
 }
-[data-state~="invisible"] {
-  visibility: hidden;
+.player .volume .slider .slider-container .slider-filler .slider-handle:active {
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0, #aaa), color-stop(1, #eee));
+  background: -webkit-linear-gradient(top left, #aaa 0%, #eee 100%);
+  background: -moz-linear-gradient(top left, #aaa 0%, #eee 100%);
+  background: -o-linear-gradient(top left, #aaa 0%, #eee 100%);
+  background: -ms-linear-gradient(top left, #aaa 0%, #eee 100%);
+  background: linear-gradient(top left, #aaa 0%, #eee 100%);
 }
-[data-state~="waiting"],
-[data-state~="loading"] {
-  cursor: wait;
+.player .slider-info {
+  height: 25px;
+  border: 1px solid #000;
 }
-[data-state~="success"],
-[data-state~="valid"] {
-  border-color: #82cf82;
-  color: #82cf82;
-  -webkit-transition: color 0.2s linear, border-color 0.2s linear;
-  -moz-transition: color 0.2s linear, border-color 0.2s linear;
-  -o-transition: color 0.2s linear, border-color 0.2s linear;
-  -ms-transition: color 0.2s linear, border-color 0.2s linear;
-  transition: color 0.2s linear, border-color 0.2s linear;
+.player .button {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
 }
-[data-state~="error"],
-[data-state~="invalid"] {
-  border-color: #f0dddd;
-  color: #f0dddd;
-  -webkit-transition: color 0.2s linear, border-color 0.2s linear;
-  -moz-transition: color 0.2s linear, border-color 0.2s linear;
-  -o-transition: color 0.2s linear, border-color 0.2s linear;
-  -ms-transition: color 0.2s linear, border-color 0.2s linear;
-  transition: color 0.2s linear, border-color 0.2s linear;
+.player .button.play {
+  width: 32px;
+  height: 32px;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  background-image: url("../images/glyphicons-halflings.png");
+  background-position: -280px 94px;
 }
-.layout-container {
-  width: 940px;
+.player .button.play:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
-.layout-centered {
-  margin: 0 auto;
+.player .button.play:active {
+  border: 2px solid #ddd;
+  background-color: #bbb;
 }
-.layout-left {
-  float: left;
+.player .button.play.paused {
+  background-position: -256px 94px;
 }
-.layout-right {
-  float: right;
+.player .button.play.stopped {
+  background-position: -256px 94px;
 }
-.layout-to-left {
-  left: auto;
-  right: 0;
+#content {
+  padding: 2em;
 }
-.layout-to-right {
-  right: auto;
-  left: 0;
-}
-@media (max-width: 480px) {
-  body {
-    padding: 0 20px;
-    text-rendering: optimizeSpeed;
-  }
-  .layout-container {
-    width: auto;
-  }
-}
-@media (max-width: 767px) {
-  body {
-    padding: 0 20px;
-    text-rendering: optimizeSpeed;
-  }
-  .layout-container {
-    width: auto;
-  }
-}
-@media (min-width: 768px) and (max-width: 979px) {
-  .layout-container {
-    width: 724px;
-  }
-}
-@media (min-width: 1200px) {
-  .layout-container {
-    width: 1170px;
-  }
-}
+/*
+
+ SoundManager 2: In-page MP3 player example
+ ------------------------------------------
+
+ Clicks on links to MP3s are intercepted via JS, calls are
+ made to SoundManager to load/play sounds. CSS classes are
+ appended to the link, which are used to highlight the
+ current play state and so on.
+
+ Class names are applied in addition to "sm2_link" base.
+
+ Default:
+
+ sm2_link
+
+ Additional states:
+
+ sm2_playing
+ sm2_paused
+
+ eg.
+
+ <!-- default -->
+ <a href="some.mp3" class="sm2_link">some.mp3</a>
+
+ <!-- playing -->
+ <a href="some.mp3" class="sm2_link sm2_playing">some.mp3</a>
+
+
+ Note you don't require ul.graphic / ul.flat etc. for your use
+ if only using one style on a page. You can just use .sm2_link{}
+ and so on, but isolate the CSS you want.
+
+ Side note: Would do multiple class definitions eg.
+
+ a.sm2_default.sm2_playing{}
+
+ .. except IE 6 has a parsing bug which may break behaviour,
+ applying sm2_playing {} even when the class is set to sm2_default.
+
+
+ If you want to make your own UI from scratch, here is the base:
+
+ Default + hover state, "click to play":
+
+ a.sm2_link {}
+ a.sm2_link:hover {}
+
+ Playing + hover state, "click to pause":
+
+ a.sm2_playing {}
+ a.sm2_playing:hover {}
+
+ Paused + hover state, "click to resume":
+
+ a.sm2_paused {}
+ a.sm2_paused:hover {}
+
+
+*/
 ul.graphic {
   list-style-type: none;
   padding-left: 0px;
@@ -891,7 +910,6 @@ ul.graphic li a.sm2_link {
   padding-left: 22px;
   min-height: 16px;
   vertical-align: middle;
-  -webkit-border-radius: 3px;
   border-radius: 3px;
   padding: 3px 3px 3px 25px;
   min-width: 19em;
@@ -923,9 +941,108 @@ body #sm2-container embed {
   left: -9999em;
   top: -9999em;
 }
-#content {
-  padding: 2em;
+/*
+Da damn bear-killer player style
+*/
+.player {
+  background-color: #444;
+  margin: 10 10px;
+  padding: 5px;
+  border: 1px solid #f00;
+  border-radius: 4px;
 }
+.player .volume {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
+  width: 100px;
+  height: 20px;
+  cursor: pointer;
+}
+.player .volume .volume-switch {
+  width: 24px;
+  height: 20px;
+  display: inline-block;
+  top: 0px;
+  left: 0px;
+  position: relative;
+  background-image: url("../images/glyphicons-halflings-white.png");
+  background-position: -405px 138px;
+}
+.player .volume .volume-switch.mute {
+  background-position: -357px 138px;
+}
+.player .volume .slider {
+  width: 75%;
+  height: 100%;
+  display: inline-block;
+}
+.player .volume .slider .slider-container {
+  width: 100%;
+  height: 50%;
+  border: 1px solid #000;
+  border-radius: 7px;
+  top: 25%;
+  left: 0%;
+  position: relative;
+  background: linear-gradient(top, #fff, #eee);
+}
+.player .volume .slider .slider-container .slider-filler {
+  height: 100%;
+  border-radius: 7px;
+  top: 0px;
+  left: 0px;
+  position: absolute;
+  background: linear-gradient(top, #eee, #aaa);
+}
+.player .volume .slider .slider-container .slider-filler .slider-handle {
+  width: 16px;
+  height: 15px;
+  border: 1px solid #444;
+  border-radius: 7px;
+  top: -40%;
+  right: -9px;
+  position: absolute;
+  background: linear-gradient(top left, #eee, #aaa);
+}
+.player .volume .slider .slider-container .slider-filler .slider-handle:active {
+  background: linear-gradient(top left, #aaa, #eee);
+}
+.player .slider-info {
+  height: 25px;
+  border: 1px solid #000;
+}
+.player .button {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
+}
+.player .button.play {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  background-image: url("../images/glyphicons-halflings.png");
+  background-position: -280px 94px;
+}
+.player .button.play:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .button.play:active {
+  border: 2px solid #ddd;
+  background-color: #bbb;
+}
+.player .button.play.paused {
+  background-position: -256px 94px;
+}
+.player .button.play.stopped {
+  background-position: -256px 94px;
+}
+/*
+.player .button.play
+  background: linear-gradient(top left, #eee, #aaa)
+*/
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }
 .ir br { display: none; }

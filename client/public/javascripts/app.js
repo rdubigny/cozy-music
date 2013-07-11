@@ -82,25 +82,19 @@
 window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
-      var Router, inlinePlayer, player;
+      var Router;
       Router = require('router');
       this.router = new Router();
-      Backbone.history.start();
-      inlinePlayer = null;
-      player = null;
-      soundManager.setup({
+      this.soundManager = soundManager;
+      this.soundManager.setup({
         debugMode: true,
         preferFlash: false,
         useFlashBlock: true,
-        url: "../../swf/",
+        url: "../swf/",
         flashVersion: 9
       });
-      soundManager.onready(function() {
-        var InlinePlayer, Player;
-        InlinePlayer = require('views/inlineplayer');
-        this.inlinePlayer = new InlinePlayer();
-        Player = require('views/player');
-        return this.player = new Player();
+      this.soundManager.onready(function() {
+        return Backbone.history.start();
       });
       if (typeof Object.freeze === 'function') {
         return Object.freeze(this);
@@ -326,11 +320,15 @@ window.require.register("router", function(exports, require, module) {
   
 });
 window.require.register("views/app_view", function(exports, require, module) {
-  var AppView, BaseView, _ref,
+  var AppView, BaseView, InlinePlayer, Player, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   BaseView = require('../lib/base_view');
+
+  InlinePlayer = require('views/inlineplayer');
+
+  Player = require('views/player/player');
 
   module.exports = AppView = (function(_super) {
     __extends(AppView, _super);
@@ -344,7 +342,13 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.template = require('./templates/home');
 
-    AppView.prototype.afterRender = function() {};
+    AppView.prototype.player = null;
+
+    AppView.prototype.afterRender = function() {
+      this.player = new Player();
+      this.player.render();
+      return this.$('.player').append(this.player.$el);
+    };
 
     return AppView;
 
@@ -594,19 +598,193 @@ window.require.register("views/inlineplayer", function(exports, require, module)
   })();
   
 });
-window.require.register("views/player", function(exports, require, module) {
+window.require.register("views/player/player", function(exports, require, module) {
   
   /*
   Here is the player with some freaking awesome features like play and pause...
   */
-  var Player;
+  var BaseView, Player, VolumeManager, app, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  module.exports = Player = (function() {
-    function Player() {}
+  BaseView = require('../../lib/base_view');
+
+  VolumeManager = require('./volumeManager');
+
+  app = require('../../application');
+
+  module.exports = Player = (function(_super) {
+    __extends(Player, _super);
+
+    function Player() {
+      this.stopTrack = __bind(this.stopTrack, this);
+      this.afterRender = __bind(this.afterRender, this);
+      _ref = Player.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Player.prototype.className = "player";
+
+    Player.prototype.tagName = "div";
+
+    Player.prototype.template = require('../templates/player/player');
+
+    Player.prototype.events = {
+      "click .button.play": "onClickPlay"
+    };
+
+    Player.prototype.afterRender = function() {
+      this.volumeManager = new VolumeManager();
+      this.volumeManager.render();
+      this.$el.append(this.volumeManager.$el);
+      this.currentTrack = app.soundManager.createSound({
+        id: "DaSound",
+        url: "../music/COMA - Hoooooray.mp3",
+        duration: 5000,
+        onfinish: this.stopTrack,
+        onstop: this.stopTrack
+      });
+      this.isStopped = true;
+      this.isPaused = false;
+      this.isPlaying = false;
+      this.playButton = this.$(".button.play");
+      return this.playButton.addClass("stopped");
+    };
+
+    Player.prototype.onClickPlay = function(event) {
+      event.preventDefault();
+      if (this.isStopped) {
+        this.currentTrack.play();
+        this.playButton.removeClass("stopped");
+        return this.isStopped = false;
+      } else if (this.isPaused) {
+        this.currentTrack.play();
+        this.playButton.removeClass("paused");
+        return this.isPaused = false;
+      } else if (!this.isPaused && !this.isStopped) {
+        this.currentTrack.pause();
+        this.playButton.addClass("paused");
+        return this.isPaused = true;
+      }
+    };
+
+    Player.prototype.stopTrack = function() {
+      this.playButton.addClass("stopped");
+      this.isStopped = true;
+      this.playButton.removeClass("paused");
+      return this.isPaused = false;
+    };
 
     return Player;
 
-  })();
+  })(BaseView);
+  
+});
+window.require.register("views/player/volumeManager", function(exports, require, module) {
+  var BaseView, VolumeManager, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseView = require('../../lib/base_view');
+
+  module.exports = VolumeManager = (function(_super) {
+    __extends(VolumeManager, _super);
+
+    function VolumeManager() {
+      this.onMouseUpSlider = __bind(this.onMouseUpSlider, this);
+      this.onMouseMoveSlider = __bind(this.onMouseMoveSlider, this);
+      _ref = VolumeManager.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    VolumeManager.prototype.className = "volume";
+
+    VolumeManager.prototype.tagName = "div";
+
+    VolumeManager.prototype.template = require('../templates/player/volumeManager');
+
+    VolumeManager.prototype.events = {
+      "mousedown .slider": "onMouseDownSlider",
+      "click .volume-switch": "onClickToggleMute"
+    };
+
+    VolumeManager.prototype.afterRender = function() {
+      this.volumeValue = 50;
+      this.isMuted = false;
+      this.slidableZone = $(document);
+      this.volumeSwitch = this.$(".volume-switch");
+      this.slider = this.$(".slider");
+      this.sliderContainer = this.$(".slider-container");
+      this.sliderFiller = this.$(".slider-filler");
+      this.sliderFiller.width("" + this.volumeValue + "%");
+      return this.sliderInfo = this.$(".slider-info");
+    };
+
+    VolumeManager.prototype.onMouseDownSlider = function(event) {
+      event.preventDefault();
+      this.setValue(event);
+      this.slidableZone.mousemove(this.onMouseMoveSlider);
+      return this.slidableZone.mouseup(this.onMouseUpSlider);
+    };
+
+    VolumeManager.prototype.onMouseMoveSlider = function(event) {
+      event.preventDefault();
+      return this.setValue(event);
+    };
+
+    VolumeManager.prototype.onMouseUpSlider = function(event) {
+      event.preventDefault();
+      this.slidableZone.off("mousemove");
+      return this.slidableZone.off("mouseup");
+    };
+
+    VolumeManager.prototype.onClickToggleMute = function(event) {
+      event.preventDefault();
+      return this.toggleMute();
+    };
+
+    VolumeManager.prototype.setValue = function(event) {
+      var handlePositionPercent, handlePositionPx;
+      handlePositionPx = event.clientX - this.sliderContainer.offset().left;
+      handlePositionPercent = handlePositionPx / this.sliderContainer.width() * 100;
+      this.volumeValue = handlePositionPercent.toFixed(0);
+      if (this.volumeValue > 100) {
+        this.volumeValue = 100;
+      }
+      if (this.volumeValue < 0) {
+        this.volumeValue = 0;
+        if (!this.isMuted) {
+          this.toggleMute();
+        }
+      }
+      if (this.volumeValue > 0 && this.isMuted) {
+        this.toggleMute();
+      }
+      return this.updateDisplay();
+    };
+
+    VolumeManager.prototype.updateDisplay = function() {
+      var newWidth;
+      newWidth = this.isMuted ? 0 : this.volumeValue;
+      this.sliderInfo.html("done : " + newWidth);
+      return this.sliderFiller.width("" + newWidth + "%");
+    };
+
+    VolumeManager.prototype.toggleMute = function() {
+      if (this.isMuted) {
+        this.volumeSwitch.removeClass("mute");
+      } else {
+        this.volumeSwitch.addClass("mute");
+      }
+      this.isMuted = !this.isMuted;
+      return this.updateDisplay();
+    };
+
+    return VolumeManager;
+
+  })(BaseView);
   
 });
 window.require.register("views/templates/home", function(exports, require, module) {
@@ -615,7 +793,29 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><ul class="graphic"><li> <a href="music/Air France - Joris Delacroix.mp3">Joris</a></li><li> <a href="music/COMA - Hoooooray.mp3">Coma</a></li><li> <a href="music/Rone - Bye Bye Macadam.mp3">Rone</a></li></ul><h2>Here are some links</h2><ul><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki">Documentation</a></li><li> <a href="https://github.com/mycozycloud/cozy-setup/wiki/Getting-started"></a>Getting Started</li><li> <a href="https://github.com/mycozycloud">Github</a></li></ul></div>');
+  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><ul class="graphic"><li><a href="music/Air France - Joris Delacroix.mp3">Joris</a></li><li><a href="music/COMA - Hoooooray.mp3">Coma</a></li><li><a href="music/Rone - Bye Bye Macadam.mp3">Rone</a></li></ul><div class="player"></div><h2>Here are some links</h2><ul><li><a href="https://github.com/mycozycloud/cozy-setup/wiki">Documentation</a></li><li><a href="https://github.com/mycozycloud/cozy-setup/wiki/Getting-started"></a>Getting Started</li><li><a href="https://github.com/mycozycloud">Github</a></li></ul></div>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/player/player", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<div class="button play"></div>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/player/volumeManager", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<div class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-filler"><div class="slider-handle"></div></div></div></div><!--.slider-info info-->');
   }
   return buf.join("");
   };

@@ -25,7 +25,7 @@ module.exports = class Player extends BaseView
 
         @currentTrack = app.soundManager.createSound
             id: "DaSound"
-            url: "../music/COMA - Hoooooray.mp3"
+            url: "music/COMA - Hoooooray.mp3"
             duration: 5000
             onfinish: @stopTrack
             onstop: @stopTrack
@@ -33,7 +33,7 @@ module.exports = class Player extends BaseView
             #    soundManager._writeDebug "whileplaying(): #{@position}/#{@duration}"
         @isStopped = true
         @isPaused = false
-        @isPlaying = false
+        @isPlayable = soundManager.canPlayLink("music/COMA - Hoooooray.mp3")
         @playButton = @$(".button.play")
         @playButton.addClass("stopped")
 

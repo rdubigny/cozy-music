@@ -73,23 +73,33 @@ Da damn bear-killer player style
         display:inline-block
         vertical-align:middle
         margin:0 10px
+        border:2px solid #bbb
+        background-color: #ddd
+        background-image: url("../images/glyphicons-halflings.png")
+        &:hover
+            background-image: url("../images/glyphicons-halflings-white.png")
+        &:active
+            border:2px solid #ddd
+            background-color: #bbb
         &.play
             width: 32px
             height: 32px
             border-radius: 16px
-            border:2px solid #bbb
-            background-color: #ddd
-            background-image: url("../images/glyphicons-halflings.png")
             background-position: -280px 94px
-            &:hover
-                background-image: url("../images/glyphicons-halflings-white.png")
-            &:active
-                border:2px solid #ddd
-                background-color: #bbb
             &.paused
                 background-position: -256px 94px
             &.stopped
                 background-position: -256px 94px
+        &.rwd
+            width: 24px
+            height: 24px
+            border-radius: 12px
+            background-position: -239px 90px
+        &.fwd
+            width: 24px
+            height: 24px
+            border-radius: 12px
+            background-position: -331px 90px
 
 /*
 .player .button.play

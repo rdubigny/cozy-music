@@ -800,29 +800,43 @@ a:visited:hover {
   display: inline-block;
   vertical-align: middle;
   margin: 0 10px;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  background-image: url("../images/glyphicons-halflings.png");
+}
+.player .button:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .button:active {
+  border: 2px solid #ddd;
+  background-color: #bbb;
 }
 .player .button.play {
   width: 32px;
   height: 32px;
   -webkit-border-radius: 16px;
   border-radius: 16px;
-  border: 2px solid #bbb;
-  background-color: #ddd;
-  background-image: url("../images/glyphicons-halflings.png");
   background-position: -280px 94px;
-}
-.player .button.play:hover {
-  background-image: url("../images/glyphicons-halflings-white.png");
-}
-.player .button.play:active {
-  border: 2px solid #ddd;
-  background-color: #bbb;
 }
 .player .button.play.paused {
   background-position: -256px 94px;
 }
 .player .button.play.stopped {
   background-position: -256px 94px;
+}
+.player .button.rwd {
+  width: 24px;
+  height: 24px;
+  -webkit-border-radius: 12px;
+  border-radius: 12px;
+  background-position: -239px 90px;
+}
+.player .button.fwd {
+  width: 24px;
+  height: 24px;
+  -webkit-border-radius: 12px;
+  border-radius: 12px;
+  background-position: -331px 90px;
 }
 #content {
   padding: 2em;
@@ -1016,28 +1030,40 @@ Da damn bear-killer player style
   display: inline-block;
   vertical-align: middle;
   margin: 0 10px;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  background-image: url("../images/glyphicons-halflings.png");
+}
+.player .button:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .button:active {
+  border: 2px solid #ddd;
+  background-color: #bbb;
 }
 .player .button.play {
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  border: 2px solid #bbb;
-  background-color: #ddd;
-  background-image: url("../images/glyphicons-halflings.png");
   background-position: -280px 94px;
-}
-.player .button.play:hover {
-  background-image: url("../images/glyphicons-halflings-white.png");
-}
-.player .button.play:active {
-  border: 2px solid #ddd;
-  background-color: #bbb;
 }
 .player .button.play.paused {
   background-position: -256px 94px;
 }
 .player .button.play.stopped {
   background-position: -256px 94px;
+}
+.player .button.rwd {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-position: -239px 90px;
+}
+.player .button.fwd {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-position: -331px 90px;
 }
 /*
 .player .button.play

@@ -640,14 +640,14 @@ window.require.register("views/player/player", function(exports, require, module
       this.$el.append(this.volumeManager.$el);
       this.currentTrack = app.soundManager.createSound({
         id: "DaSound",
-        url: "../music/COMA - Hoooooray.mp3",
+        url: "music/COMA - Hoooooray.mp3",
         duration: 5000,
         onfinish: this.stopTrack,
         onstop: this.stopTrack
       });
       this.isStopped = true;
       this.isPaused = false;
-      this.isPlaying = false;
+      this.isPlayable = soundManager.canPlayLink("music/COMA - Hoooooray.mp3");
       this.playButton = this.$(".button.play");
       return this.playButton.addClass("stopped");
     };
@@ -804,7 +804,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="button play"></div>');
+  buf.push('<div class="button rwd"></div><div class="button play"></div><div class="button fwd"></div>');
   }
   return buf.join("");
   };

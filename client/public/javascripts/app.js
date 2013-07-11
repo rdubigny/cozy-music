@@ -618,6 +618,8 @@ window.require.register("views/player/player", function(exports, require, module
     __extends(Player, _super);
 
     function Player() {
+      this.onToggleMute = __bind(this.onToggleMute, this);
+      this.onVolumeChange = __bind(this.onVolumeChange, this);
       this.stopTrack = __bind(this.stopTrack, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = Player.__super__.constructor.apply(this, arguments);
@@ -635,18 +637,26 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.afterRender = function() {
-      this.volumeManager = new VolumeManager();
+      var initialVolume;
+      initialVolume = 50;
+      this.vent = _.extend({}, Backbone.Events);
+      this.vent.bind("volumeHasChanged", this.onVolumeChange);
+      this.vent.bind("muteHasBeenToggled", this.onToggleMute);
+      this.volumeManager = new VolumeManager({
+        initVol: initialVolume,
+        vent: this.vent
+      });
       this.volumeManager.render();
       this.$el.append(this.volumeManager.$el);
       this.currentTrack = app.soundManager.createSound({
         id: "DaSound" + ((Math.random() * 1000).toFixed(0)),
         url: "music/COMA - Hoooooray.mp3",
+        volume: initialVolume,
         onfinish: this.stopTrack,
         onstop: this.stopTrack
       });
       this.isStopped = true;
       this.isPaused = false;
-      this.isPlayable = soundManager.canPlayLink("music/COMA - Hoooooray.mp3");
       this.playButton = this.$(".button.play");
       return this.playButton.addClass("stopped");
     };
@@ -672,6 +682,14 @@ window.require.register("views/player/player", function(exports, require, module
       this.isStopped = true;
       this.playButton.removeClass("paused");
       return this.isPaused = false;
+    };
+
+    Player.prototype.onVolumeChange = function(volume) {
+      return this.currentTrack.setVolume(volume);
+    };
+
+    Player.prototype.onToggleMute = function() {
+      return this.currentTrack.toggleMute();
     };
 
     return Player;
@@ -708,8 +726,13 @@ window.require.register("views/player/volumeManager", function(exports, require,
       "click .volume-switch": "onClickToggleMute"
     };
 
+    VolumeManager.prototype.initialize = function(options) {
+      VolumeManager.__super__.initialize.apply(this, arguments);
+      this.vent = options.vent;
+      return this.volumeValue = options.initVol;
+    };
+
     VolumeManager.prototype.afterRender = function() {
-      this.volumeValue = 50;
       this.isMuted = false;
       this.slidableZone = $(document);
       this.volumeSwitch = this.$(".volume-switch");
@@ -765,12 +788,14 @@ window.require.register("views/player/volumeManager", function(exports, require,
 
     VolumeManager.prototype.updateDisplay = function() {
       var newWidth;
+      this.vent.trigger("volumeHasChanged", this.volumeValue);
       newWidth = this.isMuted ? 0 : this.volumeValue;
       this.sliderInfo.html("done : " + newWidth);
       return this.sliderFiller.width("" + newWidth + "%");
     };
 
     VolumeManager.prototype.toggleMute = function() {
+      this.vent.trigger("muteHasBeenToggled");
       if (this.isMuted) {
         this.volumeSwitch.removeClass("mute");
       } else {

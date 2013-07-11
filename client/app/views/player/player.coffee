@@ -15,22 +15,34 @@ module.exports = class Player extends BaseView
         "click .button.play": "onClickPlay"
 
     afterRender: =>
-        @volumeManager = new VolumeManager()
+        initialVolume = 50 # default volume value
+
+        # create and bind the volumeManager
+        @vent = _.extend {}, Backbone.Events
+        @vent.bind "volumeHasChanged", @onVolumeChange
+        @vent.bind "muteHasBeenToggled", @onToggleMute
+        @volumeManager = new VolumeManager({initVol: initialVolume,vent: @vent})
         @volumeManager.render()
         @$el.append @volumeManager.$el
 
         @currentTrack = app.soundManager.createSound
             id: "DaSound#{(Math.random()*1000).toFixed(0)}"
             url: "music/COMA - Hoooooray.mp3"
+            volume: initialVolume
             onfinish: @stopTrack
             onstop: @stopTrack
         @isStopped = true
         @isPaused = false
-        @isPlayable = soundManager.canPlayLink("music/COMA - Hoooooray.mp3")
+        #@isValidURL = app.soundManager.canPlayURL(@currentTrack.url)
+        #@isSMReady = app.soundManager.ok()
         @playButton = @$(".button.play")
+        #if @isValidURL and @isSMReady
         @playButton.addClass("stopped")
+        #else
+        #    @playButton.addClass("unPlayable")
 
     onClickPlay: ->
+        #if @isPlayable
         if @isStopped
             @currentTrack.play()
             @playButton.removeClass("stopped")
@@ -49,3 +61,9 @@ module.exports = class Player extends BaseView
         @isStopped = true
         @playButton.removeClass("paused")
         @isPaused = false
+
+    onVolumeChange: (volume)=>
+        @currentTrack.setVolume volume
+
+    onToggleMute: =>
+        @currentTrack.toggleMute()

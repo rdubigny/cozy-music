@@ -5,8 +5,8 @@ Da damn bear-killer player style
 .player
     background-color: #444
     margin:10 10px
-    padding: 5px
-    border:1px solid #000
+    padding: 10px
+    border:1px solid black
     border-radius: 4px
 
     .volume
@@ -72,14 +72,15 @@ Da damn bear-killer player style
     .button
         display:inline-block
         vertical-align:middle
-        margin:0 10px
+        margin:0 5px
         border:2px solid #bbb
-        background-color: #ddd
+        background-color: #ccc
         background-image: url("../images/glyphicons-halflings.png")
+        cursor:pointer
         &:hover
             background-image: url("../images/glyphicons-halflings-white.png")
         &:active
-            border:2px solid #ddd
+            border:2px solid #ccc
             background-color: #bbb
         &.play
             width: 32px
@@ -90,6 +91,10 @@ Da damn bear-killer player style
                 background-position: -256px 94px
             &.stopped
                 background-position: -256px 94px
+            &.unPlayable
+                border:2px solid #b00
+                background-color: #c00
+                background-position: -137px 45px
         &.rwd
             width: 24px
             height: 24px

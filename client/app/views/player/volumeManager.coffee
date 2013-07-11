@@ -10,8 +10,12 @@ module.exports = class VolumeManager extends BaseView
         "mousedown .slider": "onMouseDownSlider"
         "click .volume-switch": "onClickToggleMute"
 
+    initialize: (options)->
+        super
+        @vent = options.vent
+        @volumeValue = options.initVol
+
     afterRender: ->
-        @volumeValue = 50 # default value
         @isMuted = false
         @slidableZone = $(document) # slidableZone is the zone where the user can slide
         @volumeSwitch = @$(".volume-switch")
@@ -52,11 +56,13 @@ module.exports = class VolumeManager extends BaseView
         @updateDisplay()
 
     updateDisplay: ->
+        @vent.trigger "volumeHasChanged", @volumeValue
         newWidth = if @isMuted then 0 else @volumeValue
         @sliderInfo.html "done : #{newWidth}"
         @sliderFiller.width "#{newWidth}%"
 
     toggleMute: ->
+        @vent.trigger "muteHasBeenToggled"
         if @isMuted
             @volumeSwitch.removeClass "mute"
         else

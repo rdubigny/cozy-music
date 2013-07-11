@@ -708,7 +708,7 @@ a:visited:hover {
   background-color: #444;
   margin: 10 10px;
   padding: 5px;
-  border: 1px solid #f00;
+  border: 1px solid #000;
   -webkit-border-radius: 4px;
   border-radius: 4px;
 }
@@ -962,7 +962,7 @@ Da damn bear-killer player style
   background-color: #444;
   margin: 10 10px;
   padding: 5px;
-  border: 1px solid #f00;
+  border: 1px solid #000;
   border-radius: 4px;
 }
 .player .volume {

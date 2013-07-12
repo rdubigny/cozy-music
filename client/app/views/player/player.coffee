@@ -33,16 +33,10 @@ module.exports = class Player extends BaseView
             onstop: @stopTrack
         @isStopped = true
         @isPaused = false
-        #@isValidURL = app.soundManager.canPlayURL(@currentTrack.url)
-        #@isSMReady = app.soundManager.ok()
         @playButton = @$(".button.play")
-        #if @isValidURL and @isSMReady
         @playButton.addClass("stopped")
-        #else
-        #    @playButton.addClass("unPlayable")
 
     onClickPlay: ->
-        #if @isPlayable
         if @isStopped
             @currentTrack.play()
             @playButton.removeClass("stopped")

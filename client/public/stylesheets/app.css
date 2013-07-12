@@ -1077,10 +1077,6 @@ Da damn bear-killer player style
   border-radius: 12px;
   background-position: -331px 90px;
 }
-/*
-.player .button.play
-  background: linear-gradient(top left, #eee, #aaa)
-*/
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }
 .ir br { display: none; }

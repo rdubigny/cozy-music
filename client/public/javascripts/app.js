@@ -647,7 +647,7 @@ window.require.register("views/player/player", function(exports, require, module
         vent: this.vent
       });
       this.volumeManager.render();
-      this.$el.append(this.volumeManager.$el);
+      this.$('#volume').append(this.volumeManager.$el);
       this.currentTrack = app.soundManager.createSound({
         id: "DaSound" + ((Math.random() * 1000).toFixed(0)),
         url: "music/COMA - Hoooooray.mp3",
@@ -825,7 +825,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="button rwd"></div><div class="button play"></div><div class="button fwd"></div>');
+  buf.push('<div class="button rwd"></div><div class="button play"></div><div class="button fwd"></div><span id="volume"></span><div class="time left">2:26</div><div class="progress"><div class="inner"></div></div><div class="time right">1:14</div>');
   }
   return buf.join("");
   };

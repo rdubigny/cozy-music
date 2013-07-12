@@ -23,7 +23,7 @@ module.exports = class Player extends BaseView
         @vent.bind "muteHasBeenToggled", @onToggleMute
         @volumeManager = new VolumeManager({initVol: initialVolume,vent: @vent})
         @volumeManager.render()
-        @$el.append @volumeManager.$el
+        @$('#volume').append @volumeManager.$el
 
         @currentTrack = app.soundManager.createSound
             id: "DaSound#{(Math.random()*1000).toFixed(0)}"

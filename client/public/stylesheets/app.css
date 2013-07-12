@@ -840,6 +840,36 @@ a:visited:hover {
   border-radius: 12px;
   background-position: -331px 90px;
 }
+.player .progress {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
+  width: 40%;
+  height: 20px;
+  cursor: pointer;
+  background-color: #fff;
+}
+.player .progress .inner {
+  height: 100%;
+  width: 60%;
+  background: -webkit-gradient(linear, left top, right top, color-stop(0, #fff), color-stop(1, #aaa));
+  background: -webkit-linear-gradient(left, #fff 0%, #aaa 100%);
+  background: -moz-linear-gradient(left, #fff 0%, #aaa 100%);
+  background: -o-linear-gradient(left, #fff 0%, #aaa 100%);
+  background: -ms-linear-gradient(left, #fff 0%, #aaa 100%);
+  background: linear-gradient(left, #fff 0%, #aaa 100%);
+}
+.player .time {
+  display: inline-block;
+  vertical-align: middle;
+  color: #fff;
+}
+.player .time.left {
+  margin-left: 20px;
+}
+.player .time.right {
+  margin-right: 20px;
+}
 #content {
   padding: 2em;
 }
@@ -1068,6 +1098,31 @@ Da damn bear-killer player style
   height: 24px;
   border-radius: 12px;
   background-position: -331px 90px;
+}
+.player .progress {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
+  width: 40%;
+  height: 20px;
+  cursor: pointer;
+  background-color: #fff;
+}
+.player .progress .inner {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(left, #fff, #aaa);
+}
+.player .time {
+  display: inline-block;
+  vertical-align: middle;
+  color: #fff;
+}
+.player .time.left {
+  margin-left: 20px;
+}
+.player .time.right {
+  margin-right: 20px;
 }
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }

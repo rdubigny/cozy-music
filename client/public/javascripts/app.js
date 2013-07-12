@@ -653,15 +653,27 @@ window.require.register("views/player/player", function(exports, require, module
         url: "music/COMA - Hoooooray.mp3",
         volume: initialVolume,
         onfinish: this.stopTrack,
-        onstop: this.stopTrack
+        onstop: this.stopTrack,
+        onfailure: this.failToPlay
       });
       this.isStopped = true;
       this.isPaused = false;
+      console.log(this.currentTrack);
+      this.isPlayable = app.soundManager.canPlayLink(this.currentTrack);
+      this.isValidURL = app.soundManager.canPlayURL(this.currentTrack.url);
+      this.isValideMIME = app.soundManager.canPlayMIME(this.currentTrack.type);
+      this.isSMReady = app.soundManager.ok();
+      alert("isPlayable : " + this.isPlayable + "; isValideMIME : " + this.isValideMIME + "; isValidURL : " + this.isValidURL + "; isSMReady : " + this.isSMReady + "; readyState : " + this.currentTrack.readyState + " ");
       this.playButton = this.$(".button.play");
       return this.playButton.addClass("stopped");
     };
 
     Player.prototype.onClickPlay = function() {
+      this.isPlayable = app.soundManager.canPlayLink(this.currentTrack);
+      this.isValidURL = app.soundManager.canPlayURL(this.currentTrack.url);
+      this.isValideMIME = app.soundManager.canPlayMIME(this.currentTrack.type);
+      this.isSMReady = app.soundManager.ok();
+      alert("isPlayable : " + this.isPlayable + "; isValideMIME : " + this.isValideMIME + "; isValidURL : " + this.isValidURL + "; isSMReady : " + this.isSMReady + "; readyState : " + this.currentTrack.readyState + " ");
       if (this.isStopped) {
         this.currentTrack.play();
         this.playButton.removeClass("stopped");
@@ -682,6 +694,10 @@ window.require.register("views/player/player", function(exports, require, module
       this.isStopped = true;
       this.playButton.removeClass("paused");
       return this.isPaused = false;
+    };
+
+    Player.prototype.failToPlay = function() {
+      return console.log("failToPlay!");
     };
 
     Player.prototype.onVolumeChange = function(volume) {

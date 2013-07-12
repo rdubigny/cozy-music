@@ -31,10 +31,15 @@ module.exports = class Player extends BaseView
             volume: initialVolume
             onfinish: @stopTrack
             onstop: @stopTrack
+            onfailure: @failToPlay
         @isStopped = true
         @isPaused = false
-        #@isValidURL = app.soundManager.canPlayURL(@currentTrack.url)
-        #@isSMReady = app.soundManager.ok()
+        console.log @currentTrack
+        @isPlayable = app.soundManager.canPlayLink(@currentTrack)
+        @isValidURL = app.soundManager.canPlayURL(@currentTrack.url)
+        @isValideMIME = app.soundManager.canPlayMIME(@currentTrack.type)
+        @isSMReady = app.soundManager.ok()
+        alert "isPlayable : #{@isPlayable}; isValideMIME : #{@isValideMIME}; isValidURL : #{@isValidURL}; isSMReady : #{@isSMReady}; readyState : #{@currentTrack.readyState} "
         @playButton = @$(".button.play")
         #if @isValidURL and @isSMReady
         @playButton.addClass("stopped")
@@ -42,6 +47,12 @@ module.exports = class Player extends BaseView
         #    @playButton.addClass("unPlayable")
 
     onClickPlay: ->
+        #console.log @currentTrack
+        @isPlayable = app.soundManager.canPlayLink(@currentTrack)
+        @isValidURL = app.soundManager.canPlayURL(@currentTrack.url)
+        @isValideMIME = app.soundManager.canPlayMIME(@currentTrack.type)
+        @isSMReady = app.soundManager.ok()
+        alert "isPlayable : #{@isPlayable}; isValideMIME : #{@isValideMIME}; isValidURL : #{@isValidURL}; isSMReady : #{@isSMReady}; readyState : #{@currentTrack.readyState} "
         #if @isPlayable
         if @isStopped
             @currentTrack.play()
@@ -61,6 +72,9 @@ module.exports = class Player extends BaseView
         @isStopped = true
         @playButton.removeClass("paused")
         @isPaused = false
+
+    failToPlay: ->
+        console.log "failToPlay!"
 
     onVolumeChange: (volume)=>
         @currentTrack.setVolume volume

@@ -88,8 +88,11 @@ window.require.register("application", function(exports, require, module) {
       this.soundManager = soundManager;
       this.soundManager.setup({
         debugMode: true,
+        debugFlash: true,
         preferFlash: false,
         useFlashBlock: true,
+        flashPollingInterval: 500,
+        html5PollingInterval: 500,
         url: "../swf/",
         flashVersion: 9
       });
@@ -618,6 +621,7 @@ window.require.register("views/player/player", function(exports, require, module
     __extends(Player, _super);
 
     function Player() {
+      this.updateProgressDisplay = __bind(this.updateProgressDisplay, this);
       this.onToggleMute = __bind(this.onToggleMute, this);
       this.onVolumeChange = __bind(this.onVolumeChange, this);
       this.stopTrack = __bind(this.stopTrack, this);
@@ -633,7 +637,8 @@ window.require.register("views/player/player", function(exports, require, module
     Player.prototype.template = require('../templates/player/player');
 
     Player.prototype.events = {
-      "click .button.play": "onClickPlay"
+      "click .button.play": "onClickPlay",
+      "mousedown .progress": "onMouseDownProgress"
     };
 
     Player.prototype.afterRender = function() {
@@ -648,17 +653,24 @@ window.require.register("views/player/player", function(exports, require, module
       });
       this.volumeManager.render();
       this.$('#volume').append(this.volumeManager.$el);
+      this.elapsedTime = this.$('#elapsedTime');
+      this.remainingTime = this.$('#remainingTime');
+      this.progress = this.$('.progress');
+      this.progressInner = this.$('.progress .inner');
       this.currentTrack = app.soundManager.createSound({
         id: "DaSound" + ((Math.random() * 1000).toFixed(0)),
         url: "music/COMA - Hoooooray.mp3",
         volume: initialVolume,
         onfinish: this.stopTrack,
-        onstop: this.stopTrack
+        onstop: this.stopTrack,
+        whileplaying: this.updateProgressDisplay
       });
+      this.progressInner.width("0%");
+      this.elapsedTime.html("0:00");
+      this.remainingTime.html(this.formatMs(this.currentTrack.durationEstimate));
       this.isStopped = true;
       this.isPaused = false;
-      this.playButton = this.$(".button.play");
-      return this.playButton.addClass("stopped");
+      return this.playButton = this.$(".button.play");
     };
 
     Player.prototype.onClickPlay = function() {
@@ -681,7 +693,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.playButton.addClass("stopped");
       this.isStopped = true;
       this.playButton.removeClass("paused");
-      return this.isPaused = false;
+      this.isPaused = false;
+      return this.updateProgressDisplay();
     };
 
     Player.prototype.onVolumeChange = function(volume) {
@@ -690,6 +703,35 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onToggleMute = function() {
       return this.currentTrack.toggleMute();
+    };
+
+    Player.prototype.formatMs = function(ms) {
+      var s;
+      s = Math.floor((ms / 1000) % 60);
+      if (s < 10) {
+        s = "0" + s;
+      }
+      return "" + (Math.floor(ms / 60000)) + ":" + s;
+    };
+
+    Player.prototype.updateProgressDisplay = function() {
+      var newWidth, remainingTime;
+      newWidth = this.currentTrack.position / this.currentTrack.durationEstimate * 100;
+      this.progressInner.width("" + newWidth + "%");
+      this.elapsedTime.html(this.formatMs(this.currentTrack.position));
+      remainingTime = this.currentTrack.durationEstimate - this.currentTrack.position;
+      return this.remainingTime.html(this.formatMs(remainingTime));
+    };
+
+    Player.prototype.onMouseDownProgress = function(event) {
+      var handlePositionPx, percent;
+      event.preventDefault();
+      handlePositionPx = event.clientX - this.progress.offset().left;
+      percent = handlePositionPx / this.progress.width();
+      if (this.currentTrack.durationEstimate * percent < this.currentTrack.duration) {
+        this.currentTrack.setPosition(this.currentTrack.durationEstimate * percent);
+        return this.updateProgressDisplay();
+      }
     };
 
     return Player;
@@ -744,14 +786,14 @@ window.require.register("views/player/volumeManager", function(exports, require,
 
     VolumeManager.prototype.onMouseDownSlider = function(event) {
       event.preventDefault();
-      this.setValue(event);
+      this.retrieveVolumeValue(event);
       this.slidableZone.mousemove(this.onMouseMoveSlider);
       return this.slidableZone.mouseup(this.onMouseUpSlider);
     };
 
     VolumeManager.prototype.onMouseMoveSlider = function(event) {
       event.preventDefault();
-      return this.setValue(event);
+      return this.retrieveVolumeValue(event);
     };
 
     VolumeManager.prototype.onMouseUpSlider = function(event) {
@@ -765,11 +807,15 @@ window.require.register("views/player/volumeManager", function(exports, require,
       return this.toggleMute();
     };
 
-    VolumeManager.prototype.setValue = function(event) {
+    VolumeManager.prototype.retrieveVolumeValue = function(event) {
       var handlePositionPercent, handlePositionPx;
       handlePositionPx = event.clientX - this.sliderContainer.offset().left;
       handlePositionPercent = handlePositionPx / this.sliderContainer.width() * 100;
       this.volumeValue = handlePositionPercent.toFixed(0);
+      return this.controlVolumeValue();
+    };
+
+    VolumeManager.prototype.controlVolumeValue = function() {
       if (this.volumeValue > 100) {
         this.volumeValue = 100;
       }
@@ -825,7 +871,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="button rwd"></div><div class="button play"></div><div class="button fwd"></div><span id="volume"></span><div class="time left">2:26</div><div class="progress"><div class="inner"></div></div><div class="time right">1:14</div>');
+  buf.push('<div class="button rwd"></div><div class="button play stopped"></div><div class="button fwd"></div><span id="volume"></span><div class="time left"><span id="elapsedTime"></span></div><div class="progress"><div class="inner"></div></div><div class="time right"><span id="remainingTime"></span></div>');
   }
   return buf.join("");
   };

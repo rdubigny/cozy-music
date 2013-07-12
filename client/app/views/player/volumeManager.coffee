@@ -17,7 +17,7 @@ module.exports = class VolumeManager extends BaseView
 
     afterRender: ->
         @isMuted = false
-        @slidableZone = $(document) # slidableZone is the zone where the user can slide
+        @slidableZone = $(document) # the zone where the user can slide
         @volumeSwitch = @$(".volume-switch")
         @slider = @$(".slider")
         @sliderContainer = @$(".slider-container")
@@ -26,13 +26,13 @@ module.exports = class VolumeManager extends BaseView
 
     onMouseDownSlider: (event) ->
         event.preventDefault()
-        @setValue(event)
+        @retrieveVolumeValue(event)
         @slidableZone.mousemove @onMouseMoveSlider
         @slidableZone.mouseup @onMouseUpSlider
 
     onMouseMoveSlider: (event) =>
         event.preventDefault()
-        @setValue(event)
+        @retrieveVolumeValue(event)
 
     onMouseUpSlider: (event) =>
         event.preventDefault()
@@ -43,10 +43,13 @@ module.exports = class VolumeManager extends BaseView
         event.preventDefault()
         @toggleMute()
 
-    setValue: (event) ->
+    retrieveVolumeValue: (event)->
         handlePositionPx = event.clientX - @sliderContainer.offset().left
         handlePositionPercent = handlePositionPx/@sliderContainer.width() * 100
         @volumeValue = handlePositionPercent.toFixed(0)
+        @controlVolumeValue()
+
+    controlVolumeValue: ->
         @volumeValue = 100 if @volumeValue > 100
         if @volumeValue < 0
             @volumeValue = 0

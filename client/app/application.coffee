@@ -13,9 +13,12 @@ module.exports =
         @soundManager.setup
             # disable or enable debug output
             debugMode: true
+            debugFlash: true
             # use HTML5 audio for MP3/MP4, if available
             preferFlash: false
             useFlashBlock: true
+            flashPollingInterval: 500
+            html5PollingInterval: 500
             # path to directory containing SM2 SWF
             url: "../swf/"
             # optional: enable MPEG-4/AAC support (requires flash 9)

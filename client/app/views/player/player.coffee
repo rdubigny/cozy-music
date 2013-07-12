@@ -13,11 +13,12 @@ module.exports = class Player extends BaseView
 
     events:
         "click .button.play": "onClickPlay"
+        "mousedown .progress": "onMouseDownProgress"
 
     afterRender: =>
         initialVolume = 50 # default volume value
 
-        # create and bind the volumeManager
+        # create, bind and display the volume bar
         @vent = _.extend {}, Backbone.Events
         @vent.bind "volumeHasChanged", @onVolumeChange
         @vent.bind "muteHasBeenToggled", @onToggleMute
@@ -25,16 +26,30 @@ module.exports = class Player extends BaseView
         @volumeManager.render()
         @$('#volume').append @volumeManager.$el
 
+        # bind the progress bar
+        @elapsedTime = @$('#elapsedTime')
+        @remainingTime = @$('#remainingTime')
+        @progress = @$('.progress')
+        @progressInner = @$('.progress .inner')
+
+        #loading the track
         @currentTrack = app.soundManager.createSound
             id: "DaSound#{(Math.random()*1000).toFixed(0)}"
             url: "music/COMA - Hoooooray.mp3"
             volume: initialVolume
             onfinish: @stopTrack
             onstop: @stopTrack
+            whileplaying: @updateProgressDisplay
+
+        # initializing variables
+        @progressInner.width "0%"
+        @elapsedTime.html "0:00"
+        @remainingTime.html @formatMs @currentTrack.durationEstimate
         @isStopped = true
         @isPaused = false
+
+        # bind play button
         @playButton = @$(".button.play")
-        @playButton.addClass("stopped")
 
     onClickPlay: ->
         if @isStopped
@@ -55,9 +70,30 @@ module.exports = class Player extends BaseView
         @isStopped = true
         @playButton.removeClass("paused")
         @isPaused = false
+        @updateProgressDisplay()
 
     onVolumeChange: (volume)=>
         @currentTrack.setVolume volume
 
     onToggleMute: =>
         @currentTrack.toggleMute()
+
+    formatMs: (ms)->
+        s = Math.floor ((ms/1000) % 60)
+        s = "0#{s}" if s < 10
+        "#{Math.floor ms/60000}:#{s}"
+
+    updateProgressDisplay: =>
+        newWidth = @currentTrack.position/@currentTrack.durationEstimate*100
+        @progressInner.width "#{newWidth}%"
+        @elapsedTime.html @formatMs(@currentTrack.position)
+        remainingTime = @currentTrack.durationEstimate - @currentTrack.position
+        @remainingTime.html @formatMs(remainingTime)
+
+    onMouseDownProgress: (event)->
+        event.preventDefault()
+        handlePositionPx = event.clientX - @progress.offset().left
+        percent = handlePositionPx/@progress.width()
+        if @currentTrack.durationEstimate*percent < @currentTrack.duration
+            @currentTrack.setPosition @currentTrack.durationEstimate*percent
+            @updateProgressDisplay()

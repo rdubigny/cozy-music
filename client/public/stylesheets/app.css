@@ -708,7 +708,7 @@ a:visited:hover {
   background-color: #444;
   margin: 10 10px;
   padding: 10px;
-  border: 1px solid #000;
+  border: 1px solid #222;
   -webkit-border-radius: 4px;
   border-radius: 4px;
 }
@@ -741,7 +741,7 @@ a:visited:hover {
 .player .volume .slider .slider-container {
   width: 100%;
   height: 50%;
-  border: 1px solid #000;
+  border: 1px solid #222;
   -webkit-border-radius: 7px;
   border-radius: 7px;
   top: 25%;
@@ -851,13 +851,12 @@ a:visited:hover {
 }
 .player .progress .inner {
   height: 100%;
-  width: 60%;
-  background: -webkit-gradient(linear, left top, right top, color-stop(0, #fff), color-stop(1, #aaa));
-  background: -webkit-linear-gradient(left, #fff 0%, #aaa 100%);
-  background: -moz-linear-gradient(left, #fff 0%, #aaa 100%);
-  background: -o-linear-gradient(left, #fff 0%, #aaa 100%);
-  background: -ms-linear-gradient(left, #fff 0%, #aaa 100%);
-  background: linear-gradient(left, #fff 0%, #aaa 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0, #eee), color-stop(1, #aaa));
+  background: -webkit-linear-gradient(left, #eee 0%, #aaa 100%);
+  background: -moz-linear-gradient(left, #eee 0%, #aaa 100%);
+  background: -o-linear-gradient(left, #eee 0%, #aaa 100%);
+  background: -ms-linear-gradient(left, #eee 0%, #aaa 100%);
+  background: linear-gradient(left, #eee 0%, #aaa 100%);
 }
 .player .time {
   display: inline-block;
@@ -994,7 +993,7 @@ Da damn bear-killer player style
   background-color: #444;
   margin: 10 10px;
   padding: 10px;
-  border: 1px solid #000;
+  border: 1px solid #222;
   border-radius: 4px;
 }
 .player .volume {
@@ -1026,7 +1025,7 @@ Da damn bear-killer player style
 .player .volume .slider .slider-container {
   width: 100%;
   height: 50%;
-  border: 1px solid #000;
+  border: 1px solid #222;
   border-radius: 7px;
   top: 25%;
   left: 0%;
@@ -1110,8 +1109,7 @@ Da damn bear-killer player style
 }
 .player .progress .inner {
   height: 100%;
-  width: 60%;
-  background: linear-gradient(left, #fff, #aaa);
+  background: linear-gradient(left, #eee, #aaa);
 }
 .player .time {
   display: inline-block;

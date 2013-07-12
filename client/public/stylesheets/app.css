@@ -754,7 +754,7 @@ a:visited:hover {
   background: -ms-linear-gradient(top, #fff 0%, #eee 100%);
   background: linear-gradient(top, #fff 0%, #eee 100%);
 }
-.player .volume .slider .slider-container .slider-filler {
+.player .volume .slider .slider-container .slider-inner {
   height: 100%;
   -webkit-border-radius: 7px;
   border-radius: 7px;
@@ -768,7 +768,7 @@ a:visited:hover {
   background: -ms-linear-gradient(top, #eee 0%, #aaa 100%);
   background: linear-gradient(top, #eee 0%, #aaa 100%);
 }
-.player .volume .slider .slider-container .slider-filler .slider-handle {
+.player .volume .slider .slider-container .slider-inner .slider-handle {
   width: 16px;
   height: 15px;
   border: 1px solid #444;
@@ -784,17 +784,13 @@ a:visited:hover {
   background: -ms-linear-gradient(top left, #eee 0%, #aaa 100%);
   background: linear-gradient(top left, #eee 0%, #aaa 100%);
 }
-.player .volume .slider .slider-container .slider-filler .slider-handle:active {
+.player .volume .slider .slider-container .slider-inner .slider-handle:active {
   background: -webkit-gradient(linear, left top, right bottom, color-stop(0, #aaa), color-stop(1, #eee));
   background: -webkit-linear-gradient(top left, #aaa 0%, #eee 100%);
   background: -moz-linear-gradient(top left, #aaa 0%, #eee 100%);
   background: -o-linear-gradient(top left, #aaa 0%, #eee 100%);
   background: -ms-linear-gradient(top left, #aaa 0%, #eee 100%);
   background: linear-gradient(top left, #aaa 0%, #eee 100%);
-}
-.player .slider-info {
-  height: 25px;
-  border: 1px solid #000;
 }
 .player .button {
   display: inline-block;
@@ -1007,7 +1003,7 @@ Da damn bear-killer player style
   position: relative;
   background: linear-gradient(top, #fff, #eee);
 }
-.player .volume .slider .slider-container .slider-filler {
+.player .volume .slider .slider-container .slider-inner {
   height: 100%;
   border-radius: 7px;
   top: 0px;
@@ -1015,7 +1011,7 @@ Da damn bear-killer player style
   position: absolute;
   background: linear-gradient(top, #eee, #aaa);
 }
-.player .volume .slider .slider-container .slider-filler .slider-handle {
+.player .volume .slider .slider-container .slider-inner .slider-handle {
   width: 16px;
   height: 15px;
   border: 1px solid #444;
@@ -1025,12 +1021,8 @@ Da damn bear-killer player style
   position: absolute;
   background: linear-gradient(top left, #eee, #aaa);
 }
-.player .volume .slider .slider-container .slider-filler .slider-handle:active {
+.player .volume .slider .slider-container .slider-inner .slider-handle:active {
   background: linear-gradient(top left, #aaa, #eee);
-}
-.player .slider-info {
-  height: 25px;
-  border: 1px solid #000;
 }
 .player .button {
   display: inline-block;

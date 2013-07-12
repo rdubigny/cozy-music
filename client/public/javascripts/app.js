@@ -738,9 +738,8 @@ window.require.register("views/player/volumeManager", function(exports, require,
       this.volumeSwitch = this.$(".volume-switch");
       this.slider = this.$(".slider");
       this.sliderContainer = this.$(".slider-container");
-      this.sliderFiller = this.$(".slider-filler");
-      this.sliderFiller.width("" + this.volumeValue + "%");
-      return this.sliderInfo = this.$(".slider-info");
+      this.sliderInner = this.$(".slider-inner");
+      return this.sliderInner.width("" + this.volumeValue + "%");
     };
 
     VolumeManager.prototype.onMouseDownSlider = function(event) {
@@ -790,8 +789,7 @@ window.require.register("views/player/volumeManager", function(exports, require,
       var newWidth;
       this.vent.trigger("volumeHasChanged", this.volumeValue);
       newWidth = this.isMuted ? 0 : this.volumeValue;
-      this.sliderInfo.html("done : " + newWidth);
-      return this.sliderFiller.width("" + newWidth + "%");
+      return this.sliderInner.width("" + newWidth + "%");
     };
 
     VolumeManager.prototype.toggleMute = function() {
@@ -838,7 +836,7 @@ window.require.register("views/templates/player/volumeManager", function(exports
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-filler"><div class="slider-handle"></div></div></div></div><!--.slider-info info-->');
+  buf.push('<div class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-inner"><div class="slider-handle"></div></div></div></div>');
   }
   return buf.join("");
   };

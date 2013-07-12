@@ -21,9 +21,8 @@ module.exports = class VolumeManager extends BaseView
         @volumeSwitch = @$(".volume-switch")
         @slider = @$(".slider")
         @sliderContainer = @$(".slider-container")
-        @sliderFiller = @$(".slider-filler")
-        @sliderFiller.width "#{@volumeValue}%"
-        @sliderInfo = @$(".slider-info")
+        @sliderInner = @$(".slider-inner")
+        @sliderInner.width "#{@volumeValue}%"
 
     onMouseDownSlider: (event) ->
         event.preventDefault()
@@ -58,8 +57,7 @@ module.exports = class VolumeManager extends BaseView
     updateDisplay: ->
         @vent.trigger "volumeHasChanged", @volumeValue
         newWidth = if @isMuted then 0 else @volumeValue
-        @sliderInfo.html "done : #{newWidth}"
-        @sliderFiller.width "#{newWidth}%"
+        @sliderInner.width "#{newWidth}%"
 
     toggleMute: ->
         @vent.trigger "muteHasBeenToggled"

@@ -14,3 +14,4 @@ module.exports = class AppView extends BaseView
         @player = new Player()
         @player.render()
         @$('#player').append @player.$el
+

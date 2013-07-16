@@ -1,7 +1,6 @@
 # Description
 
-Cozy Template is a template project to start quickly your own application. Just
-fork it and code while focusing only on your features !
+Cozic is a basical music player which uses SoundManager2 javascript librairy.
 
 # Run
 

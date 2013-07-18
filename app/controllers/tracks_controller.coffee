@@ -1,3 +1,4 @@
+# pre-function that ensures that track really exists and loads it
 before ->
     # Find track
     Track.find req.params.id, (err, track) =>
@@ -18,11 +19,25 @@ action 'all', ->
             send tracks, 200
 
 action 'create', ->
-    Track.create req.body, (err, track) =>
+
+    # you shouldn't ask about this lines
+    file = req.files["file"]
+    req.body.slug = file.name
+
+    Track.create req.body, (err, newtrack) =>
         if err
             send error: true, msg: "Server error while creating track.", 500
         else
-            send track, 200
+
+            # don't ask about this lines
+            newtrack.attachFile file.path, {"name": file.name}, (err) ->
+                if err
+                    send error: true, msg: "Server error while add attachment file.", 500
+                else
+                    send newtrack, 200
+
+            # I remember of old times, when life was as simple as that :
+            #send track, 200
 
 action 'destroy', ->
     @track.destroy (err) ->

@@ -11,7 +11,7 @@ module.exports = class TrackListView extends ViewCollection
     collectionEl: '#track-list'
     # Register listener
     events:
-        'click .create-button': 'onCreateClicked'
+        'change #uploader' : 'addFile'
 
     # Called after the constructor
     initialize: ->
@@ -23,7 +23,7 @@ module.exports = class TrackListView extends ViewCollection
 
     afterRender: ->
         super
-        #@uploader = @$('#uploader')
+        @uploader = @$('#uploader')[0]
         @$collectionEl.html '<em>loading...</em>'
         @collection.fetch
             success: (collection, response, option) =>
@@ -32,23 +32,24 @@ module.exports = class TrackListView extends ViewCollection
                 msg = "Files couldn't be retrieved due to a server error."
                 @$collectionEl.find('em').html msg
 
-    # Handler for "click" event on the '.create-button'
-    onCreateClicked: =>
-        # Grab field data
-        title = $('.title-field').val()
 
-        # Validate that data are ok.
-        if title?.length > 0
-            # Data to be used to create the new model
-            track =
-                title: title
+    addFile: ()=>
+        attach = @uploader.files[0]
+        fileAttributes = {}
+        fileAttributes.title = attach.name
+        track = new Track fileAttributes
+        track.file = attach
+        @collection.add track
+        @upload track
 
-            # Save it through collection, this will automatically add it to the
-            # current list when request finishes.
-            @collection.create track,
-                success: ->
-                    alert "Track added."
-                    $('.title-field').val ''
-                error: -> alert "Server error occured, Track was not saved"
-        else
-            alert 'Please fill the title field'
+    # create a FormData object
+    # save the model
+    upload: (track) =>
+        formdata = new FormData()
+        formdata.append 'cid', track.cid
+        formdata.append 'title', track.get 'title'
+        formdata.append 'file', track.file
+        # need to call sync directly so we can change the data
+        Backbone.sync 'create', track,
+            contentType:false # Prevent $.ajax from being smart
+            data: formdata

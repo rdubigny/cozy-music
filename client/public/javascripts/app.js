@@ -703,7 +703,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<input id="uploader" type="file"/><form id="create-track" action="#"><input placeholder="title" class="title-field"/><button class="btn create-button">create</button></form><div id="track-list"></div>');
+  buf.push('<input id="uploader" type="file"/><div id="track-list"></div>');
   }
   return buf.join("");
   };
@@ -737,7 +737,8 @@ window.require.register("views/tracklist", function(exports, require, module) {
     __extends(TrackListView, _super);
 
     function TrackListView() {
-      this.onCreateClicked = __bind(this.onCreateClicked, this);
+      this.upload = __bind(this.upload, this);
+      this.addFile = __bind(this.addFile, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -751,7 +752,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.collectionEl = '#track-list';
 
     TrackListView.prototype.events = {
-      'click .create-button': 'onCreateClicked'
+      'change #uploader': 'addFile'
     };
 
     TrackListView.prototype.initialize = function() {
@@ -762,6 +763,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.afterRender = function() {
       var _this = this;
       TrackListView.__super__.afterRender.apply(this, arguments);
+      this.uploader = this.$('#uploader')[0];
       this.$collectionEl.html('<em>loading...</em>');
       return this.collection.fetch({
         success: function(collection, response, option) {
@@ -775,25 +777,27 @@ window.require.register("views/tracklist", function(exports, require, module) {
       });
     };
 
-    TrackListView.prototype.onCreateClicked = function() {
-      var title, track;
-      title = $('.title-field').val();
-      if ((title != null ? title.length : void 0) > 0) {
-        track = {
-          title: title
-        };
-        return this.collection.create(track, {
-          success: function() {
-            alert("Track added.");
-            return $('.title-field').val('');
-          },
-          error: function() {
-            return alert("Server error occured, Track was not saved");
-          }
-        });
-      } else {
-        return alert('Please fill the title field');
-      }
+    TrackListView.prototype.addFile = function() {
+      var attach, fileAttributes, track;
+      attach = this.uploader.files[0];
+      fileAttributes = {};
+      fileAttributes.title = attach.name;
+      track = new Track(fileAttributes);
+      track.file = attach;
+      this.collection.add(track);
+      return this.upload(track);
+    };
+
+    TrackListView.prototype.upload = function(track) {
+      var formdata;
+      formdata = new FormData();
+      formdata.append('cid', track.cid);
+      formdata.append('title', track.get('title'));
+      formdata.append('file', track.file);
+      return Backbone.sync('create', track, {
+        contentType: false,
+        data: formdata
+      });
     };
 
     return TrackListView;

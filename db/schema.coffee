@@ -1,3 +1,2 @@
-Note = define 'Template', ->
+Track = define 'Track', ->
     property 'title', String
-    property 'content', String

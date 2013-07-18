@@ -1,6 +1,7 @@
 BaseView = require '../lib/base_view'
-InlinePlayer = require 'views/inlineplayer'
-Player = require 'views/player/player'
+TrackList = require './tracklist'
+Player = require './player/player'
+app = require 'application'
 
 module.exports = class AppView extends BaseView
 
@@ -10,8 +11,14 @@ module.exports = class AppView extends BaseView
     player: null
 
     afterRender: ->
+        # list of all tracks available
+        @trackList = new TrackList
+            collection: app.tracks
+        @$('#tracks-display').append @trackList.$el
+        @trackList.render()
+
         # soundManager is ready to be called here (cf. application.coffee)
         @player = new Player()
-        @player.render()
         @$('#player').append @player.$el
+        @player.render()
 

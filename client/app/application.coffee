@@ -8,6 +8,9 @@ module.exports =
         Router = require 'router'
         @router = new Router()
 
+        TrackCollection = require 'collections/track'
+        @tracks = new TrackCollection()
+
         @soundManager = soundManager
 
         @soundManager.setup

@@ -8,7 +8,7 @@ app = module.exports = (params) ->
 
 if not module.parent
     port = process.env.PORT || 9250
-    host = process.env.HOST || "127.0.0.1"
+    host = process.env.HOST || "0.0.0.0"
     server = app()
     server.listen port, host, ->
         console.log(

@@ -2,7 +2,7 @@
 @import 'nib'
 
 @import '_base'
-//@import '_ui'
+@import '_ui'
 
 // Import your styles here
 
@@ -19,7 +19,18 @@
 
     .track
         margin: 1em 0
+        background-color: #eee
+        color: #444
+        margin: 0px 10px
+        padding: 10px
+        border:1px solid #aaa
+        border-radius: 4px
+
+        &:hover
+            background-color: #ddd
+            color: #fff
 
         .title
+            margin: 0px 10px
             font-weight: bold
 

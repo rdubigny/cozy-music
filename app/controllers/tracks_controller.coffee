@@ -8,7 +8,7 @@ before ->
             @track = track
             next()
 # Make this pre-treatment only before destroy action.
-, only: ['destroy']
+, only: ['destroy', 'getAttachment']
 
 action 'all', ->
     # Here we use the method all to retrieve all tracks stored.
@@ -36,9 +36,6 @@ action 'create', ->
                 else
                     send newtrack, 200
 
-            # I remember of old times, when life was as simple as that :
-            #send track, 200
-
 action 'destroy', ->
     @track.destroy (err) ->
         if err
@@ -46,3 +43,18 @@ action 'destroy', ->
             send error: 'Cannot destroy track', 500
         else
             send success: 'track successfully deleted', 200
+
+
+action 'getAttachment', ->
+    title = params.title
+
+    @track.getFile title, (err, resp, body) ->
+        if err or not resp?
+            send 500
+        else if resp.statusCode is 404
+            send 'File not found', 404
+        else if resp.statusCode != 200
+            send 500
+        else
+            send 200
+    .pipe(res) # this is compound "magic" res = response variable

@@ -90,7 +90,7 @@ window.require.register("application", function(exports, require, module) {
       this.soundManager = soundManager;
       this.soundManager.setup({
         debugMode: true,
-        debugFlash: true,
+        debugFlash: false,
         preferFlash: false,
         useFlashBlock: true,
         flashPollingInterval: 500,
@@ -448,18 +448,20 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.events = {
       "click .button.play": "onClickPlay",
+      "click .button.rwd": "onClickRwd",
       "mousedown .progress": "onMouseDownProgress"
     };
 
+    Player.prototype.subscriptions = {
+      "track:dblclick": "onDblClickTrack",
+      "volumeManager:toggleMute": "onToggleMute",
+      "volumeManager:volumeChanged": "onVolumeChange"
+    };
+
     Player.prototype.afterRender = function() {
-      var initialVolume;
-      initialVolume = 50;
-      this.vent = _.extend({}, Backbone.Events);
-      this.vent.bind("volumeHasChanged", this.onVolumeChange);
-      this.vent.bind("muteHasBeenToggled", this.onToggleMute);
+      this.volume = 50;
       this.volumeManager = new VolumeManager({
-        initVol: initialVolume,
-        vent: this.vent
+        initVol: this.volume
       });
       this.volumeManager.render();
       this.$('#volume').append(this.volumeManager.$el);
@@ -467,47 +469,89 @@ window.require.register("views/player/player", function(exports, require, module
       this.remainingTime = this.$('#remainingTime');
       this.progress = this.$('.progress');
       this.progressInner = this.$('.progress .inner');
-      this.currentTrack = app.soundManager.createSound({
-        id: "DaSound" + ((Math.random() * 1000).toFixed(0)),
-        url: "music/COMA - Hoooooray.mp3",
-        volume: initialVolume,
-        onfinish: this.stopTrack,
-        onstop: this.stopTrack,
-        whileplaying: this.updateProgressDisplay
-      });
+      this.currentTrack = null;
       this.progressInner.width("0%");
       this.elapsedTime.html("0:00");
-      this.remainingTime.html(this.formatMs(this.currentTrack.durationEstimate));
+      this.remainingTime.html("0:00");
       this.isStopped = true;
       this.isPaused = false;
       return this.playButton = this.$(".button.play");
     };
 
     Player.prototype.onClickPlay = function() {
-      if (this.isStopped) {
-        this.currentTrack.play();
-        this.playButton.removeClass("stopped");
-        return this.isStopped = false;
-      } else if (this.isPaused) {
-        this.currentTrack.play();
-        this.playButton.removeClass("paused");
-        return this.isPaused = false;
-      } else if (!this.isPaused && !this.isStopped) {
-        this.currentTrack.pause();
-        this.playButton.addClass("paused");
-        return this.isPaused = true;
+      if (this.currentTrack != null) {
+        if (this.isStopped) {
+          this.currentTrack.play();
+          this.playButton.removeClass("stopped");
+          return this.isStopped = false;
+        } else if (this.isPaused) {
+          this.currentTrack.play();
+          this.playButton.removeClass("paused");
+          return this.isPaused = false;
+        } else if (!this.isPaused && !this.isStopped) {
+          this.currentTrack.pause();
+          this.playButton.addClass("paused");
+          return this.isPaused = true;
+        }
       }
     };
 
+    Player.prototype.onClickRwd = function() {
+      if ((this.currentTrack != null) && !this.isStopped) {
+        this.currentTrack.setPosition(0);
+        return this.updateProgressDisplay();
+      }
+    };
+
+    Player.prototype.onMouseDownProgress = function(event) {
+      var handlePositionPx, percent;
+      if (this.currentTrack != null) {
+        event.preventDefault();
+        handlePositionPx = event.clientX - this.progress.offset().left;
+        percent = handlePositionPx / this.progress.width();
+        if (this.currentTrack.durationEstimate * percent < this.currentTrack.duration) {
+          this.currentTrack.setPosition(this.currentTrack.durationEstimate * percent);
+          return this.updateProgressDisplay();
+        }
+      }
+    };
+
+    Player.prototype.onDblClickTrack = function(id, dataLocation) {
+      console.log("appel de onDblClickTrack");
+      if (this.currentTrack == null) {
+        this.stopTrack();
+      }
+      this.currentTrack = app.soundManager.createSound({
+        id: id,
+        url: dataLocation,
+        volume: this.volume,
+        onfinish: this.stopTrack,
+        onstop: this.stopTrack,
+        whileplaying: this.updateProgressDisplay
+      });
+      this.currentTrack.play();
+      this.playButton.removeClass("stopped");
+      this.isStopped = false;
+      this.playButton.removeClass("paused");
+      return this.isPaused = false;
+    };
+
     Player.prototype.stopTrack = function() {
+      if (this.currentTrack != null) {
+        this.currentTrack.destruct();
+        this.currentTrack = null;
+      }
       this.playButton.addClass("stopped");
       this.isStopped = true;
       this.playButton.removeClass("paused");
       this.isPaused = false;
-      return this.updateProgressDisplay();
+      this.progressInner.width("0%");
+      this.elapsedTime.html("0:00");
+      return this.remainingTime.html("0:00");
     };
 
     Player.prototype.onVolumeChange = function(volume) {
+      this.volume = volume;
       return this.currentTrack.setVolume(volume);
     };
 
@@ -531,17 +575,6 @@ window.require.register("views/player/player", function(exports, require, module
       this.elapsedTime.html(this.formatMs(this.currentTrack.position));
       remainingTime = this.currentTrack.durationEstimate - this.currentTrack.position;
       return this.remainingTime.html(this.formatMs(remainingTime));
-    };
-
-    Player.prototype.onMouseDownProgress = function(event) {
-      var handlePositionPx, percent;
-      event.preventDefault();
-      handlePositionPx = event.clientX - this.progress.offset().left;
-      percent = handlePositionPx / this.progress.width();
-      if (this.currentTrack.durationEstimate * percent < this.currentTrack.duration) {
-        this.currentTrack.setPosition(this.currentTrack.durationEstimate * percent);
-        return this.updateProgressDisplay();
-      }
     };
 
     return Player;
@@ -580,7 +613,6 @@ window.require.register("views/player/volumeManager", function(exports, require,
 
     VolumeManager.prototype.initialize = function(options) {
       VolumeManager.__super__.initialize.apply(this, arguments);
-      this.vent = options.vent;
       return this.volumeValue = options.initVol;
     };
 
@@ -643,13 +675,13 @@ window.require.register("views/player/volumeManager", function(exports, require,
 
     VolumeManager.prototype.updateDisplay = function() {
       var newWidth;
-      this.vent.trigger("volumeHasChanged", this.volumeValue);
+      Backbone.Mediator.publish('volumeManager:volumeChanged', this.volumeValue);
       newWidth = this.isMuted ? 0 : this.volumeValue;
       return this.sliderInner.width("" + newWidth + "%");
     };
 
     VolumeManager.prototype.toggleMute = function() {
-      this.vent.trigger("muteHasBeenToggled");
+      Backbone.Mediator.publish('volumeManager:toggleMute', this.volumeValue);
       if (this.isMuted) {
         this.volumeSwitch.removeClass("mute");
       } else {
@@ -714,7 +746,7 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="title">' + escape((interp = model.title) == null ? '' : interp) + '</div><button class="delete-button">delete</button>');
+  buf.push('<div class="title">' + escape((interp = model.title) == null ? '' : interp) + '</div><button class="delete-button">Delete</button>');
   }
   return buf.join("");
   };
@@ -780,6 +812,10 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.addFile = function() {
       var attach, fileAttributes, track;
       attach = this.uploader.files[0];
+      if (!attach.type.match(/audio\/.*/)) {
+        alert("Please select an audio file");
+        return;
+      }
       fileAttributes = {};
       fileAttributes.title = attach.name;
       track = new Track(fileAttributes);
@@ -827,10 +863,13 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.template = require('./templates/tracklist_item');
 
     TrackListItemView.prototype.events = {
-      'click .delete-button': 'onDeleteClicked'
+      'click .delete-button': 'onDeleteClicked',
+      'dblclick ': 'onDoubleClick'
     };
 
-    TrackListItemView.prototype.onDeleteClicked = function() {
+    TrackListItemView.prototype.onDeleteClicked = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
       this.$('.delete-button').html("deleting...");
       return this.model.destroy({
         error: function() {
@@ -838,6 +877,16 @@ window.require.register("views/tracklist_item", function(exports, require, modul
           return this.$('.delete-button').html("delete");
         }
       });
+    };
+
+    TrackListItemView.prototype.onDoubleClick = function(event) {
+      var dataLocation, id, title;
+      event.preventDefault();
+      event.stopPropagation();
+      title = this.model.attributes.title;
+      id = this.model.attributes.id;
+      dataLocation = "tracks/" + id + "/attach/" + title;
+      return Backbone.Mediator.publish('track:dblclick', "sound-" + id, dataLocation);
     };
 
     return TrackListItemView;

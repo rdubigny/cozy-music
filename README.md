@@ -1,6 +1,6 @@
 # Description
 
-Cozic is a basical music player which uses SoundManager2 javascript librairy.
+Cozic is a basical music player developped to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript librairy.
 
 # Run
 

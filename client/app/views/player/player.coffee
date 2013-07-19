@@ -13,16 +13,21 @@ module.exports = class Player extends BaseView
 
     events:
         "click .button.play": "onClickPlay"
+        "click .button.rwd": "onClickRwd"
         "mousedown .progress": "onMouseDownProgress"
 
+    subscriptions:
+        # subscribe to the channel shared with views/trackList_item.coffee
+        "track:dblclick": "onDblClickTrack"
+        # subscribe to the channel shared with views/player/volumeManager.coffee
+        "volumeManager:toggleMute": "onToggleMute"
+        "volumeManager:volumeChanged": "onVolumeChange"
+
     afterRender: =>
-        initialVolume = 50 # default volume value
+        @volume = 50 # default volume value
 
         # create, bind and display the volume bar
-        @vent = _.extend {}, Backbone.Events
-        @vent.bind "volumeHasChanged", @onVolumeChange
-        @vent.bind "muteHasBeenToggled", @onToggleMute
-        @volumeManager = new VolumeManager({initVol: initialVolume,vent: @vent})
+        @volumeManager = new VolumeManager({initVol: @volume})
         @volumeManager.render()
         @$('#volume').append @volumeManager.$el
 
@@ -32,19 +37,11 @@ module.exports = class Player extends BaseView
         @progress = @$('.progress')
         @progressInner = @$('.progress .inner')
 
-        #loading the track
-        @currentTrack = app.soundManager.createSound
-            id: "DaSound#{(Math.random()*1000).toFixed(0)}"
-            url: "music/COMA - Hoooooray.mp3"
-            volume: initialVolume
-            onfinish: @stopTrack
-            onstop: @stopTrack
-            whileplaying: @updateProgressDisplay
-
         # initializing variables
+        @currentTrack = null
         @progressInner.width "0%"
         @elapsedTime.html "0:00"
-        @remainingTime.html @formatMs @currentTrack.durationEstimate
+        @remainingTime.html "0:00" #@formatMs @currentTrack.durationEstimate
         @isStopped = true
         @isPaused = false
 
@@ -52,27 +49,68 @@ module.exports = class Player extends BaseView
         @playButton = @$(".button.play")
 
     onClickPlay: ->
-        if @isStopped
-            @currentTrack.play()
-            @playButton.removeClass("stopped")
-            @isStopped = false
-        else if @isPaused
-            @currentTrack.play()
-            @playButton.removeClass("paused")
-            @isPaused = false
-        else if not @isPaused and not @isStopped # <=> isPlaying
-            @currentTrack.pause()
-            @playButton.addClass("paused")
-            @isPaused = true
+        if @currentTrack?
+            if @isStopped
+                @currentTrack.play()
+                @playButton.removeClass("stopped")
+                @isStopped = false
+            else if @isPaused
+                @currentTrack.play()
+                @playButton.removeClass("paused")
+                @isPaused = false
+            else if not @isPaused and not @isStopped # <=> isPlaying
+                @currentTrack.pause()
+                @playButton.addClass("paused")
+                @isPaused = true
+
+    onClickRwd: ->
+        if @currentTrack? and not @isStopped
+                @currentTrack.setPosition 0
+                @updateProgressDisplay()
+
+    onMouseDownProgress: (event)->
+        if @currentTrack?
+            event.preventDefault()
+            handlePositionPx = event.clientX - @progress.offset().left
+            percent = handlePositionPx/@progress.width()
+            if @currentTrack.durationEstimate*percent < @currentTrack.duration
+                @currentTrack.setPosition @currentTrack.durationEstimate*percent
+                @updateProgressDisplay()
+
+    onDblClickTrack: (id, dataLocation)->
+        console.log "appel de onDblClickTrack"
+        unless @currentTrack?
+            @stopTrack()
+
+        #loading the track
+        @currentTrack = app.soundManager.createSound
+            id: id
+            url: dataLocation
+            volume: @volume
+            onfinish: @stopTrack
+            onstop: @stopTrack
+            whileplaying: @updateProgressDisplay
+        @currentTrack.play() # works better than 'autoload: true'
+        @playButton.removeClass("stopped")
+        @isStopped = false
+        @playButton.removeClass("paused")
+        @isPaused = false
+
 
     stopTrack: =>
+        if @currentTrack?
+            @currentTrack.destruct()
+            @currentTrack = null
         @playButton.addClass("stopped")
         @isStopped = true
         @playButton.removeClass("paused")
         @isPaused = false
-        @updateProgressDisplay()
+        @progressInner.width "0%"
+        @elapsedTime.html "0:00"
+        @remainingTime.html "0:00"
 
     onVolumeChange: (volume)=>
+        @volume = volume
         @currentTrack.setVolume volume
 
     onToggleMute: =>
@@ -89,11 +127,3 @@ module.exports = class Player extends BaseView
         @elapsedTime.html @formatMs(@currentTrack.position)
         remainingTime = @currentTrack.durationEstimate - @currentTrack.position
         @remainingTime.html @formatMs(remainingTime)
-
-    onMouseDownProgress: (event)->
-        event.preventDefault()
-        handlePositionPx = event.clientX - @progress.offset().left
-        percent = handlePositionPx/@progress.width()
-        if @currentTrack.durationEstimate*percent < @currentTrack.duration
-            @currentTrack.setPosition @currentTrack.durationEstimate*percent
-            @updateProgressDisplay()

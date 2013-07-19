@@ -35,6 +35,9 @@ module.exports = class TrackListView extends ViewCollection
 
     addFile: ()=>
         attach = @uploader.files[0]
+        unless attach.type.match /audio\/.*/
+            alert "Please select an audio file"
+            return
         fileAttributes = {}
         fileAttributes.title = attach.name
         track = new Track fileAttributes

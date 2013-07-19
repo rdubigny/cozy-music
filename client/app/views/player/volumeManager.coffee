@@ -12,7 +12,6 @@ module.exports = class VolumeManager extends BaseView
 
     initialize: (options)->
         super
-        @vent = options.vent
         @volumeValue = options.initVol
 
     afterRender: ->
@@ -58,12 +57,12 @@ module.exports = class VolumeManager extends BaseView
         @updateDisplay()
 
     updateDisplay: ->
-        @vent.trigger "volumeHasChanged", @volumeValue
+        Backbone.Mediator.publish 'volumeManager:volumeChanged', @volumeValue
         newWidth = if @isMuted then 0 else @volumeValue
         @sliderInner.width "#{newWidth}%"
 
     toggleMute: ->
-        @vent.trigger "muteHasBeenToggled"
+        Backbone.Mediator.publish 'volumeManager:toggleMute', @volumeValue
         if @isMuted
             @volumeSwitch.removeClass "mute"
         else

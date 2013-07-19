@@ -13,10 +13,22 @@ module.exports = class TrackListItemView extends BaseView
 
     events:
         'click .delete-button': 'onDeleteClicked'
+        'dblclick ': 'onDoubleClick'
 
-    onDeleteClicked: ->
+    onDeleteClicked: (event)->
+        event.preventDefault()
+        event.stopPropagation()
         @$('.delete-button').html "deleting..."
         @model.destroy
             error: ->
                 alert "Server error occured, track was not deleted."
                 @$('.delete-button').html "delete"
+
+    onDoubleClick: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        title = @model.attributes.title
+        id = @model.attributes.id
+        dataLocation = "tracks/#{id}/attach/#{title}"
+        # publish on the channel shared with views/player/player.coffee
+        Backbone.Mediator.publish('track:dblclick', "sound-#{id}", dataLocation)

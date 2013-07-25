@@ -46,9 +46,9 @@ action 'destroy', ->
 
 
 action 'getAttachment', ->
-    title = params.title
+    fileName = params.fileName
 
-    @track.getFile title, (err, resp, body) ->
+    @track.getFile fileName, (err, resp, body) ->
         if err or not resp?
             send 500
         else if resp.statusCode is 404

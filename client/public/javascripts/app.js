@@ -89,7 +89,7 @@ window.require.register("application", function(exports, require, module) {
       this.tracks = new TrackCollection();
       this.soundManager = soundManager;
       this.soundManager.setup({
-        debugMode: true,
+        debugMode: false,
         debugFlash: false,
         preferFlash: false,
         useFlashBlock: true,
@@ -333,6 +333,33 @@ window.require.register("models/track", function(exports, require, module) {
 
     Track.prototype.rootUrl = 'tracks';
 
+    Track.prototype.defaults = function() {
+      return {
+        onServer: true
+      };
+    };
+
+    Track.prototype.sync = function(method, model, options) {
+      var progress;
+      progress = function(e) {
+        return model.trigger('progress', e);
+      };
+      _.extend(options, {
+        xhr: function() {
+          var xhr;
+          xhr = $.ajaxSettings.xhr();
+          if (xhr instanceof window.XMLHttpRequest) {
+            xhr.addEventListener('progress', progress, false);
+          }
+          if (xhr.upload) {
+            xhr.upload.addEventListener('progress', progress, false);
+          }
+          return xhr;
+        }
+      });
+      return Backbone.sync.apply(this, arguments);
+    };
+
     return Track;
 
   })(Backbone.Model);
@@ -431,6 +458,7 @@ window.require.register("views/player/player", function(exports, require, module
     __extends(Player, _super);
 
     function Player() {
+      this.id3Fired = __bind(this.id3Fired, this);
       this.updateProgressDisplay = __bind(this.updateProgressDisplay, this);
       this.onToggleMute = __bind(this.onToggleMute, this);
       this.onVolumeChange = __bind(this.onVolumeChange, this);
@@ -453,13 +481,15 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.subscriptions = {
-      "track:dblclick": "onDblClickTrack",
+      "track:play": "onPlayTrack",
       "volumeManager:toggleMute": "onToggleMute",
       "volumeManager:volumeChanged": "onVolumeChange"
     };
 
     Player.prototype.afterRender = function() {
+      this.playButton = this.$(".button.play");
       this.volume = 50;
+      this.isMutted = false;
       this.volumeManager = new VolumeManager({
         initVol: this.volume
       });
@@ -474,8 +504,7 @@ window.require.register("views/player/player", function(exports, require, module
       this.elapsedTime.html("0:00");
       this.remainingTime.html("0:00");
       this.isStopped = true;
-      this.isPaused = false;
-      return this.playButton = this.$(".button.play");
+      return this.isPaused = false;
     };
 
     Player.prototype.onClickPlay = function() {
@@ -516,20 +545,23 @@ window.require.register("views/player/player", function(exports, require, module
       }
     };
 
-    Player.prototype.onDblClickTrack = function(id, dataLocation) {
-      console.log("appel de onDblClickTrack");
-      if (this.currentTrack == null) {
+    Player.prototype.onPlayTrack = function(id, dataLocation) {
+      if (this.currentTrack != null) {
         this.stopTrack();
       }
       this.currentTrack = app.soundManager.createSound({
         id: id,
         url: dataLocation,
+        usePolicyFile: true,
         volume: this.volume,
         onfinish: this.stopTrack,
         onstop: this.stopTrack,
         whileplaying: this.updateProgressDisplay
       });
       this.currentTrack.play();
+      if (this.isMutted) {
+        this.currentTrack.mute();
+      }
       this.playButton.removeClass("stopped");
       this.isStopped = false;
       this.playButton.removeClass("paused");
@@ -552,11 +584,16 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onVolumeChange = function(volume) {
       this.volume = volume;
-      return this.currentTrack.setVolume(volume);
+      if (this.currentTrack != null) {
+        return this.currentTrack.setVolume(volume);
+      }
     };
 
     Player.prototype.onToggleMute = function() {
-      return this.currentTrack.toggleMute();
+      this.isMutted = !this.isMutted;
+      if (this.currentTrack != null) {
+        return this.currentTrack.toggleMute();
+      }
     };
 
     Player.prototype.formatMs = function(ms) {
@@ -575,6 +612,20 @@ window.require.register("views/player/player", function(exports, require, module
       this.elapsedTime.html(this.formatMs(this.currentTrack.position));
       remainingTime = this.currentTrack.durationEstimate - this.currentTrack.position;
       return this.remainingTime.html(this.formatMs(remainingTime));
+    };
+
+    Player.prototype.id3Fired = function(prop, data) {
+      var _i, _len, _ref1, _results;
+      console.log('sound #{@currentTrack.id} ID3 data received');
+      _ref1 = this.currentTrack.id3;
+      _results = [];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        prop = _ref1[_i];
+        _results.push((function() {
+          return console.log('#{prop}: #{@currentTrack.id3[prop]}');
+        })());
+      }
+      return _results;
     };
 
     return Player;
@@ -702,7 +753,7 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><h1>CoZic</h1><h2>Put music in your Cozy</h2><div id="tracks-display"></div><div id="player"></div></div>');
+  buf.push('<div id="content"><div id="title"><table><th id="h1">CoZic</th><th id="h2">Put music in your Cozy</th></table></div><div id="tracks-display"></div><div id="player"></div></div>');
   }
   return buf.join("");
   };
@@ -735,7 +786,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<input id="uploader" type="file"/><div id="track-list"></div>');
+  buf.push('<input id="uploader" type="file"/><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field">Artist</th><th class="field">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table>');
   }
   return buf.join("");
   };
@@ -746,7 +797,7 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="title">' + escape((interp = model.title) == null ? '' : interp) + '</div><button class="delete-button">Delete</button>');
+  buf.push('<td id="state"><div class="button addto"></div><div class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td><div class="button delete"></div></td>');
   }
   return buf.join("");
   };
@@ -766,16 +817,22 @@ window.require.register("views/tracklist", function(exports, require, module) {
   ViewCollection = require('../lib/view_collection');
 
   module.exports = TrackListView = (function(_super) {
+    var controlFile, readMetaData, refreshDisplay, upload, uploadWorker,
+      _this = this;
+
     __extends(TrackListView, _super);
 
     function TrackListView() {
-      this.upload = __bind(this.upload, this);
-      this.addFile = __bind(this.addFile, this);
+      this.onUnclickTrack = __bind(this.onUnclickTrack, this);
+      this.onClickTrack = __bind(this.onClickTrack, this);
+      this.handleFile = __bind(this.handleFile, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
     TrackListView.prototype.className = 'tracks-display';
+
+    TrackListView.prototype.tagName = 'div';
 
     TrackListView.prototype.template = require('./templates/tracklist');
 
@@ -784,22 +841,35 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.collectionEl = '#track-list';
 
     TrackListView.prototype.events = {
-      'change #uploader': 'addFile'
+      'change #uploader': 'handleFile'
+    };
+
+    TrackListView.prototype.subscriptions = {
+      "track:click": "onClickTrack",
+      "track:unclick": "onUnclickTrack"
     };
 
     TrackListView.prototype.initialize = function() {
       TrackListView.__super__.initialize.apply(this, arguments);
-      return this.views = {};
+      this.views = {};
+      this.listenTo(this.collection, "add", this.onCollectionAdd);
+      return this.listenTo(this.collection, "remove", this.onCollectionRemove);
+    };
+
+    TrackListView.prototype.appendView = function(view) {
+      return this.$collectionEl.prepend(view.el);
     };
 
     TrackListView.prototype.afterRender = function() {
       var _this = this;
       TrackListView.__super__.afterRender.apply(this, arguments);
       this.uploader = this.$('#uploader')[0];
+      this.selectedTrack = null;
       this.$collectionEl.html('<em>loading...</em>');
       return this.collection.fetch({
         success: function(collection, response, option) {
-          return _this.$collectionEl.find('em').remove();
+          _this.$collectionEl.find('em').remove();
+          return _this.$('tr:odd').addClass('odd');
         },
         error: function() {
           var msg;
@@ -809,40 +879,119 @@ window.require.register("views/tracklist", function(exports, require, module) {
       });
     };
 
-    TrackListView.prototype.addFile = function() {
-      var attach, fileAttributes, track;
-      attach = this.uploader.files[0];
-      if (!attach.type.match(/audio\/.*/)) {
-        alert("Please select an audio file");
-        return;
+    controlFile = function(track, cb) {
+      var err;
+      if (!track.file.type.match(/audio\/(mp3|mpeg)/)) {
+        err = "\"" + (track.get('fileName')) + "\" is of unsupported " + track.file.type + " filetype";
       }
-      fileAttributes = {};
-      fileAttributes.title = attach.name;
-      track = new Track(fileAttributes);
-      track.file = attach;
-      this.collection.add(track);
-      return this.upload(track);
+      return cb(err);
     };
 
-    TrackListView.prototype.upload = function(track) {
+    readMetaData = function(track, cb) {
+      var reader, url;
+      url = track.get('title');
+      reader = new FileReader();
+      reader.onload = function(event) {
+        return ID3.loadTags(url, (function() {
+          var tags;
+          tags = ID3.getAllTags(url);
+          track.set({
+            title: tags.title != null ? tags.title : url,
+            artist: tags.artist != null ? tags.artist : '',
+            album: tags.album != null ? tags.album : '',
+            track: tags.track != null ? tags.track : ''
+          });
+          return cb();
+        }), {
+          tags: ["title", "artist", "album", "track"],
+          dataReader: FileAPIReader(track.file)
+        });
+      };
+      reader.readAsArrayBuffer(track.file);
+      return reader.onabort = function(event) {
+        return cb("unable to read \"" + url + "\"");
+      };
+    };
+
+    upload = function(track, trackview, cb) {
       var formdata;
       formdata = new FormData();
       formdata.append('cid', track.cid);
       formdata.append('title', track.get('title'));
+      formdata.append('artist', track.get('artist'));
+      formdata.append('album', track.get('album'));
+      formdata.append('track', track.get('track'));
       formdata.append('file', track.file);
-      return Backbone.sync('create', track, {
+      trackview.startUpload();
+      return track.sync('create', track, {
+        processData: false,
         contentType: false,
-        data: formdata
+        data: formdata,
+        success: function() {
+          return cb();
+        },
+        error: function() {
+          return cb("upload failed");
+        }
       });
+    };
+
+    refreshDisplay = function(track, trackview, cb) {
+      trackview.endUpload();
+      return cb();
+    };
+
+    uploadWorker = function(track, trackview) {
+      return async.waterfall([
+        function(cb) {
+          return controlFile(track, cb);
+        }, function(cb) {
+          return readMetaData(track, cb);
+        }, function(cb) {
+          return upload(track, trackview, cb);
+        }, function(cb) {
+          return refreshDisplay(track, trackview, cb);
+        }
+      ], function(err) {
+        if (err) {
+          return alert("file not loaded properly : " + err);
+        }
+      });
+    };
+
+    TrackListView.prototype.handleFile = function(event) {
+      var attach, fileAttributes, track;
+      attach = this.uploader.files[0];
+      fileAttributes = {};
+      fileAttributes.title = attach.name;
+      track = new Track(fileAttributes);
+      track.file = attach;
+      track.set({
+        onServer: false
+      });
+      this.collection.add(track);
+      return uploadWorker(track, this.views[track.cid]);
+    };
+
+    TrackListView.prototype.onClickTrack = function(track) {
+      if (this.selectedTrack !== null) {
+        this.selectedTrack.toggleSelect();
+      }
+      return this.selectedTrack = track;
+    };
+
+    TrackListView.prototype.onUnclickTrack = function() {
+      return this.selectedTrack = null;
     };
 
     return TrackListView;
 
-  })(ViewCollection);
+  }).call(this, ViewCollection);
   
 });
 window.require.register("views/tracklist_item", function(exports, require, module) {
   var BaseView, TrackListItemView, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -852,41 +1001,126 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     __extends(TrackListItemView, _super);
 
     function TrackListItemView() {
+      this.returnToNormal = __bind(this.returnToNormal, this);
+      this.onProgressChange = __bind(this.onProgressChange, this);
+      this.onClick = __bind(this.onClick, this);
       _ref = TrackListItemView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
     TrackListItemView.prototype.className = 'track';
 
-    TrackListItemView.prototype.tagName = 'div';
+    TrackListItemView.prototype.tagName = 'tr';
 
     TrackListItemView.prototype.template = require('./templates/tracklist_item');
 
     TrackListItemView.prototype.events = {
-      'click .delete-button': 'onDeleteClicked',
-      'dblclick ': 'onDoubleClick'
+      'click .button.delete': 'onDeleteClicked',
+      'click .button.puttoplay': 'onPlayClicked',
+      'dblclick ': 'onDoubleClick',
+      'click': 'onClick'
+    };
+
+    TrackListItemView.prototype.initialize = function() {
+      TrackListItemView.__super__.initialize.apply(this, arguments);
+      return this.listenTo(this.model, "change", this.render);
+    };
+
+    TrackListItemView.prototype.afterRender = function() {
+      if (!this.model.attributes.onServer) {
+        return this.initUpload();
+      }
     };
 
     TrackListItemView.prototype.onDeleteClicked = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      this.$('.delete-button').html("deleting...");
+      this.$('td.field.title').html("deleting...");
       return this.model.destroy({
         error: function() {
           alert("Server error occured, track was not deleted.");
-          return this.$('.delete-button').html("delete");
+          return this.$('td.field.title').html("error while deleting");
         }
       });
     };
 
-    TrackListItemView.prototype.onDoubleClick = function(event) {
-      var dataLocation, id, title;
+    TrackListItemView.prototype.playTrack = function() {
+      var dataLocation, fileName, id;
+      fileName = this.model.attributes.slug;
+      id = this.model.attributes.id;
+      dataLocation = "tracks/" + id + "/attach/" + fileName;
+      return Backbone.Mediator.publish('track:play', "sound-" + id, dataLocation);
+    };
+
+    TrackListItemView.prototype.onPlayClicked = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      title = this.model.attributes.title;
-      id = this.model.attributes.id;
-      dataLocation = "tracks/" + id + "/attach/" + title;
-      return Backbone.Mediator.publish('track:dblclick', "sound-" + id, dataLocation);
+      return this.playTrack();
+    };
+
+    TrackListItemView.prototype.onDoubleClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.playTrack();
+    };
+
+    TrackListItemView.prototype.toggleSelect = function() {
+      if (this.$el.hasClass('selected')) {
+        Backbone.Mediator.publish('track:unclick', this);
+      } else {
+        Backbone.Mediator.publish('track:click', this);
+      }
+      return this.$el.toggleClass('selected');
+    };
+
+    TrackListItemView.prototype.onClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.toggleSelect();
+    };
+
+    TrackListItemView.prototype.onProgressChange = function(e) {
+      var el, pct;
+      if (e.lengthComputable) {
+        pct = Math.floor((e.loaded / e.total) * 100);
+        el = this.$('.uploadProgress');
+        if (el != null) {
+          el.before(el.clone(true)).remove();
+          return this.$('.uploadProgress').html("" + pct + "%");
+        }
+      } else {
+        return console.warn('Content Length not reported!');
+      }
+    };
+
+    TrackListItemView.prototype.initUpload = function() {
+      var uploadProgress;
+      this.saveAddBtn = this.$('.button.addto').detach();
+      this.savePlayBtn = this.$('.button.puttoplay').detach();
+      uploadProgress = $(document.createElement('div'));
+      uploadProgress.addClass('uploadProgress');
+      uploadProgress.html('INIT');
+      return this.$('#state').append(uploadProgress);
+    };
+
+    TrackListItemView.prototype.startUpload = function() {
+      console.log('uploading...');
+      this.$('.uploadProgress').html('0%');
+      return this.listenTo(this.model, "progress", this.onProgressChange);
+    };
+
+    TrackListItemView.prototype.endUpload = function() {
+      console.log('DONE');
+      this.stopListening(this.model, "progress");
+      this.model.attributes.onServer = true;
+      this.$('.uploadProgress').html('DONE');
+      return this.$('.uploadProgress').delay(2000).fadeOut(2000, this.returnToNormal);
+    };
+
+    TrackListItemView.prototype.returnToNormal = function() {
+      this.$('.uploadProgress').remove();
+      this.$('#state').append(this.saveAddBtn);
+      return this.$('#state').append(this.savePlayBtn);
     };
 
     return TrackListItemView;

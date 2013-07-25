@@ -2,35 +2,126 @@
 @import 'nib'
 
 @import '_base'
-@import '_ui'
-
-// Import your styles here
-
-//@import '_states'
-//@import '_layout'
-//@import '_responsive'
 @import 'player'
 
-#content
-  padding: 2em
+title-width = 200px
+field-width = 150px
+num-width = 30px
 
-#track-list
-    padding: 2em
+body
+    background-color: #eee
 
-    .track
-        margin: 1em 0
-        background-color: #eee
-        color: #444
-        margin: 0px 10px
-        padding: 10px
-        border:1px solid #aaa
-        border-radius: 4px
+#title
+    background-color: #444
+    padding: 5px
+    font-weight: bold
+    table
+        width: 100%
 
+    #h1
+        text-align: left
+        color: #fff
+        font-size: 1.8em
+    #h2
+        text-align: right
+        color: #eee
+        font-size: 1.2em
+        transition: all 1.0s ease
         &:hover
-            background-color: #ddd
-            color: #fff
+            color #fff
 
-        .title
-            margin: 0px 10px
-            font-weight: bold
+#content
+    padding: 30px
+    width: 700px
+    background-color: #fff
+    margin: auto auto
+    text-align: center
+    border:1px solid #ddd
 
+    #uploader
+        display:inline-block
+
+    #tracks-display
+        display:inline-block
+
+        table
+            table-layout: fixed
+            border:1px solid #aaa
+
+            thead
+                color: #f00
+                border:1px solid #aaa
+                th
+                    &.left
+                        width: 60px
+                    &.right
+                        width: 30px
+                    &.field
+                        cursor:pointer
+                        width: field-width
+                        text-align: left
+                        font-weight: bold
+                        &.title
+                            width: title-width
+                        &.num
+                            width: num-width
+
+            tbody
+                tr.track
+                    background-color: #fff
+                    color: #444
+                    height: 30px
+                    transition: all 0.3s ease
+
+                    &.odd
+                        background-color: #eee
+
+
+                    &.selected
+                        background-color: #c8c8c8
+
+                    &:hover
+                        background-color: #444
+                        color: #fff
+                        .button
+                            display: inline-block
+                        .uploadProgress
+                            color: white
+
+                    .button
+                        display: none
+
+                    .field
+                        text-align: left
+                        font-weight: bold
+                        font-size: 0.8em
+                        overflow: ellipsis
+                        max-width: field-width
+                        &.num
+                            width: num-width
+                        &.title
+                            max-width: title-width
+
+                        .info
+                            display: none
+
+                        &:hover .info
+                            display: block
+                            position: absolute
+                            background-color: #666
+                            color: #fff
+                            padding: 5px
+
+                    .uploadProgress
+                        color: red
+                        font-weight: bold
+                        font-size: 0.8em
+                        display: block
+                        animation-name: dropText
+                        animation-duration: 0.1s
+                        animation-iteration-count: 1
+
+@keyframes dropText{
+from{transform:scale(1.3);}
+to{transform:scale(1);}
+}

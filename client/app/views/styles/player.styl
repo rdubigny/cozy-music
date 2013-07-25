@@ -4,10 +4,8 @@ Da damn bear-killer player style
 
 .player
     background-color: #444
-    margin:10 10px
-    padding: 10px
+    padding: 5px
     border:1px solid #222
-    border-radius: 4px
 
     .volume
         display:inline-block
@@ -65,43 +63,6 @@ Da damn bear-killer player style
                         &:active
                             background: linear-gradient(top left, #aaa, #eee)
 
-    .button
-        display:inline-block
-        vertical-align:middle
-        margin:0 5px
-        border:2px solid #bbb
-        background-color: #ccc
-        background-image: url("../images/glyphicons-halflings.png")
-        cursor:pointer
-        &:hover
-            background-image: url("../images/glyphicons-halflings-white.png")
-        &:active
-            border:2px solid #ccc
-            background-color: #bbb
-        &.play
-            width: 32px
-            height: 32px
-            border-radius: 16px
-            background-position: -280px 94px
-            &.paused
-                background-position: -256px 94px
-            &.stopped
-                background-position: -256px 94px
-            &.unPlayable
-                border:2px solid #b00
-                background-color: #c00
-                background-position: -137px 45px
-        &.rwd
-            width: 24px
-            height: 24px
-            border-radius: 12px
-            background-position: -239px 90px
-        &.fwd
-            width: 24px
-            height: 24px
-            border-radius: 12px
-            background-position: -331px 90px
-
     .progress
         display:inline-block
         vertical-align:middle
@@ -121,3 +82,77 @@ Da damn bear-killer player style
             margin-left: 20px
         &.right
             margin-right: 20px
+
+.button
+    display:inline-block
+    vertical-align:middle
+    margin:2.5px 2.5px
+    border:2px solid #bbb
+    background-color: #ccc
+    background-image: url("../images/glyphicons-halflings.png")
+    cursor:pointer
+    transition: all 0.2s ease
+    &:hover
+        background-image: url("../images/glyphicons-halflings-white.png")
+    &:active
+        border:2px solid #ccc
+        background-color: #bbb
+    &.play
+        width: 32px
+        height: 32px
+        border-radius: 16px
+        background-position: -280px 94px
+        &.paused
+            background-position: -256px 94px
+        &.stopped
+            background-position: -256px 94px
+        &.unPlayable
+            border:2px solid #b00
+            background-color: #c00
+            background-position: -137px 45px
+    &.rwd
+        width: 24px
+        height: 24px
+        border-radius: 12px
+        background-position: -239px 90px
+    &.fwd
+        width: 24px
+        height: 24px
+        border-radius: 12px
+        background-position: -331px 90px
+
+    &.delete
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -311px 1px
+        &:hover
+            border:2px solid #b00
+            background-color: #c00
+        &:active
+            border:2px solid #c00
+            background-color: #a00
+
+    &.puttoplay
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -262px 88px
+        &:hover
+            border:2px solid #090
+            background-color: #0a0
+        &:active
+            border:2px solid #0a0
+            background-color: #090
+
+    &.addto
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -406px 63.5px
+        &:hover
+            border:2px solid #55e
+            background-color: #55f
+        &:active
+            border:2px solid #009
+            background-color: #00a

@@ -18,13 +18,19 @@ module.exports = class Player extends BaseView
 
     subscriptions:
         # subscribe to the channel shared with views/trackList_item.coffee
-        "track:dblclick": "onDblClickTrack"
+        "track:play": "onPlayTrack"
         # subscribe to the channel shared with views/player/volumeManager.coffee
         "volumeManager:toggleMute": "onToggleMute"
         "volumeManager:volumeChanged": "onVolumeChange"
 
     afterRender: =>
+
+        # bind play button
+        @playButton = @$(".button.play")
+
+        # initializing variables related to volumeManager
         @volume = 50 # default volume value
+        @isMutted = false
 
         # create, bind and display the volume bar
         @volumeManager = new VolumeManager({initVol: @volume})
@@ -44,9 +50,6 @@ module.exports = class Player extends BaseView
         @remainingTime.html "0:00" #@formatMs @currentTrack.durationEstimate
         @isStopped = true
         @isPaused = false
-
-        # bind play button
-        @playButton = @$(".button.play")
 
     onClickPlay: ->
         if @currentTrack?
@@ -77,20 +80,23 @@ module.exports = class Player extends BaseView
                 @currentTrack.setPosition @currentTrack.durationEstimate*percent
                 @updateProgressDisplay()
 
-    onDblClickTrack: (id, dataLocation)->
-        console.log "appel de onDblClickTrack"
-        unless @currentTrack?
+    onPlayTrack: (id, dataLocation)->
+        if @currentTrack?
             @stopTrack()
 
         #loading the track
         @currentTrack = app.soundManager.createSound
             id: id
             url: dataLocation
+            usePolicyFile: true
             volume: @volume
+            #muted: @isMutted #doesn't seem to work
+            #autoload: true # removed because of a soundManager bug, see below
             onfinish: @stopTrack
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
         @currentTrack.play() # works better than 'autoload: true'
+        @currentTrack.mute() if @isMutted
         @playButton.removeClass("stopped")
         @isStopped = false
         @playButton.removeClass("paused")
@@ -111,10 +117,13 @@ module.exports = class Player extends BaseView
 
     onVolumeChange: (volume)=>
         @volume = volume
-        @currentTrack.setVolume volume
+        if @currentTrack?
+            @currentTrack.setVolume volume
 
     onToggleMute: =>
-        @currentTrack.toggleMute()
+        @isMutted = not @isMutted
+        if @currentTrack?
+            @currentTrack.toggleMute()
 
     formatMs: (ms)->
         s = Math.floor ((ms/1000) % 60)
@@ -127,3 +136,9 @@ module.exports = class Player extends BaseView
         @elapsedTime.html @formatMs(@currentTrack.position)
         remainingTime = @currentTrack.durationEstimate - @currentTrack.position
         @remainingTime.html @formatMs(remainingTime)
+
+    id3Fired: (prop, data)=>
+        console.log 'sound #{@currentTrack.id} ID3 data received'
+        for prop in @currentTrack.id3
+            do ->
+                console.log '#{prop}: #{@currentTrack.id3[prop]}'

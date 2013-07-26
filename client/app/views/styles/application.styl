@@ -66,6 +66,20 @@ body
                         &.num
                             width: num-width
 
+                        .sortArrow
+                            display: inline-block
+                            margin-left: 10px
+                            padding: 5px
+                            width: 14px
+                            height: 14px
+                            background-image: url("../images/glyphicons-halflings.png")
+                            &:hover
+                                background-image: url("../images/glyphicons-halflings-red.png")
+                            &.up
+                                background-position: -287px -119px
+                            &.down
+                                background-position: -312px -118px
+
             tbody
                 tr.track
                     background-color: #fff

@@ -21,40 +21,52 @@ module.exports = class ViewCollection extends BaseView
 
     template: -> ''
 
-    itemViewOptions: ->
-
     collectionEl: null
 
-    # add 'empty' class to view when there is no subview
+    # add 'empty' class to view when there is no sub-view
+    # Warning : onChange is not an actual handler for the change event
     onChange: ->
         @$el.toggleClass 'empty', _.size(@views) is 0
 
-    # can be overriden if we want to place the subviews somewhere else
+    # can be overridden if we want to place the sub-views somewhere else
+    # there is th add and th unshift functions for that.
+    # The two fonction throw the same add event.
     appendView: (view) ->
         @$collectionEl.append view.el
 
     # bind listeners to the collection
     initialize: ->
         super
-        @views = {}
+        # To handle the sub views.
+        # already initialized by the constructor
+        #@views = {}
         @listenTo @collection, "reset",   @onReset
-        @listenTo @collection, "add",     @addItem
+        # commented because it disable the unshift backbone function
+        #@listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
+
+        # fill free to override for a more accurate computing
+        # binding add event to render is dirty dirty
+        # because there is no need to render the whole collection just when
+        # adding an only item. But here it's the quick solution I found
+        # to enable unshift
+        @listenTo @collection, 'add sort', @render
 
         if not @collectionEl?
             collectionEl = el
 
     # if we have views before a render call, we detach them
-    render: ->
+    beforeRender: ->
         view.$el.detach() for id, view of @views
         super
 
     # after render, we reattach the views
     afterRender: ->
+        super
         @$collectionEl = $(@collectionEl)
         @appendView view.$el for id, view of @views
         @onReset @collection
-        @onChange @views
+        @onChange # no needs of argument "@appendView" here
 
     # destroy all sub views before remove
     remove: ->
@@ -68,15 +80,14 @@ module.exports = class ViewCollection extends BaseView
 
     # event listeners for add
     addItem: (model) =>
-        options = _.extend {}, {model: model}, @itemViewOptions(model)
+        options = _.extend {}, {model: model}
         view = new @itemview(options)
         @views[model.cid] = view.render()
         @appendView view
-        @onChange @views
+        @onChange
 
     # event listeners for remove
     removeItem: (model) =>
         @views[model.cid].remove()
         delete @views[model.cid]
-
-        @onChange @views
+        @onChange

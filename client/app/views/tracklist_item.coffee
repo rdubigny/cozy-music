@@ -13,10 +13,11 @@ module.exports = class TrackListItemView extends BaseView
 
     events:
         'click .button.delete': 'onDeleteClicked'
-        'click .button.puttoplay': 'onPlayClicked'
-        'dblclick ': 'onDoubleClick'
+        'click .button.puttoplay': 'onPlayClick'
+        'dblclick': 'onPlayClick'
         'click': 'onClick'
 
+    # Called after the constructor
     initialize: ->
         super
         @listenTo @model, "change", @render
@@ -24,12 +25,12 @@ module.exports = class TrackListItemView extends BaseView
     afterRender: ->
         @initUpload() unless @model.attributes.onServer
 
-    onDeleteClicked: (event)->
+    onDeleteClicked: (event)=>
         event.preventDefault()
         event.stopPropagation()
         @$('td.field.title').html "deleting..."
         @model.destroy
-            error: ->
+            error: =>
                 alert "Server error occured, track was not deleted."
                 @$('td.field.title').html "error while deleting"
 
@@ -40,16 +41,12 @@ module.exports = class TrackListItemView extends BaseView
         # signal to player to play this track
         Backbone.Mediator.publish('track:play', "sound-#{id}", dataLocation)
 
-    onPlayClicked: (event)->
+    onPlayClick: (event)->
         event.preventDefault()
         event.stopPropagation()
-        @playTrack()
-
-
-    onDoubleClick: (event)->
-        event.preventDefault()
-        event.stopPropagation()
-        @playTrack()
+        # if the file is not backed up yet, disable the play launch
+        if @model.attributes.onServer
+            @playTrack()
 
     toggleSelect: ->
         if @$el.hasClass 'selected'
@@ -94,18 +91,16 @@ module.exports = class TrackListItemView extends BaseView
         @$('#state').append uploadProgress
 
     startUpload: ->
-        console.log 'uploading...'
         @$('.uploadProgress').html '0%'
         @listenTo @model, "progress", @onProgressChange
 
     endUpload: ->
-        console.log 'DONE'
         @stopListening @model, "progress"
-        @model.attributes.onServer = true
         @$('.uploadProgress').html 'DONE'
-        @$('.uploadProgress').delay(2000).fadeOut 2000, @returnToNormal
+        @$('.uploadProgress').delay(1000).fadeOut 1000, @returnToNormal
 
     returnToNormal: =>
         @$('.uploadProgress').remove()
         @$('#state').append @saveAddBtn
         @$('#state').append @savePlayBtn
+        @model.attributes.onServer = true

@@ -47,7 +47,7 @@ module.exports = class Player extends BaseView
         @currentTrack = null
         @progressInner.width "0%"
         @elapsedTime.html "0:00"
-        @remainingTime.html "0:00" #@formatMs @currentTrack.durationEstimate
+        @remainingTime.html "0:00"
         @isStopped = true
         @isPaused = false
 
@@ -82,9 +82,17 @@ module.exports = class Player extends BaseView
 
     onPlayTrack: (id, dataLocation)->
         if @currentTrack?
+            # if this is the same track there is no need to destruct the song
+            # then recreate it. Set the position to zero is enough.
+            if @currentTrack.id is id
+                @currentTrack.setPosition 0
+                @updateProgressDisplay()
+                return
+            # else destroy the current track
             @stopTrack()
 
-        #loading the track
+        # here @currentTrack is null, we can proceed the track loading
+        # loading the track
         @currentTrack = app.soundManager.createSound
             id: id
             url: dataLocation
@@ -97,12 +105,14 @@ module.exports = class Player extends BaseView
             whileplaying: @updateProgressDisplay
         @currentTrack.play() # works better than 'autoload: true'
         @currentTrack.mute() if @isMutted
+
+        # update display and variables
         @playButton.removeClass("stopped")
         @isStopped = false
         @playButton.removeClass("paused")
         @isPaused = false
 
-
+    # stop means destroy, this function destroy the track and update the display
     stopTrack: =>
         if @currentTrack?
             @currentTrack.destruct()
@@ -115,30 +125,28 @@ module.exports = class Player extends BaseView
         @elapsedTime.html "0:00"
         @remainingTime.html "0:00"
 
+    # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>
         @volume = volume
         if @currentTrack?
             @currentTrack.setVolume volume
 
+    # on mute handler, same thing but for the muted value
     onToggleMute: =>
         @isMutted = not @isMutted
         if @currentTrack?
             @currentTrack.toggleMute()
 
+    # transform milliseconds to a cool readable string format : "mm:ss" or "m:ss"
     formatMs: (ms)->
         s = Math.floor ((ms/1000) % 60)
         s = "0#{s}" if s < 10
         "#{Math.floor ms/60000}:#{s}"
 
+    # update both left and right timers and the progress bar
     updateProgressDisplay: =>
         newWidth = @currentTrack.position/@currentTrack.durationEstimate*100
         @progressInner.width "#{newWidth}%"
         @elapsedTime.html @formatMs(@currentTrack.position)
         remainingTime = @currentTrack.durationEstimate - @currentTrack.position
         @remainingTime.html @formatMs(remainingTime)
-
-    id3Fired: (prop, data)=>
-        console.log 'sound #{@currentTrack.id} ID3 data received'
-        for prop in @currentTrack.id3
-            do ->
-                console.log '#{prop}: #{@currentTrack.id3[prop]}'

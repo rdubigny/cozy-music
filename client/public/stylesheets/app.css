@@ -971,6 +971,23 @@ body {
 #content #tracks-display table thead th.field.num {
   width: 30px;
 }
+#content #tracks-display table thead th.field .sortArrow {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px;
+  width: 14px;
+  height: 14px;
+  background-image: url("../images/glyphicons-halflings.png");
+}
+#content #tracks-display table thead th.field .sortArrow:hover {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
+#content #tracks-display table thead th.field .sortArrow.up {
+  background-position: -287px -119px;
+}
+#content #tracks-display table thead th.field .sortArrow.down {
+  background-position: -312px -118px;
+}
 #content #tracks-display table tbody tr.track {
   background-color: #fff;
   color: #444;

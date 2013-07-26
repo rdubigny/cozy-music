@@ -13,45 +13,59 @@ module.exports = class TrackListView extends ViewCollection
     # Register listener
     events:
         'change #uploader' : 'handleFile'
+        'click th.field.title': 'onClickTableHeadTitle'
+        'click th.field.artist': 'onClickTableHeadArtist'
 
     subscriptions:
         # when a track is selected or unselected
-        "track:click": "onClickTrack"
-        "track:unclick": "onUnclickTrack"
+        'track:click': 'onClickTrack'
+        'track:unclick': 'onUnclickTrack'
 
-    # Called after the constructor
+    # specify the current sorting mode
+    # values are the columns name
+    elementSort: 'title'
+
+    isReverseOrder: false
+
+    disableSorting: =>
+        @elementSort = null
+        @updateSortingDisplay()
+
     initialize: ->
         super
-        # To handle the sub views.
-        @views = {}
-        @listenTo @collection, "add", @onCollectionAdd
-        @listenTo @collection, "remove", @onCollectionRemove
+        @listenTo @collection, 'add', @disableSorting
 
-    # override : new elements are inserted before the others (not after)
-    appendView: (view) ->
-        @$collectionEl.prepend view.el
+    # update display
+    updateSortingDisplay: =>
+        # remove old arrow
+        @$('.sortArrow').remove()
+
+        if @elementSort?
+            # create a new arrow
+            newArrow = $(document.createElement('div'))
+            if @isReverseOrder
+                newArrow.addClass('sortArrow up')
+            else
+                newArrow.addClass('sortArrow down')
+
+            # append it in the document
+            @$('th.field.'+@elementSort).append newArrow
 
     afterRender: ->
         super
         @uploader = @$('#uploader')[0]
         @selectedTrack = null
-        @$collectionEl.html '<em>loading...</em>'
-        @collection.fetch
-            success: (collection, response, option) =>
-                @$collectionEl.find('em').remove()
-                @$('tr:odd').addClass 'odd'
-            error: =>
-                msg = "Files couldn't be retrieved due to a server error."
-                @$collectionEl.find('em').html msg
+        $('.tracks-display tr:odd').addClass 'odd'
+        @updateSortingDisplay()
 
+    # control file type
     controlFile = (track, cb)=>
-        # control file type
         unless track.file.type.match /audio\/(mp3|mpeg)/ # list of supported filetype
             err = "\"#{track.get 'fileName'}\" is of unsupported #{track.file.type} filetype"
         cb(err)
 
+    # read metadata using a FileReader
     readMetaData = (track, cb)=>
-        # read metadata using a FileReader
         url = track.get 'title'
         reader = new FileReader()
         reader.onload = (event)=>
@@ -64,7 +78,7 @@ module.exports = class TrackListView extends ViewCollection
                     track: if tags.track? then tags.track else ''
                 cb()
             ),
-                tags: ["title","artist","album","track"]
+                tags: ['title','artist','album','track']
                 dataReader: FileAPIReader track.file
         reader.readAsArrayBuffer track.file
         reader.onabort = (event)=>
@@ -86,7 +100,8 @@ module.exports = class TrackListView extends ViewCollection
             processData: false # tell jQuery not to process the data
             contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
             data: formdata
-            success: ->
+            success: (model)->
+                track.set model # useful to get the generated id
                 cb()
             error: ->
                 cb("upload failed")
@@ -113,8 +128,64 @@ module.exports = class TrackListView extends ViewCollection
         track.file = attach
         track.set
             onServer: false
-        @collection.add track
+        @collection.unshift track,
+            sort: false
         uploadWorker track, @views[track.cid]
+
+
+
+
+
+    onClickTableHeadTitle: (event)=>
+        event.preventDefault()
+        event.stopPropagation()
+        # sort by title in alphabetical order
+        # update variables for displaying
+        if @elementSort is 'title'
+            @isReverseOrder = not @isReverseOrder
+        else
+            @isReverseOrder = false
+
+        @elementSort = 'title'
+
+        # override the comparator function
+        if @isReverseOrder
+            # sort in reverse alphabetical order
+            @collection.comparator = (track)->
+                - track.get('title')
+        else
+            # sort in alphabetical order
+            @collection.comparator = (track)->
+                track.get('title')
+
+        ###
+        user.sort(function(a, b){
+            if(a.firstname < b.firstname) return -1;
+            if(a.firstname > b.firstname) return 1;
+            return 0;
+        })
+        ###
+
+        @collection.sort() # sort function doesn't work yet
+        #console.log @collection
+
+    onClickTableHeadArtist: (event)=>
+        event.preventDefault()
+        event.stopPropagation()
+        # sort by title in alphabetical order
+        # update variables for displaying
+        if @elementSort is 'artist'
+            @isReverseOrder = not @isReverseOrder
+        else
+            @isReverseOrder = false
+
+        @elementSort = 'artist'
+
+        @collection.sort()
+
+
+
+
 
     onClickTrack: (track)=>
         # unselect previous selected track if there is one
@@ -126,3 +197,6 @@ module.exports = class TrackListView extends ViewCollection
     onUnclickTrack: =>
         # unregister selected track
         @selectedTrack = null
+
+    onCollectionSort: ->
+        console.log "the collection have been sorted"

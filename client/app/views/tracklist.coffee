@@ -13,33 +13,35 @@ module.exports = class TrackListView extends ViewCollection
     # Register listener
     events:
         'change #uploader' : 'handleFile'
-        'click th.field.title': 'onClickTableHeadTitle'
-        'click th.field.artist': 'onClickTableHeadArtist'
+        'click th.field.title': (event)->
+            @onClickTableHead event, 'title'
+        'click th.field.artist': (event)->
+            @onClickTableHead event, 'artist'
+        'click th.field.album': (event)->
+            @onClickTableHead event, 'album'
 
     subscriptions:
         # when a track is selected or unselected
         'track:click': 'onClickTrack'
         'track:unclick': 'onUnclickTrack'
 
-    # specify the current sorting mode
-    # values are the columns name
-    elementSort: 'title'
-
-    isReverseOrder: false
-
-    disableSorting: =>
-        @elementSort = null
-        @updateSortingDisplay()
-
     initialize: ->
         super
-        @listenTo @collection, 'add', @disableSorting
+        @toggleSort 'artist' # default value : sort by artist
 
-    # update display
+        # specify the current sorting mode
+        @elementSort = null
+        @isReverseOrder= false
+
+        # always render after sorting (except for the first sort)
+        @listenTo @collection, 'sort', @render
+
+    # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>
         # remove old arrow
         @$('.sortArrow').remove()
 
+        # if elementSort is null, don't display sorting
         if @elementSort?
             # create a new arrow
             newArrow = $(document.createElement('div'))
@@ -100,6 +102,7 @@ module.exports = class TrackListView extends ViewCollection
             processData: false # tell jQuery not to process the data
             contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
             data: formdata
+            sort: false # doesn't work
             success: (model)->
                 track.set model # useful to get the generated id
                 cb()
@@ -132,60 +135,56 @@ module.exports = class TrackListView extends ViewCollection
             sort: false
         uploadWorker track, @views[track.cid]
 
-
-
-
-
-    onClickTableHeadTitle: (event)=>
+    onClickTableHead: (event, element) =>
         event.preventDefault()
         event.stopPropagation()
-        # sort by title in alphabetical order
+        @toggleSort element
+
+
+    toggleSort: (element)=>
+        # sort by 'element' in alphabetical order
         # update variables for displaying
-        if @elementSort is 'title'
+        if @elementSort is element
             @isReverseOrder = not @isReverseOrder
         else
             @isReverseOrder = false
 
-        @elementSort = 'title'
+        @elementSort = element
+
+        if element is 'title'
+            elementArray = ['title', 'artist', 'album', 'track']
+        else if element is 'artist'
+            elementArray = ['artist', 'album', 'track', 'title']
+        else if element is 'album'
+            elementArray = ['album', 'track', 'title', 'artist']
+        else
+            elementArray = [element, null, null, null]
 
         # override the comparator function
         if @isReverseOrder
-            # sort in reverse alphabetical order
-            @collection.comparator = (track)->
-                - track.get('title')
+            @collection.comparator = (t1, t2)->
+                return -1 if t1.get(elementArray[0]) > t2.get(elementArray[0])
+                return 1 if t1.get(elementArray[0]) < t2.get(elementArray[0])
+                return -1 if t1.get(elementArray[1]) > t2.get(elementArray[1])
+                return 1 if t1.get(elementArray[1]) < t2.get(elementArray[1])
+                return -1 if t1.get(elementArray[2]) > t2.get(elementArray[2])
+                return 1 if t1.get(elementArray[2]) < t2.get(elementArray[2])
+                return -1 if t1.get(elementArray[3]) > t2.get(elementArray[3])
+                return 1 if t1.get(elementArray[3]) < t2.get(elementArray[3])
+                0
         else
-            # sort in alphabetical order
-            @collection.comparator = (track)->
-                track.get('title')
-
-        ###
-        user.sort(function(a, b){
-            if(a.firstname < b.firstname) return -1;
-            if(a.firstname > b.firstname) return 1;
-            return 0;
-        })
-        ###
-
-        @collection.sort() # sort function doesn't work yet
-        #console.log @collection
-
-    onClickTableHeadArtist: (event)=>
-        event.preventDefault()
-        event.stopPropagation()
-        # sort by title in alphabetical order
-        # update variables for displaying
-        if @elementSort is 'artist'
-            @isReverseOrder = not @isReverseOrder
-        else
-            @isReverseOrder = false
-
-        @elementSort = 'artist'
+            @collection.comparator = (t1, t2)->
+                return -1 if t1.get(elementArray[0]) < t2.get(elementArray[0])
+                return 1 if t1.get(elementArray[0]) > t2.get(elementArray[0])
+                return -1 if t1.get(elementArray[1]) < t2.get(elementArray[1])
+                return 1 if t1.get(elementArray[1]) > t2.get(elementArray[1])
+                return -1 if t1.get(elementArray[2]) < t2.get(elementArray[2])
+                return 1 if t1.get(elementArray[2]) > t2.get(elementArray[2])
+                return -1 if t1.get(elementArray[3]) < t2.get(elementArray[3])
+                return 1 if t1.get(elementArray[3]) > t2.get(elementArray[3])
+                0
 
         @collection.sort()
-
-
-
-
 
     onClickTrack: (track)=>
         # unselect previous selected track if there is one

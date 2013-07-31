@@ -28,10 +28,7 @@ module.exports = class ViewCollection extends BaseView
         @$el.toggleClass 'empty', _.size(@views) is 0
 
     # can be overridden if we want to place the sub-views somewhere else
-    # there is th add and th unshift functions for that.
-    # The two fonction throw the same add event.
     appendView: (view) ->
-
         index = @collection.indexOf view.model
 
         if index is 0
@@ -52,22 +49,13 @@ module.exports = class ViewCollection extends BaseView
     # bind listeners to the collection
     initialize: ->
         super
-        # To handle the sub views.
-        # already initialized by the constructor
+        # To handle the sub views
         @listenTo @collection, "reset",   @onReset
-        # commented because it disable the unshift backbone function
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
 
         # When an item is added, removed or the view is rendered
         @on "change", @onChange
-
-        # fill free to override for a more accurate computing
-        # binding add event to render is dirty dirty
-        # because there is no need to render the whole collection just when
-        # adding an only item. But here it's the quick solution I found
-        # to enable unshift
-        #@listenTo @collection, 'add sort', @render
 
         if not @collectionEl?
             collectionEl = el

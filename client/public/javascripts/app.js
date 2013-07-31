@@ -838,11 +838,10 @@ window.require.register("views/tracklist", function(exports, require, module) {
     function TrackListView() {
       this.onUnclickTrack = __bind(this.onUnclickTrack, this);
       this.onClickTrack = __bind(this.onClickTrack, this);
-      this.onClickTableHeadArtist = __bind(this.onClickTableHeadArtist, this);
-      this.onClickTableHeadTitle = __bind(this.onClickTableHeadTitle, this);
+      this.toggleSort = __bind(this.toggleSort, this);
+      this.onClickTableHead = __bind(this.onClickTableHead, this);
       this.handleFile = __bind(this.handleFile, this);
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
-      this.disableSorting = __bind(this.disableSorting, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -859,8 +858,15 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.events = {
       'change #uploader': 'handleFile',
-      'click th.field.title': 'onClickTableHeadTitle',
-      'click th.field.artist': 'onClickTableHeadArtist'
+      'click th.field.title': function(event) {
+        return this.onClickTableHead(event, 'title');
+      },
+      'click th.field.artist': function(event) {
+        return this.onClickTableHead(event, 'artist');
+      },
+      'click th.field.album': function(event) {
+        return this.onClickTableHead(event, 'album');
+      }
     };
 
     TrackListView.prototype.subscriptions = {
@@ -868,18 +874,12 @@ window.require.register("views/tracklist", function(exports, require, module) {
       'track:unclick': 'onUnclickTrack'
     };
 
-    TrackListView.prototype.elementSort = 'title';
-
-    TrackListView.prototype.isReverseOrder = false;
-
-    TrackListView.prototype.disableSorting = function() {
-      this.elementSort = null;
-      return this.updateSortingDisplay();
-    };
-
     TrackListView.prototype.initialize = function() {
       TrackListView.__super__.initialize.apply(this, arguments);
-      return this.listenTo(this.collection, 'add', this.disableSorting);
+      this.toggleSort('artist');
+      this.elementSort = null;
+      this.isReverseOrder = false;
+      return this.listenTo(this.collection, 'sort', this.render);
     };
 
     TrackListView.prototype.updateSortingDisplay = function() {
@@ -952,6 +952,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
         processData: false,
         contentType: false,
         data: formdata,
+        sort: false,
         success: function(model) {
           track.set(model);
           return cb();
@@ -1001,44 +1002,86 @@ window.require.register("views/tracklist", function(exports, require, module) {
       return uploadWorker(track, this.views[track.cid]);
     };
 
-    TrackListView.prototype.onClickTableHeadTitle = function(event) {
+    TrackListView.prototype.onClickTableHead = function(event, element) {
       event.preventDefault();
       event.stopPropagation();
-      if (this.elementSort === 'title') {
-        this.isReverseOrder = !this.isReverseOrder;
-      } else {
-        this.isReverseOrder = false;
-      }
-      this.elementSort = 'title';
-      if (this.isReverseOrder) {
-        this.collection.comparator = function(track) {
-          return -track.get('title');
-        };
-      } else {
-        this.collection.comparator = function(track) {
-          return track.get('title');
-        };
-      }
-
-      /*
-      user.sort(function(a, b){
-          if(a.firstname < b.firstname) return -1;
-          if(a.firstname > b.firstname) return 1;
-          return 0;
-      })
-      */
-      return this.collection.sort();
+      return this.toggleSort(element);
     };
 
-    TrackListView.prototype.onClickTableHeadArtist = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      if (this.elementSort === 'artist') {
+    TrackListView.prototype.toggleSort = function(element) {
+      var elementArray;
+      if (this.elementSort === element) {
         this.isReverseOrder = !this.isReverseOrder;
       } else {
         this.isReverseOrder = false;
       }
-      this.elementSort = 'artist';
+      this.elementSort = element;
+      if (element === 'title') {
+        elementArray = ['title', 'artist', 'album', 'track'];
+      } else if (element === 'artist') {
+        elementArray = ['artist', 'album', 'track', 'title'];
+      } else if (element === 'album') {
+        elementArray = ['album', 'track', 'title', 'artist'];
+      } else {
+        elementArray = [element, null, null, null];
+      }
+      if (this.isReverseOrder) {
+        this.collection.comparator = function(t1, t2) {
+          if (t1.get(elementArray[0]) > t2.get(elementArray[0])) {
+            return -1;
+          }
+          if (t1.get(elementArray[0]) < t2.get(elementArray[0])) {
+            return 1;
+          }
+          if (t1.get(elementArray[1]) > t2.get(elementArray[1])) {
+            return -1;
+          }
+          if (t1.get(elementArray[1]) < t2.get(elementArray[1])) {
+            return 1;
+          }
+          if (t1.get(elementArray[2]) > t2.get(elementArray[2])) {
+            return -1;
+          }
+          if (t1.get(elementArray[2]) < t2.get(elementArray[2])) {
+            return 1;
+          }
+          if (t1.get(elementArray[3]) > t2.get(elementArray[3])) {
+            return -1;
+          }
+          if (t1.get(elementArray[3]) < t2.get(elementArray[3])) {
+            return 1;
+          }
+          return 0;
+        };
+      } else {
+        this.collection.comparator = function(t1, t2) {
+          if (t1.get(elementArray[0]) < t2.get(elementArray[0])) {
+            return -1;
+          }
+          if (t1.get(elementArray[0]) > t2.get(elementArray[0])) {
+            return 1;
+          }
+          if (t1.get(elementArray[1]) < t2.get(elementArray[1])) {
+            return -1;
+          }
+          if (t1.get(elementArray[1]) > t2.get(elementArray[1])) {
+            return 1;
+          }
+          if (t1.get(elementArray[2]) < t2.get(elementArray[2])) {
+            return -1;
+          }
+          if (t1.get(elementArray[2]) > t2.get(elementArray[2])) {
+            return 1;
+          }
+          if (t1.get(elementArray[3]) < t2.get(elementArray[3])) {
+            return -1;
+          }
+          if (t1.get(elementArray[3]) > t2.get(elementArray[3])) {
+            return 1;
+          }
+          return 0;
+        };
+      }
       return this.collection.sort();
     };
 

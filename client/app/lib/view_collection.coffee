@@ -35,9 +35,7 @@ module.exports = class ViewCollection extends BaseView
         index = @collection.indexOf view.model
 
         if index is 0
-            @$collectionEl.prepend render
-        else if index is @collection.length - 1
-            @$collectionEl.append render
+            @$collectionEl.prepend view.$el
         else
             if view.className?
                 className = ".#{view.className}"
@@ -48,8 +46,8 @@ module.exports = class ViewCollection extends BaseView
                 tagName = view.tagName
             else
                 tagName = ""
-            selector = "#{tagName}#{className}:nth-of-type(#{index+1})"
-            @$collectionEl.find(selector).before render
+            selector = "#{tagName}#{className}:nth-of-type(#{index})"
+            @$collectionEl.find(selector).after view.$el
 
     # bind listeners to the collection
     initialize: ->

@@ -249,28 +249,46 @@ window.require.register("lib/view_collection", function(exports, require, module
     };
 
     ViewCollection.prototype.appendView = function(view) {
-      return this.$collectionEl.append(view.el);
+      var className, index, selector, tagName;
+      index = this.collection.indexOf(view.model);
+      if (index === 0) {
+        return this.$collectionEl.prepend(view.$el);
+      } else {
+        if (view.className != null) {
+          className = "." + view.className;
+        } else {
+          className = "";
+        }
+        if (view.tagName != null) {
+          tagName = view.tagName;
+        } else {
+          tagName = "";
+        }
+        selector = "" + tagName + className + ":nth-of-type(" + index + ")";
+        return this.$collectionEl.find(selector).after(view.$el);
+      }
     };
 
     ViewCollection.prototype.initialize = function() {
       var collectionEl;
       ViewCollection.__super__.initialize.apply(this, arguments);
       this.listenTo(this.collection, "reset", this.onReset);
+      this.listenTo(this.collection, "add", this.addItem);
       this.listenTo(this.collection, "remove", this.removeItem);
-      this.listenTo(this.collection, 'add sort', this.render);
+      this.on("change", this.onChange);
       if (this.collectionEl == null) {
         return collectionEl = el;
       }
     };
 
-    ViewCollection.prototype.beforeRender = function() {
+    ViewCollection.prototype.render = function() {
       var id, view, _ref1;
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
         view.$el.detach();
       }
-      return ViewCollection.__super__.beforeRender.apply(this, arguments);
+      return ViewCollection.__super__.render.apply(this, arguments);
     };
 
     ViewCollection.prototype.afterRender = function() {
@@ -283,7 +301,7 @@ window.require.register("lib/view_collection", function(exports, require, module
         this.appendView(view.$el);
       }
       this.onReset(this.collection);
-      return this.onChange;
+      return this.trigger('change');
     };
 
     ViewCollection.prototype.remove = function() {
@@ -309,13 +327,13 @@ window.require.register("lib/view_collection", function(exports, require, module
       view = new this.itemview(options);
       this.views[model.cid] = view.render();
       this.appendView(view);
-      return this.onChange;
+      return this.trigger('change');
     };
 
     ViewCollection.prototype.removeItem = function(model) {
       this.views[model.cid].remove();
       delete this.views[model.cid];
-      return this.onChange;
+      return this.trigger('change');
     };
 
     return ViewCollection;

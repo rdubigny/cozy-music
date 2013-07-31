@@ -968,38 +968,55 @@ window.require.register("views/tracklist", function(exports, require, module) {
       return cb();
     };
 
-    uploadWorker = function(track, trackview) {
+    uploadWorker = function(task, done) {
       return async.waterfall([
         function(cb) {
-          return controlFile(track, cb);
+          return controlFile(task.track, cb);
         }, function(cb) {
-          return readMetaData(track, cb);
+          return readMetaData(task.track, cb);
         }, function(cb) {
-          return upload(track, trackview, cb);
+          return upload(task.track, task.trackview, cb);
         }, function(cb) {
-          return refreshDisplay(track, trackview, cb);
+          return refreshDisplay(task.track, task.trackview, cb);
         }
       ], function(err) {
         if (err) {
-          return alert("file not loaded properly : " + err);
+          return done("file not loaded properly : " + err);
+        } else {
+          return done();
         }
       });
     };
 
+    TrackListView.prototype.uploadQueue = async.queue(uploadWorker, 3);
+
     TrackListView.prototype.handleFile = function(event) {
-      var attach, fileAttributes, track;
-      attach = this.uploader.files[0];
-      fileAttributes = {};
-      fileAttributes.title = attach.name;
-      track = new Track(fileAttributes);
-      track.file = attach;
-      track.set({
-        onServer: false
-      });
-      this.collection.unshift(track, {
-        sort: false
-      });
-      return uploadWorker(track, this.views[track.cid]);
+      var file, fileAttributes, files, track, _i, _len, _results,
+        _this = this;
+      files = this.uploader.files;
+      _results = [];
+      for (_i = 0, _len = files.length; _i < _len; _i++) {
+        file = files[_i];
+        fileAttributes = {};
+        fileAttributes.title = file.name;
+        track = new Track(fileAttributes);
+        track.file = file;
+        track.set({
+          onServer: false
+        });
+        this.collection.unshift(track, {
+          sort: false
+        });
+        _results.push(this.uploadQueue.push({
+          track: track,
+          trackview: this.views[track.cid]
+        }, function(err) {
+          if (err) {
+            return console.log(err);
+          }
+        }));
+      }
+      return _results;
     };
 
     TrackListView.prototype.onClickTableHead = function(event, element) {
@@ -1094,10 +1111,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.onUnclickTrack = function() {
       return this.selectedTrack = null;
-    };
-
-    TrackListView.prototype.onCollectionSort = function() {
-      return console.log("the collection have been sorted");
     };
 
     return TrackListView;

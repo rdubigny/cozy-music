@@ -113,27 +113,39 @@ module.exports = class TrackListView extends ViewCollection
         trackview.endUpload()
         cb()
 
-    uploadWorker = (track, trackview)=>
+    uploadWorker = (task, done)=>
         async.waterfall [
-            (cb) -> controlFile track, cb
-            (cb) -> readMetaData track, cb
-            (cb) -> upload track, trackview, cb
-            (cb) -> refreshDisplay track, trackview, cb
+            (cb) -> controlFile task.track, cb
+            (cb) -> readMetaData task.track, cb
+            (cb) -> upload task.track, task.trackview, cb
+            (cb) -> refreshDisplay task.track, task.trackview, cb
         ], (err) ->
             if err
-                alert "file not loaded properly : #{err}"
+                done "file not loaded properly : #{err}"
+            else
+                done()
+
+    # upload 3 by 3
+    uploadQueue: async.queue uploadWorker, 3
 
     handleFile: (event)=>
-        attach = @uploader.files[0]
-        fileAttributes = {}
-        fileAttributes.title = attach.name
-        track = new Track fileAttributes
-        track.file = attach
-        track.set
-            onServer: false
-        @collection.unshift track,
-            sort: false
-        uploadWorker track, @views[track.cid]
+        files = @uploader.files
+
+        for file in files
+            fileAttributes = {}
+            fileAttributes.title = file.name
+            track = new Track fileAttributes
+            track.file = file
+            track.set
+                onServer: false
+            @collection.unshift track,
+                sort: false
+
+            @uploadQueue.push
+                track: track
+                trackview: @views[track.cid]
+            , (err) =>
+                return console.log err if err
 
     onClickTableHead: (event, element) =>
         event.preventDefault()
@@ -184,6 +196,7 @@ module.exports = class TrackListView extends ViewCollection
                 return 1 if t1.get(elementArray[3]) > t2.get(elementArray[3])
                 0
 
+        # sort with this new comparator function
         @collection.sort()
 
     onClickTrack: (track)=>
@@ -196,6 +209,3 @@ module.exports = class TrackListView extends ViewCollection
     onUnclickTrack: =>
         # unregister selected track
         @selectedTrack = null
-
-    onCollectionSort: ->
-        console.log "the collection have been sorted"

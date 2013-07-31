@@ -24,7 +24,6 @@ module.exports = class ViewCollection extends BaseView
     collectionEl: null
 
     # add 'empty' class to view when there is no sub-view
-    # Warning : onChange is not an actual handler for the change event
     onChange: ->
         @$el.toggleClass 'empty', _.size(@views) is 0
 
@@ -32,31 +31,51 @@ module.exports = class ViewCollection extends BaseView
     # there is th add and th unshift functions for that.
     # The two fonction throw the same add event.
     appendView: (view) ->
-        @$collectionEl.append view.el
+
+        index = @collection.indexOf view.model
+
+        if index is 0
+            @$collectionEl.prepend render
+        else if index is @collection.length - 1
+            @$collectionEl.append render
+        else
+            if view.className?
+                className = ".#{view.className}"
+            else
+                className = ""
+
+            if view.tagName?
+                tagName = view.tagName
+            else
+                tagName = ""
+            selector = "#{tagName}#{className}:nth-of-type(#{index+1})"
+            @$collectionEl.find(selector).before render
 
     # bind listeners to the collection
     initialize: ->
         super
         # To handle the sub views.
         # already initialized by the constructor
-        #@views = {}
         @listenTo @collection, "reset",   @onReset
         # commented because it disable the unshift backbone function
-        #@listenTo @collection, "add",     @addItem
+        @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
+
+        # When an item is added, removed or the view is rendered
+        @on "change", @onChange
 
         # fill free to override for a more accurate computing
         # binding add event to render is dirty dirty
         # because there is no need to render the whole collection just when
         # adding an only item. But here it's the quick solution I found
         # to enable unshift
-        @listenTo @collection, 'add sort', @render
+        #@listenTo @collection, 'add sort', @render
 
         if not @collectionEl?
             collectionEl = el
 
     # if we have views before a render call, we detach them
-    beforeRender: ->
+    render: ->
         view.$el.detach() for id, view of @views
         super
 
@@ -66,7 +85,7 @@ module.exports = class ViewCollection extends BaseView
         @$collectionEl = $(@collectionEl)
         @appendView view.$el for id, view of @views
         @onReset @collection
-        @onChange # no needs of argument "@appendView" here
+        @trigger 'change'
 
     # destroy all sub views before remove
     remove: ->
@@ -84,10 +103,10 @@ module.exports = class ViewCollection extends BaseView
         view = new @itemview(options)
         @views[model.cid] = view.render()
         @appendView view
-        @onChange
+        @trigger 'change'
 
     # event listeners for remove
     removeItem: (model) =>
         @views[model.cid].remove()
         delete @views[model.cid]
-        @onChange
+        @trigger 'change'

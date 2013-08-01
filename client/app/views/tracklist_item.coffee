@@ -20,10 +20,16 @@ module.exports = class TrackListItemView extends BaseView
     # Called after the constructor
     initialize: ->
         super
-        @listenTo @model, "change", @render
-
-    afterRender: ->
-        @initUpload() unless @model.attributes.onServer
+        # handle variable changes
+        @listenTo @model, 'change:state', @onStateChange
+        @listenTo @model, 'change:title', (event)=>
+            @$('td.field.title').html @model.attributes.title
+        @listenTo @model, 'change:artist', (event)=>
+            @$('td.field.artist').html @model.attributes.artist
+        @listenTo @model, 'change:album', (event)=>
+            @$('td.field.album').html @model.attributes.album
+        @listenTo @model, 'change:track', (event)=>
+            @$('td.field.track').html @model.attributes.track
 
     onDeleteClicked: (event)=>
         event.preventDefault()
@@ -45,7 +51,7 @@ module.exports = class TrackListItemView extends BaseView
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
-        if @model.attributes.onServer
+        if @model.attributes.state = 'server'
             @playTrack()
 
     toggleSelect: ->
@@ -82,6 +88,14 @@ module.exports = class TrackListItemView extends BaseView
         else
             console.warn 'Content Length not reported!'
 
+    onStateChange: ->
+        if @model.attributes.state is 'client'
+            @initUpload()
+        else if @model.attributes.state is 'uploadStart'
+            @startUpload()
+        else if @model.attributes.state is 'uploadEnd'
+            @endUpload()
+
     initUpload: ->
         @saveAddBtn = @$('.button.addto').detach()
         @savePlayBtn = @$('.button.puttoplay').detach()
@@ -103,4 +117,4 @@ module.exports = class TrackListItemView extends BaseView
         @$('.uploadProgress').remove()
         @$('#state').append @saveAddBtn
         @$('#state').append @savePlayBtn
-        @model.attributes.onServer = true
+        @model.attributes.state = 'server'

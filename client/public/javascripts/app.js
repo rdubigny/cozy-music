@@ -89,9 +89,7 @@ window.require.register("application", function(exports, require, module) {
       TrackCollection = require('collections/track');
       this.tracks = new TrackCollection();
       this.tracks.fetch({
-        success: function(collection, response, option) {
-          return $('.tracks-display tr:odd').addClass('odd');
-        },
+        success: function(collection, response, option) {},
         error: function() {}
       });
       this.soundManager = soundManager;
@@ -358,7 +356,7 @@ window.require.register("models/track", function(exports, require, module) {
 
     Track.prototype.defaults = function() {
       return {
-        onServer: true
+        state: 'server'
       };
     };
 
@@ -419,11 +417,13 @@ window.require.register("router", function(exports, require, module) {
   
 });
 window.require.register("views/app_view", function(exports, require, module) {
-  var AppView, BaseView, Player, TrackList, app, _ref,
+  var AppView, BaseView, Player, TrackList, Uploader, app, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   BaseView = require('../lib/base_view');
+
+  Uploader = require('./uploader');
 
   TrackList = require('./tracklist');
 
@@ -446,6 +446,9 @@ window.require.register("views/app_view", function(exports, require, module) {
     AppView.prototype.player = null;
 
     AppView.prototype.afterRender = function() {
+      this.uploader = new Uploader;
+      this.$('#uploader').append(this.uploader.$el);
+      this.uploader.render();
       this.trackList = new TrackList({
         collection: app.tracks
       });
@@ -766,7 +769,7 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><div id="title"><table><th id="h1">CoZic</th><th id="h2">Put music in your Cozy</th></table></div><div id="tracks-display"></div><div id="player"></div></div>');
+  buf.push('<div id="content"><div id="uploader"></div><div id="tracks-display"></div><div id="player"></div></div>');
   }
   return buf.join("");
   };
@@ -799,7 +802,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<input id="uploader" type="file" multiple="multiple"/><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table>');
+  buf.push('<table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table>');
   }
   return buf.join("");
   };
@@ -811,6 +814,17 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   with (locals || {}) {
   var interp;
   buf.push('<td id="state"><div class="button addto"></div><div class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td><div class="button delete"></div></td>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/uploader", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<table><td id="h1">CoZic</td><td id="h2">Put music in your Cozy</td></table>');
   }
   return buf.join("");
   };
@@ -830,9 +844,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
   ViewCollection = require('../lib/view_collection');
 
   module.exports = TrackListView = (function(_super) {
-    var controlFile, readMetaData, refreshDisplay, upload, uploadWorker,
-      _this = this;
-
     __extends(TrackListView, _super);
 
     function TrackListView() {
@@ -840,7 +851,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.onClickTrack = __bind(this.onClickTrack, this);
       this.toggleSort = __bind(this.toggleSort, this);
       this.onClickTableHead = __bind(this.onClickTableHead, this);
-      this.handleFile = __bind(this.handleFile, this);
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -857,7 +867,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.collectionEl = '#track-list';
 
     TrackListView.prototype.events = {
-      'change #uploader': 'handleFile',
       'click th.field.title': function(event) {
         return this.onClickTableHead(event, 'title');
       },
@@ -898,125 +907,9 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.afterRender = function() {
       TrackListView.__super__.afterRender.apply(this, arguments);
-      this.uploader = this.$('#uploader')[0];
       this.selectedTrack = null;
       $('.tracks-display tr:odd').addClass('odd');
       return this.updateSortingDisplay();
-    };
-
-    controlFile = function(track, cb) {
-      var err;
-      if (!track.file.type.match(/audio\/(mp3|mpeg)/)) {
-        err = "\"" + (track.get('fileName')) + "\" is of unsupported " + track.file.type + " filetype";
-      }
-      return cb(err);
-    };
-
-    readMetaData = function(track, cb) {
-      var reader, url;
-      url = track.get('title');
-      reader = new FileReader();
-      reader.onload = function(event) {
-        return ID3.loadTags(url, (function() {
-          var tags;
-          tags = ID3.getAllTags(url);
-          track.set({
-            title: tags.title != null ? tags.title : url,
-            artist: tags.artist != null ? tags.artist : '',
-            album: tags.album != null ? tags.album : '',
-            track: tags.track != null ? tags.track : ''
-          });
-          return cb();
-        }), {
-          tags: ['title', 'artist', 'album', 'track'],
-          dataReader: FileAPIReader(track.file)
-        });
-      };
-      reader.readAsArrayBuffer(track.file);
-      return reader.onabort = function(event) {
-        return cb("unable to read \"" + url + "\"");
-      };
-    };
-
-    upload = function(track, trackview, cb) {
-      var formdata;
-      formdata = new FormData();
-      formdata.append('cid', track.cid);
-      formdata.append('title', track.get('title'));
-      formdata.append('artist', track.get('artist'));
-      formdata.append('album', track.get('album'));
-      formdata.append('track', track.get('track'));
-      formdata.append('file', track.file);
-      trackview.startUpload();
-      return track.sync('create', track, {
-        processData: false,
-        contentType: false,
-        data: formdata,
-        sort: false,
-        success: function(model) {
-          track.set(model);
-          return cb();
-        },
-        error: function() {
-          return cb("upload failed");
-        }
-      });
-    };
-
-    refreshDisplay = function(track, trackview, cb) {
-      trackview.endUpload();
-      return cb();
-    };
-
-    uploadWorker = function(task, done) {
-      return async.waterfall([
-        function(cb) {
-          return controlFile(task.track, cb);
-        }, function(cb) {
-          return readMetaData(task.track, cb);
-        }, function(cb) {
-          return upload(task.track, task.trackview, cb);
-        }, function(cb) {
-          return refreshDisplay(task.track, task.trackview, cb);
-        }
-      ], function(err) {
-        if (err) {
-          return done("file not loaded properly : " + err);
-        } else {
-          return done();
-        }
-      });
-    };
-
-    TrackListView.prototype.uploadQueue = async.queue(uploadWorker, 3);
-
-    TrackListView.prototype.handleFile = function(event) {
-      var file, fileAttributes, files, track, _i, _len, _results,
-        _this = this;
-      files = this.uploader.files;
-      _results = [];
-      for (_i = 0, _len = files.length; _i < _len; _i++) {
-        file = files[_i];
-        fileAttributes = {};
-        fileAttributes.title = file.name;
-        track = new Track(fileAttributes);
-        track.file = file;
-        track.set({
-          onServer: false
-        });
-        this.collection.unshift(track, {
-          sort: false
-        });
-        _results.push(this.uploadQueue.push({
-          track: track,
-          trackview: this.views[track.cid]
-        }, function(err) {
-          if (err) {
-            return console.log(err);
-          }
-        }));
-      }
-      return _results;
     };
 
     TrackListView.prototype.onClickTableHead = function(event, element) {
@@ -1115,7 +1008,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     return TrackListView;
 
-  }).call(this, ViewCollection);
+  })(ViewCollection);
   
 });
 window.require.register("views/tracklist_item", function(exports, require, module) {
@@ -1152,14 +1045,21 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     };
 
     TrackListItemView.prototype.initialize = function() {
+      var _this = this;
       TrackListItemView.__super__.initialize.apply(this, arguments);
-      return this.listenTo(this.model, "change", this.render);
-    };
-
-    TrackListItemView.prototype.afterRender = function() {
-      if (!this.model.attributes.onServer) {
-        return this.initUpload();
-      }
+      this.listenTo(this.model, 'change:state', this.onStateChange);
+      this.listenTo(this.model, 'change:title', function(event) {
+        return _this.$('td.field.title').html(_this.model.attributes.title);
+      });
+      this.listenTo(this.model, 'change:artist', function(event) {
+        return _this.$('td.field.artist').html(_this.model.attributes.artist);
+      });
+      this.listenTo(this.model, 'change:album', function(event) {
+        return _this.$('td.field.album').html(_this.model.attributes.album);
+      });
+      return this.listenTo(this.model, 'change:track', function(event) {
+        return _this.$('td.field.track').html(_this.model.attributes.track);
+      });
     };
 
     TrackListItemView.prototype.onDeleteClicked = function(event) {
@@ -1186,7 +1086,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.onPlayClick = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      if (this.model.attributes.onServer) {
+      if (this.model.attributes.state = 'server') {
         return this.playTrack();
       }
     };
@@ -1220,6 +1120,16 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       }
     };
 
+    TrackListItemView.prototype.onStateChange = function() {
+      if (this.model.attributes.state === 'client') {
+        return this.initUpload();
+      } else if (this.model.attributes.state === 'uploadStart') {
+        return this.startUpload();
+      } else if (this.model.attributes.state === 'uploadEnd') {
+        return this.endUpload();
+      }
+    };
+
     TrackListItemView.prototype.initUpload = function() {
       var uploadProgress;
       this.saveAddBtn = this.$('.button.addto').detach();
@@ -1245,11 +1155,226 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       this.$('.uploadProgress').remove();
       this.$('#state').append(this.saveAddBtn);
       this.$('#state').append(this.savePlayBtn);
-      return this.model.attributes.onServer = true;
+      return this.model.attributes.state = 'server';
     };
 
     return TrackListItemView;
 
   })(BaseView);
+  
+});
+window.require.register("views/uploader", function(exports, require, module) {
+  var BaseView, Track, Uploader, app, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseView = require('../lib/base_view');
+
+  Track = require('../models/track');
+
+  app = require('../../application');
+
+  module.exports = Uploader = (function(_super) {
+    var controlFile, readMetaData, refreshDisplay, upload, uploadWorker,
+      _this = this;
+
+    __extends(Uploader, _super);
+
+    function Uploader() {
+      this.handleFiles = __bind(this.handleFiles, this);
+      this.onDragOver = __bind(this.onDragOver, this);
+      this.onFilesDropped = __bind(this.onFilesDropped, this);
+      this.onUploadFormChange = __bind(this.onUploadFormChange, this);
+      this.setupHiddenFileInput = __bind(this.setupHiddenFileInput, this);
+      _ref = Uploader.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Uploader.prototype.className = 'uploader';
+
+    Uploader.prototype.tagName = 'div';
+
+    Uploader.prototype.template = require('./templates/uploader');
+
+    Uploader.prototype.events = {
+      'click': 'onClick',
+      'drop': 'onFilesDropped',
+      'dragover': 'onDragOver',
+      dragend: function(e) {
+        return this.$el.removeClass('dragover');
+      },
+      dragenter: function(e) {
+        return this.$el.addClass('dragover');
+      },
+      dragleave: function(e) {
+        return this.$el.removeClass('dragover');
+      }
+    };
+
+    Uploader.prototype.afterRender = function() {
+      return this.setupHiddenFileInput();
+    };
+
+    Uploader.prototype.setupHiddenFileInput = function() {
+      if (this.hiddenFileInput) {
+        document.body.removeChild(this.hiddenFileInput);
+      }
+      this.hiddenFileInput = document.createElement("input");
+      this.hiddenFileInput.setAttribute("type", "file");
+      this.hiddenFileInput.setAttribute("multiple", "multiple");
+      this.hiddenFileInput.style.visibility = "hidden";
+      this.hiddenFileInput.style.position = "absolute";
+      this.hiddenFileInput.style.top = "0";
+      this.hiddenFileInput.style.left = "0";
+      this.hiddenFileInput.style.height = "0";
+      this.hiddenFileInput.style.width = "0";
+      document.body.appendChild(this.hiddenFileInput);
+      return this.hiddenFileInput.addEventListener("change", this.onUploadFormChange);
+    };
+
+    Uploader.prototype.onUploadFormChange = function(event) {
+      this.handleFiles(this.hiddenFileInput.files);
+      return this.setupHiddenFileInput();
+    };
+
+    Uploader.prototype.onClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.hiddenFileInput.click();
+    };
+
+    Uploader.prototype.onFilesDropped = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.$el.removeClass('dragover');
+      event.dataTransfer = event.originalEvent.dataTransfer;
+      return this.handleFiles(event.dataTransfer.files);
+    };
+
+    Uploader.prototype.onDragOver = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.$el.addClass('dragover');
+    };
+
+    controlFile = function(track, cb) {
+      var err;
+      if (!track.file.type.match(/audio\/(mp3|mpeg)/)) {
+        err = "\"" + (track.get('fileName')) + "\" is of unsupported " + track.file.type + " filetype";
+      }
+      return cb(err);
+    };
+
+    readMetaData = function(track, cb) {
+      var reader, url;
+      url = track.get('title');
+      reader = new FileReader();
+      reader.onload = function(event) {
+        return ID3.loadTags(url, (function() {
+          var tags;
+          tags = ID3.getAllTags(url);
+          track.set({
+            title: tags.title != null ? tags.title : url,
+            artist: tags.artist != null ? tags.artist : '',
+            album: tags.album != null ? tags.album : '',
+            track: tags.track != null ? tags.track : ''
+          });
+          return cb();
+        }), {
+          tags: ['title', 'artist', 'album', 'track'],
+          dataReader: FileAPIReader(track.file)
+        });
+      };
+      reader.readAsArrayBuffer(track.file);
+      return reader.onabort = function(event) {
+        return cb("unable to read \"" + url + "\"");
+      };
+    };
+
+    upload = function(track, cb) {
+      var formdata;
+      formdata = new FormData();
+      formdata.append('cid', track.cid);
+      formdata.append('title', track.get('title'));
+      formdata.append('artist', track.get('artist'));
+      formdata.append('album', track.get('album'));
+      formdata.append('track', track.get('track'));
+      formdata.append('file', track.file);
+      track.set({
+        state: 'uploadStart'
+      });
+      return track.sync('create', track, {
+        processData: false,
+        contentType: false,
+        data: formdata,
+        sort: false,
+        success: function(model) {
+          track.set(model);
+          return cb();
+        },
+        error: function() {
+          return cb("upload failed");
+        }
+      });
+    };
+
+    refreshDisplay = function(track, cb) {
+      track.set({
+        state: 'uploadEnd'
+      });
+      return cb();
+    };
+
+    uploadWorker = function(track, done) {
+      return async.waterfall([
+        function(cb) {
+          return controlFile(track, cb);
+        }, function(cb) {
+          return readMetaData(track, cb);
+        }, function(cb) {
+          return upload(track, cb);
+        }, function(cb) {
+          return refreshDisplay(track, cb);
+        }
+      ], function(err) {
+        if (err) {
+          return done("file not loaded properly : " + err);
+        } else {
+          return done();
+        }
+      });
+    };
+
+    Uploader.prototype.uploadQueue = async.queue(uploadWorker, 3);
+
+    Uploader.prototype.handleFiles = function(files) {
+      var file, fileAttributes, track, _i, _len, _results,
+        _this = this;
+      _results = [];
+      for (_i = 0, _len = files.length; _i < _len; _i++) {
+        file = files[_i];
+        fileAttributes = {};
+        fileAttributes.title = file.name;
+        track = new Track(fileAttributes);
+        track.file = file;
+        app.tracks.unshift(track, {
+          sort: false
+        });
+        track.set({
+          state: 'client'
+        });
+        _results.push(this.uploadQueue.push(track, function(err) {
+          if (err) {
+            return console.log(err);
+          }
+        }));
+      }
+      return _results;
+    };
+
+    return Uploader;
+
+  }).call(this, BaseView);
   
 });

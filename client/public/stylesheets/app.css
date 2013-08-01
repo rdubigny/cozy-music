@@ -905,31 +905,33 @@ input {
 body {
   background-color: #eee;
 }
-#title {
+div.uploader {
+  -webkit-transition: all 1.5s ease;
+  -moz-transition: all 1.5s ease;
+  -o-transition: all 1.5s ease;
+  -ms-transition: all 1.5s ease;
+  transition: all 1.5s ease;
   background-color: #444;
+  color: #fff;
   padding: 5px;
   font-weight: bold;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
 }
-#title table {
+div.uploader.dragover {
+  background-color: #f00;
+}
+div.uploader table {
   width: 100%;
 }
-#title #h1 {
+div.uploader #h1 {
   text-align: left;
-  color: #fff;
   font-size: 1.8em;
 }
-#title #h2 {
+div.uploader #h2 {
   text-align: right;
-  color: #eee;
   font-size: 1.2em;
-  -webkit-transition: all 1s ease;
-  -moz-transition: all 1s ease;
-  -o-transition: all 1s ease;
-  -ms-transition: all 1s ease;
-  transition: all 1s ease;
-}
-#title #h2:hover {
-  color: #fff;
 }
 #content {
   padding: 30px;
@@ -938,9 +940,6 @@ body {
   margin: auto auto;
   text-align: center;
   border: 1px solid #ddd;
-}
-#content #uploader {
-  display: inline-block;
 }
 #content #tracks-display {
   display: inline-block;

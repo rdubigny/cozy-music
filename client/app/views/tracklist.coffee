@@ -12,7 +12,6 @@ module.exports = class TrackListView extends ViewCollection
     collectionEl: '#track-list'
     # Register listener
     events:
-        'change #uploader' : 'handleFile'
         'click th.field.title': (event)->
             @onClickTableHead event, 'title'
         'click th.field.artist': (event)->
@@ -55,98 +54,11 @@ module.exports = class TrackListView extends ViewCollection
 
     afterRender: ->
         super
-        @uploader = @$('#uploader')[0]
         @selectedTrack = null
         $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()
 
-    # control file type
-    controlFile = (track, cb)=>
-        unless track.file.type.match /audio\/(mp3|mpeg)/ # list of supported filetype
-            err = "\"#{track.get 'fileName'}\" is of unsupported #{track.file.type} filetype"
-        cb(err)
-
-    # read metadata using a FileReader
-    readMetaData = (track, cb)=>
-        url = track.get 'title'
-        reader = new FileReader()
-        reader.onload = (event)=>
-            ID3.loadTags url, (=>
-                tags = ID3.getAllTags url
-                track.set
-                    title: if tags.title? then tags.title else url
-                    artist: if tags.artist? then tags.artist else ''
-                    album: if tags.album? then tags.album else ''
-                    track: if tags.track? then tags.track else ''
-                cb()
-            ),
-                tags: ['title','artist','album','track']
-                dataReader: FileAPIReader track.file
-        reader.readAsArrayBuffer track.file
-        reader.onabort = (event)=>
-            cb("unable to read \"#{url}\"")
-
-    # create a FormData object
-    # save the model
-    upload = (track, trackview, cb) =>
-        formdata = new FormData()
-        formdata.append 'cid', track.cid
-        formdata.append 'title', track.get 'title'
-        formdata.append 'artist', track.get 'artist'
-        formdata.append 'album', track.get 'album'
-        formdata.append 'track',track.get 'track'
-        formdata.append 'file', track.file
-
-        trackview.startUpload()
-        track.sync 'create', track,
-            processData: false # tell jQuery not to process the data
-            contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
-            data: formdata
-            sort: false # doesn't work
-            success: (model)->
-                track.set model # useful to get the generated id
-                cb()
-            error: ->
-                cb("upload failed")
-
-    refreshDisplay = (track, trackview, cb) =>
-        trackview.endUpload()
-        cb()
-
-    uploadWorker = (task, done)=>
-        async.waterfall [
-            (cb) -> controlFile task.track, cb
-            (cb) -> readMetaData task.track, cb
-            (cb) -> upload task.track, task.trackview, cb
-            (cb) -> refreshDisplay task.track, task.trackview, cb
-        ], (err) ->
-            if err
-                done "file not loaded properly : #{err}"
-            else
-                done()
-
-    # upload 3 by 3
-    uploadQueue: async.queue uploadWorker, 3
-
-    handleFile: (event)=>
-        files = @uploader.files
-
-        for file in files
-            fileAttributes = {}
-            fileAttributes.title = file.name
-            track = new Track fileAttributes
-            track.file = file
-            track.set
-                onServer: false
-            @collection.unshift track,
-                sort: false
-
-            @uploadQueue.push
-                track: track
-                trackview: @views[track.cid]
-            , (err) =>
-                return console.log err if err
-
+    # event listeners for clicks on table header
     onClickTableHead: (event, element) =>
         event.preventDefault()
         event.stopPropagation()

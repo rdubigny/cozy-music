@@ -2,6 +2,10 @@
 
 Cozic is a basical music player developped to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript librairy.
 
+### NB
+
+For now, compatibility is ensured for chrome only (not for chromium nor FF).
+
 # Run
 
 Clone this repository, install dependencies and run server (it requires Node.js

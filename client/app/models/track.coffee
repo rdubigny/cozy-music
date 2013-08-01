@@ -5,7 +5,7 @@ module.exports = class Track extends Backbone.Model
     rootUrl: 'tracks'
 
     defaults: ->
-        onServer: true
+        state: 'server'
 
     # patch Model.sync so it could trigger progress event
     sync: (method, model, options)->

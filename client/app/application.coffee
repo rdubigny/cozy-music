@@ -14,7 +14,7 @@ module.exports =
         @tracks.fetch
             success: (collection, response, option) ->
                 #@$collectionEl.find('#load').remove()
-                $('.tracks-display tr:odd').addClass 'odd'
+                #$('.tracks-display tr:odd').addClass 'odd'
             error: =>
                 #msg = "Files couldn't be retrieved due to a server error."
                 #@$collectionEl.find('#load').html msg

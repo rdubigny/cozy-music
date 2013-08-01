@@ -11,24 +11,28 @@ num-width = 30px
 body
     background-color: #eee
 
-#title
+div.uploader
+    transition: all 1.5s ease
     background-color: #444
+    color: #fff
     padding: 5px
     font-weight: bold
+    height: 100%
+    width: 100%
+    cursor:pointer
+
+    &.dragover
+        background-color: #f00
+
     table
         width: 100%
 
     #h1
         text-align: left
-        color: #fff
         font-size: 1.8em
     #h2
         text-align: right
-        color: #eee
         font-size: 1.2em
-        transition: all 1.0s ease
-        &:hover
-            color #fff
 
 #content
     padding: 30px
@@ -37,9 +41,6 @@ body
     margin: auto auto
     text-align: center
     border:1px solid #ddd
-
-    #uploader
-        display:inline-block
 
     #tracks-display
         display:inline-block

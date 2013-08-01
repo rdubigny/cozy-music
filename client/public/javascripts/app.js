@@ -89,8 +89,11 @@ window.require.register("application", function(exports, require, module) {
       TrackCollection = require('collections/track');
       this.tracks = new TrackCollection();
       this.tracks.fetch({
-        success: function(collection, response, option) {},
-        error: function() {}
+        error: function() {
+          var msg;
+          msg = "Files couldn't be retrieved due to a server error.";
+          return alert(msg);
+        }
       });
       this.soundManager = soundManager;
       this.soundManager.setup({
@@ -888,7 +891,13 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.toggleSort('artist');
       this.elementSort = null;
       this.isReverseOrder = false;
-      return this.listenTo(this.collection, 'sort', this.render);
+      this.listenTo(this.collection, 'sort', this.render);
+      return this.listenTo(this.collection, 'sync', function(e) {
+        console.log("vue tracklist : \"pense à me supprimer un de ces quatres\"");
+        if (this.collection.length === 0) {
+          return Backbone.Mediator.publish('tracklist:isEmpty');
+        }
+      });
     };
 
     TrackListView.prototype.updateSortingDisplay = function() {
@@ -1066,13 +1075,18 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       var _this = this;
       event.preventDefault();
       event.stopPropagation();
-      this.$('td.field.title').html("deleting...");
-      return this.model.destroy({
-        error: function() {
-          alert("Server error occured, track was not deleted.");
-          return _this.$('td.field.title').html("error while deleting");
-        }
-      });
+      if (this.model.attributes.state !== 'uploadStart') {
+        this.model.set({
+          state: 'canceled'
+        });
+        return this.model.destroy({
+          error: function() {
+            return alert("Server error occured, track was not deleted.");
+          }
+        });
+      } else {
+        return alert("Wait for upload to finish to delete this track");
+      }
     };
 
     TrackListItemView.prototype.playTrack = function() {
@@ -1212,8 +1226,16 @@ window.require.register("views/uploader", function(exports, require, module) {
       }
     };
 
+    Uploader.prototype.subscriptions = {
+      'tracklist:isEmpty': 'onEmptyTrackList'
+    };
+
     Uploader.prototype.afterRender = function() {
       return this.setupHiddenFileInput();
+    };
+
+    Uploader.prototype.onEmptyTrackList = function() {
+      return this.$('td#h2').html("Drop files here or click to add tracks");
     };
 
     Uploader.prototype.setupHiddenFileInput = function() {
@@ -1301,10 +1323,13 @@ window.require.register("views/uploader", function(exports, require, module) {
       formdata.append('album', track.get('album'));
       formdata.append('track', track.get('track'));
       formdata.append('file', track.file);
+      if (track.attributes.state === 'canceled') {
+        return cb("upload canceled");
+      }
       track.set({
         state: 'uploadStart'
       });
-      return track.sync('create', track, {
+      track.sync('create', track, {
         processData: false,
         contentType: false,
         data: formdata,
@@ -1317,6 +1342,7 @@ window.require.register("views/uploader", function(exports, require, module) {
           return cb("upload failed");
         }
       });
+      return false;
     };
 
     refreshDisplay = function(track, cb) {
@@ -1339,7 +1365,7 @@ window.require.register("views/uploader", function(exports, require, module) {
         }
       ], function(err) {
         if (err) {
-          return done("file not loaded properly : " + err);
+          return done("file not uploaded properly : " + err);
         } else {
           return done();
         }

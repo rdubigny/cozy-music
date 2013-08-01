@@ -34,11 +34,16 @@ module.exports = class TrackListItemView extends BaseView
     onDeleteClicked: (event)=>
         event.preventDefault()
         event.stopPropagation()
-        @$('td.field.title').html "deleting..."
-        @model.destroy
-            error: =>
-                alert "Server error occured, track was not deleted."
-                @$('td.field.title').html "error while deleting"
+        if @model.attributes.state isnt 'uploadStart'
+            @model.set
+                state: 'canceled'
+
+            @model.destroy
+                error: =>
+                    alert "Server error occured, track was not deleted."
+        else
+            alert "Wait for upload to finish to delete this track"
+
 
     playTrack: ->
         fileName = @model.attributes.slug

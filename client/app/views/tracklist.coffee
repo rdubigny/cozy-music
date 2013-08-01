@@ -33,7 +33,13 @@ module.exports = class TrackListView extends ViewCollection
         @isReverseOrder= false
 
         # always render after sorting (except for the first sort)
+        # doesn't work
         @listenTo @collection, 'sort', @render
+        # supress that when views_collection is fonctionnal (with onReset)
+        @listenTo @collection, 'sync', (e) ->
+            console.log "vue tracklist : \"pense à me supprimer un de ces quatres\""
+            if @collection.length is 0
+                Backbone.Mediator.publish('tracklist:isEmpty')
 
     # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>
@@ -54,6 +60,10 @@ module.exports = class TrackListView extends ViewCollection
 
     afterRender: ->
         super
+        # uncomment that when views_collection is fonctionnal
+        #console.log "length : "+@collection.length
+        #if @collection.length is 0
+        #    Backbone.Mediator.publish('tracklist:isEmpty')
         @selectedTrack = null
         $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()

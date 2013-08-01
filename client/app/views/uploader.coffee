@@ -17,8 +17,14 @@ module.exports = class Uploader extends BaseView
         dragenter: (e) -> @$el.addClass 'dragover'
         dragleave: (e) -> @$el.removeClass 'dragover'
 
+    subscriptions:
+        'tracklist:isEmpty': 'onEmptyTrackList'
+
     afterRender: ->
         @setupHiddenFileInput()
+
+    onEmptyTrackList: ->
+        @$('td#h2').html "Drop files here or click to add tracks"
 
     setupHiddenFileInput: =>
         document.body.removeChild @hiddenFileInput if @hiddenFileInput
@@ -102,8 +108,12 @@ module.exports = class Uploader extends BaseView
         formdata.append 'track',track.get 'track'
         formdata.append 'file', track.file
 
+        if track.attributes.state is 'canceled'
+            return cb("upload canceled")
+
         track.set
             state: 'uploadStart'
+
         track.sync 'create', track,
             processData: false # tell jQuery not to process the data
             contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
@@ -114,6 +124,9 @@ module.exports = class Uploader extends BaseView
                 cb()
             error: ->
                 cb("upload failed")
+
+        false # There is no reasons for this
+        # I just didn't want to return the function above. Just in case...
 
     refreshDisplay = (track, cb) =>
         track.set
@@ -128,7 +141,7 @@ module.exports = class Uploader extends BaseView
             (cb) -> refreshDisplay track, cb
         ], (err) ->
             if err
-                done "file not loaded properly : #{err}"
+                done "file not uploaded properly : #{err}"
             else
                 done()
 

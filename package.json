@@ -1,12 +1,12 @@
-{ "name": "cozy-template"
-, "version": "1.0.0"
+{ "name": "Cozic"
+, "version": "0.0.1"
 , "engines": ["node = 0.8.x"]
-, "description": "A template project for cozy applications"
+, "description": "A cozy application to play, upload and organize your music"
 , "license": "MIT"
 , "repository":
   {
     "type": "git"
-  , "url": "https://github.com/mycozycloud/cozy-template.git"
+  , "url": "https://github.com/rdubigny/cozy-music.git"
   }
 , "main": "server.coffee"
 , "dependencies":
@@ -30,5 +30,10 @@
 , "scripts":
   { "test": "cake tests"
   , "start": "coffee server.coffee"
+  },
+  "cozy-permissions": {
+    "Track": {
+      "description": "upload and play your musics"
+    }
   }
 }

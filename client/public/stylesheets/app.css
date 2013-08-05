@@ -935,7 +935,7 @@ div.uploader #h2 {
 }
 #content {
   padding: 30px;
-  width: 700px;
+  width: 750px;
   background-color: #fff;
   margin: auto auto;
   text-align: center;
@@ -943,9 +943,10 @@ div.uploader #h2 {
 }
 #content #tracks-display {
   display: inline-block;
+  height: 450px;
+  overflow-y: scroll;
 }
 #content #tracks-display table {
-  table-layout: fixed;
   border: 1px solid #aaa;
 }
 #content #tracks-display table thead {
@@ -1027,7 +1028,7 @@ div.uploader #h2 {
   max-width: 150px;
 }
 #content #tracks-display table tbody tr.track .field.num {
-  width: 30px;
+  max-width: 30px;
 }
 #content #tracks-display table tbody tr.track .field.title {
   max-width: 200px;

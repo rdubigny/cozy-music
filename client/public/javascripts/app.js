@@ -97,12 +97,13 @@ window.require.register("application", function(exports, require, module) {
       });
       this.soundManager = soundManager;
       this.soundManager.setup({
-        debugMode: false,
+        debugMode: true,
         debugFlash: false,
         preferFlash: false,
         useFlashBlock: true,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
+        consoleOnly: true,
         url: "../swf/",
         flashVersion: 9
       });
@@ -488,6 +489,7 @@ window.require.register("views/player/player", function(exports, require, module
 
     function Player() {
       this.updateProgressDisplay = __bind(this.updateProgressDisplay, this);
+      this.printLoadingInfo = __bind(this.printLoadingInfo, this);
       this.onToggleMute = __bind(this.onToggleMute, this);
       this.onVolumeChange = __bind(this.onVolumeChange, this);
       this.stopTrack = __bind(this.stopTrack, this);
@@ -510,6 +512,12 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.subscriptions = {
       "track:play": "onPlayTrack",
+      "track:stop": function(id) {
+        var _ref1;
+        if (((_ref1 = this.currentTrack) != null ? _ref1.id : void 0) === id) {
+          return this.stopTrack();
+        }
+      },
       "volumeManager:toggleMute": "onToggleMute",
       "volumeManager:volumeChanged": "onVolumeChange"
     };
@@ -529,8 +537,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.progressInner = this.$('.progress .inner');
       this.currentTrack = null;
       this.progressInner.width("0%");
-      this.elapsedTime.html("0:00");
-      this.remainingTime.html("0:00");
+      this.elapsedTime.html("&nbsp;0:00");
+      this.remainingTime.html("&nbsp;0:00");
       this.isStopped = true;
       return this.isPaused = false;
     };
@@ -589,7 +597,16 @@ window.require.register("views/player/player", function(exports, require, module
         volume: this.volume,
         onfinish: this.stopTrack,
         onstop: this.stopTrack,
-        whileplaying: this.updateProgressDisplay
+        whileplaying: this.updateProgressDisplay,
+        whileloading: this.printLoadingInfo,
+        multiShot: false,
+        onload: function(success) {
+          if (success) {
+            return console.log("onLoad successful");
+          } else {
+            return console.log("onLoad failed");
+          }
+        }
       });
       this.currentTrack.play();
       if (this.isMutted) {
@@ -611,8 +628,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.playButton.removeClass("paused");
       this.isPaused = false;
       this.progressInner.width("0%");
-      this.elapsedTime.html("0:00");
-      return this.remainingTime.html("0:00");
+      this.elapsedTime.html("&nbsp;0:00");
+      return this.remainingTime.html("&nbsp;0:00");
     };
 
     Player.prototype.onVolumeChange = function(volume) {
@@ -630,12 +647,34 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.formatMs = function(ms) {
-      var s;
+      var m, s;
       s = Math.floor((ms / 1000) % 60);
       if (s < 10) {
         s = "0" + s;
       }
-      return "" + (Math.floor(ms / 60000)) + ":" + s;
+      m = Math.floor(ms / 60000);
+      if (m < 10) {
+        m = "&nbsp;" + m;
+      }
+      return "" + m + ":" + s;
+    };
+
+    Player.prototype.printLoadingInfo = function() {
+      var buf, i, printBuf, tot, _i, _len, _ref1,
+        _this = this;
+      tot = this.currentTrack.durationEstimate;
+      console.log("is buffering : " + this.currentTrack.isBuffering);
+      console.log("buffered :");
+      printBuf = function(buf) {
+        return console.log("[" + (Math.floor(buf.start / tot * 100)) + "% - " + (Math.floor(buf.end / tot * 100)) + "%]");
+      };
+      _ref1 = this.currentTrack.buffered;
+      for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+        buf = _ref1[i];
+        printBuf(this.currentTrack.buffered[i]);
+      }
+      console.log("bytes loaded : " + (Math.floor(this.currentTrack.bytesLoaded / this.currentTrack.bytesTotal * 100)));
+      return console.log("");
     };
 
     Player.prototype.updateProgressDisplay = function() {
@@ -883,7 +922,12 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.subscriptions = {
       'track:click': 'onClickTrack',
-      'track:unclick': 'onUnclickTrack'
+      'track:unclick': 'onUnclickTrack',
+      'uploader:addTrack': function(e) {
+        this.elementSort = null;
+        this.isReverseOrder = false;
+        return this.updateSortingDisplay();
+      }
     };
 
     TrackListView.prototype.initialize = function() {
@@ -900,6 +944,13 @@ window.require.register("views/tracklist", function(exports, require, module) {
       });
     };
 
+    TrackListView.prototype.afterRender = function() {
+      TrackListView.__super__.afterRender.apply(this, arguments);
+      this.selectedTrack = null;
+      $('.tracks-display tr:odd').addClass('odd');
+      return this.updateSortingDisplay();
+    };
+
     TrackListView.prototype.updateSortingDisplay = function() {
       var newArrow;
       this.$('.sortArrow').remove();
@@ -912,13 +963,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
         }
         return this.$('th.field.' + this.elementSort).append(newArrow);
       }
-    };
-
-    TrackListView.prototype.afterRender = function() {
-      TrackListView.__super__.afterRender.apply(this, arguments);
-      this.selectedTrack = null;
-      $('.tracks-display tr:odd').addClass('odd');
-      return this.updateSortingDisplay();
     };
 
     TrackListView.prototype.onClickTableHead = function(event, element) {
@@ -1033,7 +1077,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
 
     function TrackListItemView() {
       this.returnToNormal = __bind(this.returnToNormal, this);
-      this.onProgressChange = __bind(this.onProgressChange, this);
+      this.onUploadProgressChange = __bind(this.onUploadProgressChange, this);
       this.onClick = __bind(this.onClick, this);
       this.onDeleteClicked = __bind(this.onDeleteClicked, this);
       _ref = TrackListItemView.__super__.constructor.apply(this, arguments);
@@ -1071,22 +1115,39 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       });
     };
 
+    TrackListItemView.prototype.afterRender = function() {
+      var state;
+      state = this.model.attributes.state;
+      if (state === 'client') {
+        return this.initUpload();
+      } else if (state === 'uploadStart') {
+        this.initUpload();
+        return this.startUpload();
+      }
+    };
+
     TrackListItemView.prototype.onDeleteClicked = function(event) {
-      var _this = this;
+      var id, state,
+        _this = this;
       event.preventDefault();
       event.stopPropagation();
-      if (this.model.attributes.state !== 'uploadStart') {
+      state = this.model.attributes.state;
+      if (state === 'uploadStart') {
+        alert("Wait for upload to finish to delete this track");
+        return;
+      }
+      if (state === 'client') {
         this.model.set({
           state: 'canceled'
         });
-        return this.model.destroy({
-          error: function() {
-            return alert("Server error occured, track was not deleted.");
-          }
-        });
-      } else {
-        return alert("Wait for upload to finish to delete this track");
       }
+      id = this.model.attributes.id;
+      Backbone.Mediator.publish('track:stop', "sound-" + id);
+      return this.model.destroy({
+        error: function() {
+          return alert("Server error occured, track was not deleted.");
+        }
+      });
     };
 
     TrackListItemView.prototype.playTrack = function() {
@@ -1100,7 +1161,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.onPlayClick = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      if (this.model.attributes.state = 'server') {
+      if (this.model.attributes.state === 'server') {
         return this.playTrack();
       }
     };
@@ -1120,7 +1181,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       return this.toggleSelect();
     };
 
-    TrackListItemView.prototype.onProgressChange = function(e) {
+    TrackListItemView.prototype.onUploadProgressChange = function(e) {
       var el, pct;
       if (e.lengthComputable) {
         pct = Math.floor((e.loaded / e.total) * 100);
@@ -1156,7 +1217,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
 
     TrackListItemView.prototype.startUpload = function() {
       this.$('.uploadProgress').html('0%');
-      return this.listenTo(this.model, "progress", this.onProgressChange);
+      return this.listenTo(this.model, "progress", this.onUploadProgressChange);
     };
 
     TrackListItemView.prototype.endUpload = function() {
@@ -1245,6 +1306,7 @@ window.require.register("views/uploader", function(exports, require, module) {
       this.hiddenFileInput = document.createElement("input");
       this.hiddenFileInput.setAttribute("type", "file");
       this.hiddenFileInput.setAttribute("multiple", "multiple");
+      this.hiddenFileInput.setAttribute("accept", "audio/*");
       this.hiddenFileInput.style.visibility = "hidden";
       this.hiddenFileInput.style.position = "absolute";
       this.hiddenFileInput.style.top = "0";
@@ -1283,7 +1345,7 @@ window.require.register("views/uploader", function(exports, require, module) {
     controlFile = function(track, cb) {
       var err;
       if (!track.file.type.match(/audio\/(mp3|mpeg)/)) {
-        err = "\"" + (track.get('fileName')) + "\" is of unsupported " + track.file.type + " filetype";
+        err = "unsupported " + track.file.type + " filetype";
       }
       return cb(err);
     };
@@ -1310,7 +1372,7 @@ window.require.register("views/uploader", function(exports, require, module) {
       };
       reader.readAsArrayBuffer(track.file);
       return reader.onabort = function(event) {
-        return cb("unable to read \"" + url + "\"");
+        return cb("unable to read metadata");
       };
     };
 
@@ -1365,7 +1427,7 @@ window.require.register("views/uploader", function(exports, require, module) {
         }
       ], function(err) {
         if (err) {
-          return done("file not uploaded properly : " + err);
+          return done("" + (track.get('title')) + " not uploaded properly : " + err, track);
         } else {
           return done();
         }
@@ -1377,6 +1439,7 @@ window.require.register("views/uploader", function(exports, require, module) {
     Uploader.prototype.handleFiles = function(files) {
       var file, fileAttributes, track, _i, _len, _results,
         _this = this;
+      Backbone.Mediator.publish('uploader:addTrack');
       _results = [];
       for (_i = 0, _len = files.length; _i < _len; _i++) {
         file = files[_i];
@@ -1390,9 +1453,10 @@ window.require.register("views/uploader", function(exports, require, module) {
         track.set({
           state: 'client'
         });
-        _results.push(this.uploadQueue.push(track, function(err) {
+        _results.push(this.uploadQueue.push(track, function(err, track) {
           if (err) {
-            return console.log(err);
+            console.log(err);
+            return app.tracks.remove(track);
           }
         }));
       }

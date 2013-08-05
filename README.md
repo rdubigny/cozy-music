@@ -11,10 +11,10 @@ For now, compatibility is ensured for chrome only (not for chromium nor FF).
 Clone this repository, install dependencies and run server (it requires Node.js
 and Coffee-script)
 
-    git clone git://github.com/mycozycloud/cozy-template.git
-    cd cozy-template
+    git clone git://github.com/rdubigny/cozy-music.git
+    cd cozy-music
     npm install
-    coffee server
+    coffee server.coffee
 
 # About Cozy
 

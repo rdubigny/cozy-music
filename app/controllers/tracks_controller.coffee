@@ -48,7 +48,7 @@ action 'destroy', ->
 action 'getAttachment', ->
     fileName = params.fileName
 
-    @track.getFile fileName, (err, resp, body) ->
+    stream = @track.getFile fileName, (err, resp, body) ->
         if err or not resp?
             send 500
         else if resp.statusCode is 404
@@ -57,4 +57,8 @@ action 'getAttachment', ->
             send 500
         else
             send 200
-    .pipe(res) # this is compound "magic" res = response variable
+
+    stream.pipe(res) # this is compound "magic" res = response variable
+
+    res.on 'close', ->
+        stream.abort()

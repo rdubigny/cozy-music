@@ -32,7 +32,7 @@ module.exports = class Uploader extends BaseView
         @hiddenFileInput = document.createElement "input"
         @hiddenFileInput.setAttribute "type", "file"
         @hiddenFileInput.setAttribute "multiple", "multiple"
-        #@hiddenFileInput.setAttribute "accept",
+        @hiddenFileInput.setAttribute "accept", "audio/*"
         # Not setting `display="none"` because some browsers don't accept clicks
         # on elements that aren't displayed.
         @hiddenFileInput.style.visibility = "hidden"
@@ -74,7 +74,7 @@ module.exports = class Uploader extends BaseView
     # control file type
     controlFile = (track, cb)=>
         unless track.file.type.match /audio\/(mp3|mpeg)/ # list of supported filetype
-            err = "\"#{track.get 'fileName'}\" is of unsupported #{track.file.type} filetype"
+            err = "unsupported #{track.file.type} filetype"
         cb(err)
 
     # read metadata using a FileReader
@@ -95,7 +95,7 @@ module.exports = class Uploader extends BaseView
                 dataReader: FileAPIReader track.file
         reader.readAsArrayBuffer track.file
         reader.onabort = (event)=>
-            cb("unable to read \"#{url}\"")
+            cb "unable to read metadata"
 
     # create a FormData object
     # save the model
@@ -108,8 +108,10 @@ module.exports = class Uploader extends BaseView
         formdata.append 'track',track.get 'track'
         formdata.append 'file', track.file
 
+        # if the upload have been canceled don't proceed to upload
+        # return the callback with an error to stop the waterfall
         if track.attributes.state is 'canceled'
-            return cb("upload canceled")
+            return cb "upload canceled"
 
         track.set
             state: 'uploadStart'
@@ -118,9 +120,9 @@ module.exports = class Uploader extends BaseView
             processData: false # tell jQuery not to process the data
             contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
             data: formdata
-            sort: false # doesn't work
+            sort: false # doesn't work but we want our most rescent tracks to be on top
             success: (model)->
-                track.set model # fetch the generated id
+                track.set model # to get the generated id
                 cb()
             error: ->
                 cb("upload failed")
@@ -141,7 +143,7 @@ module.exports = class Uploader extends BaseView
             (cb) -> refreshDisplay track, cb
         ], (err) ->
             if err
-                done "file not uploaded properly : #{err}"
+                done "#{track.get('title')} not uploaded properly : #{err}", track
             else
                 done()
 
@@ -149,6 +151,9 @@ module.exports = class Uploader extends BaseView
     uploadQueue: async.queue uploadWorker, 3
 
     handleFiles: (files)=>
+        # signal trackList view
+        Backbone.Mediator.publish 'uploader:addTrack'
+        # handle files
         for file in files
             fileAttributes = {}
             fileAttributes.title = file.name
@@ -159,5 +164,8 @@ module.exports = class Uploader extends BaseView
             track.set
                 state: 'client'
 
-            @uploadQueue.push track , (err) =>
-                return console.log err if err
+            @uploadQueue.push track , (err, track) =>
+                if err
+                    console.log err
+                    # remove the track(it's already done if upload was canceled)
+                    app.tracks.remove track

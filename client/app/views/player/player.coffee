@@ -17,9 +17,13 @@ module.exports = class Player extends BaseView
         "mousedown .progress": "onMouseDownProgress"
 
     subscriptions:
-        # subscribe to the channel shared with views/trackList_item.coffee
+        # these channels are shared with views/trackList_item.coffee
         "track:play": "onPlayTrack"
-        # subscribe to the channel shared with views/player/volumeManager.coffee
+        "track:stop": (id) ->
+            if @currentTrack?.id is id
+                @stopTrack()
+
+        # these channels are shared with views/player/volumeManager.coffee
         "volumeManager:toggleMute": "onToggleMute"
         "volumeManager:volumeChanged": "onVolumeChange"
 
@@ -46,8 +50,8 @@ module.exports = class Player extends BaseView
         # initializing variables
         @currentTrack = null
         @progressInner.width "0%"
-        @elapsedTime.html "0:00"
-        @remainingTime.html "0:00"
+        @elapsedTime.html "&nbsp;0:00"
+        @remainingTime.html "&nbsp;0:00"
         @isStopped = true
         @isPaused = false
 
@@ -103,6 +107,14 @@ module.exports = class Player extends BaseView
             onfinish: @stopTrack
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
+            whileloading: @printLoadingInfo
+            # sound "restart" (instead of "chorus") when played multiple times
+            multiShot: false
+            onload: (success)->
+                if success
+                    console.log "onLoad successful"
+                else
+                    console.log "onLoad failed"
         @currentTrack.play() # works better than 'autoload: true'
         @currentTrack.mute() if @isMutted
 
@@ -122,8 +134,8 @@ module.exports = class Player extends BaseView
         @playButton.removeClass("paused")
         @isPaused = false
         @progressInner.width "0%"
-        @elapsedTime.html "0:00"
-        @remainingTime.html "0:00"
+        @elapsedTime.html "&nbsp;0:00"
+        @remainingTime.html "&nbsp;0:00"
 
     # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>
@@ -137,11 +149,25 @@ module.exports = class Player extends BaseView
         if @currentTrack?
             @currentTrack.toggleMute()
 
-    # transform milliseconds to a cool readable string format : "mm:ss" or "m:ss"
+    # transform milliseconds to a cool readable string format : "mm:ss" or " m:ss"
     formatMs: (ms)->
         s = Math.floor ((ms/1000) % 60)
         s = "0#{s}" if s < 10
-        "#{Math.floor ms/60000}:#{s}"
+        m = Math.floor ms/60000
+        m = "&nbsp;#{m}" if m < 10
+        "#{m}:#{s}"
+
+    printLoadingInfo: =>
+        tot = @currentTrack.durationEstimate
+        console.log "is buffering : #{@currentTrack.isBuffering}"
+        console.log "buffered :"
+        printBuf = (buf)=>
+            console.log "[#{Math.floor(buf.start/tot*100)}% - #{Math.floor(buf.end/tot*100)}%]"
+        printBuf @currentTrack.buffered[i] for buf, i in @currentTrack.buffered
+        console.log "bytes loaded : #{Math.floor(@currentTrack.bytesLoaded/@currentTrack.bytesTotal*100)}"
+        console.log ""
+
+
 
     # update both left and right timers and the progress bar
     updateProgressDisplay: =>

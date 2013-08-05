@@ -23,6 +23,13 @@ module.exports = class TrackListView extends ViewCollection
         # when a track is selected or unselected
         'track:click': 'onClickTrack'
         'track:unclick': 'onUnclickTrack'
+        # when adding new tracks
+        'uploader:addTrack': (e)->
+            # just update display
+            @elementSort = null
+            @isReverseOrder= false
+            @updateSortingDisplay()
+
 
     initialize: ->
         super
@@ -39,7 +46,17 @@ module.exports = class TrackListView extends ViewCollection
         @listenTo @collection, 'sync', (e) ->
             console.log "vue tracklist : \"pense à me supprimer un de ces quatres\""
             if @collection.length is 0
-                Backbone.Mediator.publish('tracklist:isEmpty')
+                Backbone.Mediator.publish 'tracklist:isEmpty'
+
+    afterRender: ->
+        super
+        # uncomment that when views_collection is fonctionnal
+        #console.log "length : "+@collection.length
+        #if @collection.length is 0
+        #    Backbone.Mediator.publish('tracklist:isEmpty')
+        @selectedTrack = null
+        $('.tracks-display tr:odd').addClass 'odd'
+        @updateSortingDisplay()
 
     # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>
@@ -51,22 +68,12 @@ module.exports = class TrackListView extends ViewCollection
             # create a new arrow
             newArrow = $(document.createElement('div'))
             if @isReverseOrder
-                newArrow.addClass('sortArrow up')
+                newArrow.addClass 'sortArrow up'
             else
-                newArrow.addClass('sortArrow down')
+                newArrow.addClass 'sortArrow down'
 
             # append it in the document
             @$('th.field.'+@elementSort).append newArrow
-
-    afterRender: ->
-        super
-        # uncomment that when views_collection is fonctionnal
-        #console.log "length : "+@collection.length
-        #if @collection.length is 0
-        #    Backbone.Mediator.publish('tracklist:isEmpty')
-        @selectedTrack = null
-        $('.tracks-display tr:odd').addClass 'odd'
-        @updateSortingDisplay()
 
     # event listeners for clicks on table header
     onClickTableHead: (event, element) =>

@@ -31,41 +31,61 @@ module.exports = class TrackListItemView extends BaseView
         @listenTo @model, 'change:track', (event)=>
             @$('td.field.track').html @model.attributes.track
 
+    afterRender: ->
+        # in case the view is rendered during the upload (ex: because of a sort)
+        state = @model.attributes.state
+        if state is 'client'
+            @initUpload()
+        else if state is 'uploadStart'
+            @initUpload()
+            @startUpload()
+
     onDeleteClicked: (event)=>
         event.preventDefault()
         event.stopPropagation()
-        if @model.attributes.state isnt 'uploadStart'
+
+        state = @model.attributes.state
+
+        if state is 'uploadStart'
+            # we don't know the file id on the server before the upload is ended
+            # it simplier to just prohibit the cancelling at this moment
+            alert "Wait for upload to finish to delete this track"
+            return
+
+        if state is 'client'
+            # This will stop the upload process and delete the model
             @model.set
                 state: 'canceled'
 
-            @model.destroy
-                error: =>
-                    alert "Server error occured, track was not deleted."
-        else
-            alert "Wait for upload to finish to delete this track"
-
+        # stop playing this track if at play
+        id = @model.attributes.id
+        Backbone.Mediator.publish 'track:stop', "sound-#{id}"
+        # destroy the model
+        @model.destroy
+            error: =>
+                alert "Server error occured, track was not deleted."
 
     playTrack: ->
         fileName = @model.attributes.slug
         id = @model.attributes.id
         dataLocation = "tracks/#{id}/attach/#{fileName}"
-        # signal to player to play this track
-        Backbone.Mediator.publish('track:play', "sound-#{id}", dataLocation)
+        # signal the player to play this track
+        Backbone.Mediator.publish 'track:play', "sound-#{id}", dataLocation
 
     onPlayClick: (event)->
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
-        if @model.attributes.state = 'server'
+        if @model.attributes.state is 'server'
             @playTrack()
 
     toggleSelect: ->
         if @$el.hasClass 'selected'
             # signal to unregister previous selection
-            Backbone.Mediator.publish('track:unclick', @)
+            Backbone.Mediator.publish 'track:unclick', @
         else
             # signal to unselect previous selection and register the new one
-            Backbone.Mediator.publish('track:click', @)
+            Backbone.Mediator.publish 'track:click', @
         @$el.toggleClass 'selected'
 
     onClick: (event)=>
@@ -73,7 +93,7 @@ module.exports = class TrackListItemView extends BaseView
         event.stopPropagation()
         @toggleSelect()
 
-    onProgressChange: (e)=>
+    onUploadProgressChange: (e)=>
         # make sure we can compute the length
         if e.lengthComputable
             #calculate the percentage loaded
@@ -111,7 +131,7 @@ module.exports = class TrackListItemView extends BaseView
 
     startUpload: ->
         @$('.uploadProgress').html '0%'
-        @listenTo @model, "progress", @onProgressChange
+        @listenTo @model, "progress", @onUploadProgressChange
 
     endUpload: ->
         @stopListening @model, "progress"

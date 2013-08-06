@@ -1,7 +1,6 @@
 TrackView = require './tracklist_item'
 Track = require '../models/track'
 ViewCollection = require '../lib/view_collection'
-ScrollBar = require './scrollbar'
 
 module.exports = class TrackListView extends ViewCollection
 
@@ -57,8 +56,12 @@ module.exports = class TrackListView extends ViewCollection
         @selectedTrack = null
         $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()
-        @$('#scrollbar1').tinyscrollbar()
-        #@$el.niceScroll()
+        @$('.viewport').niceScroll(
+            cursorcolor:"#ddd"
+            cursorborder: ""
+            cursorwidth:"10px"
+            cursorborderradius: "0px"
+        )
 
     remove: ->
         super

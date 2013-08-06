@@ -1033,7 +1033,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="scrollbar1"><div class="viewport"><div class="overview"><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div></div><div class="scrollbar"><div class="track"><div class="thumb"></div></div></div></div>');
+  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
   }
   return buf.join("");
   };
@@ -1061,7 +1061,7 @@ window.require.register("views/templates/uploader", function(exports, require, m
   };
 });
 window.require.register("views/tracklist", function(exports, require, module) {
-  var ScrollBar, Track, TrackListView, TrackView, ViewCollection, _ref,
+  var Track, TrackListView, TrackView, ViewCollection, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1071,8 +1071,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
   Track = require('../models/track');
 
   ViewCollection = require('../lib/view_collection');
-
-  ScrollBar = require('./scrollbar');
 
   module.exports = TrackListView = (function(_super) {
     __extends(TrackListView, _super);
@@ -1139,7 +1137,12 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.selectedTrack = null;
       $('.tracks-display tr:odd').addClass('odd');
       this.updateSortingDisplay();
-      return this.$('#scrollbar1').tinyscrollbar();
+      return this.$('.viewport').niceScroll({
+        cursorcolor: "#ddd",
+        cursorborder: "",
+        cursorwidth: "10px",
+        cursorborderradius: "0px"
+      });
     };
 
     TrackListView.prototype.remove = function() {

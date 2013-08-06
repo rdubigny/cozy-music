@@ -1,7 +1,7 @@
-BaseView = require '../lib/base_view'
 TrackView = require './tracklist_item'
 Track = require '../models/track'
 ViewCollection = require '../lib/view_collection'
+ScrollBar = require './scrollbar'
 
 module.exports = class TrackListView extends ViewCollection
 
@@ -48,7 +48,7 @@ module.exports = class TrackListView extends ViewCollection
             if @collection.length is 0
                 Backbone.Mediator.publish 'tracklist:isEmpty'
 
-    afterRender: ->
+    afterRender: =>
         super
         # uncomment that when views_collection is fonctionnal
         #console.log "length : "+@collection.length
@@ -57,6 +57,12 @@ module.exports = class TrackListView extends ViewCollection
         @selectedTrack = null
         $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()
+        @$('#scrollbar1').tinyscrollbar()
+        #@$el.niceScroll()
+
+    remove: ->
+        super
+        @list.getNiceScroll().remove()
 
     # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>

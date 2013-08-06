@@ -690,6 +690,54 @@ input {
   font: 300 16px Geneva, Verdana, "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
   line-height: 1.2;
 }
+#scrollbar1 {
+  width: 688px;
+}
+#scrollbar1 .viewport {
+  width: 678px;
+  height: 450px;
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+}
+#scrollbar1 .overview {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+#scrollbar1 .scrollbar {
+  width: 10px;
+  position: relative;
+  display: inline-block;
+}
+#scrollbar1 .track {
+  background-color: #aaa;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+#scrollbar1 .thumb {
+  height: 20px;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  background-color: #ddd;
+}
+#scrollbar1 .disabl {
+  display: none;
+}
+.noSelect {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
 .player {
   background-color: #444;
   padding: 5px;
@@ -940,11 +988,6 @@ div.uploader #h2 {
   margin: auto auto;
   text-align: center;
   border: 1px solid #ddd;
-}
-#content #tracks-display {
-  display: inline-block;
-  height: 450px;
-  overflow-y: scroll;
 }
 #content #tracks-display table {
   border: 1px solid #aaa;

@@ -15,6 +15,51 @@ input
     font 300 16px Geneva, Verdana, "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif
     line-height 1.2
 
+#scrollbar1
+    width: 688px
+
+    .viewport
+        width: 678px
+        height: 450px
+        overflow: hidden
+        position: relative
+        display:inline-block
+
+    .overview
+        position: absolute
+        left: 0
+        top: 0
+
+    .scrollbar
+        width: 10px
+        position: relative
+        display:inline-block
+
+    .track
+        background-color: #aaa
+        height: 100%
+        width: 100%
+        position: relative
+
+    .thumb
+        height: 20px
+        width: 100%
+        cursor: pointer
+        overflow: hidden
+        position: absolute
+        top: 0
+        background-color: #ddd
+
+    .disabl
+        display: none
+
+.noSelect
+    user-select: none
+    -o-user-select: none
+    -moz-user-select: none
+    -khtml-user-select: none
+    -webkit-user-select: none
+
 @import 'player'
 
 title-width = 200px
@@ -56,13 +101,8 @@ div.uploader
     border:1px solid #ddd
 
     #tracks-display
-        display:inline-block
-        height: 450px
-        overflow-y: scroll
-
         table
             border:1px solid #aaa
-
             thead
                 color: #f00
                 border:1px solid #aaa

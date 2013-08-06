@@ -805,6 +805,195 @@ window.require.register("views/player/volumeManager", function(exports, require,
   })(BaseView);
   
 });
+window.require.register("views/scrollbar", function(exports, require, module) {
+  
+  /*
+    Tiny Scrollbar
+    http://www.baijs.nl/tinyscrollbar/
+
+    Dual licensed under the MIT or GPL Version 2 licenses.
+    http://www.opensource.org/licenses/mit-license.php
+    http://www.opensource.org/licenses/gpl-2.0.php
+
+    Date: 13 / 08 / 2012
+    @version 1.81
+    @author Maarten Baijs
+  */
+  var ScrollBar;
+
+  module.exports = ScrollBar = (function() {
+    var Scrollbar;
+
+    function ScrollBar() {}
+
+    $.tiny = $.tiny || {};
+
+    $.tiny.scrollbar = {
+      options: {
+        axis: "y",
+        wheel: 40,
+        scroll: true,
+        lockscroll: true,
+        size: "auto",
+        sizethumb: "auto",
+        invertscroll: false
+      }
+    };
+
+    $.fn.tinyscrollbar = function(params) {
+      var options;
+      options = $.extend({}, $.tiny.scrollbar.options, params);
+      this.each(function() {
+        return $(this).data("tsb", new Scrollbar($(this), options));
+      });
+      return this;
+    };
+
+    $.fn.tinyscrollbar_update = function(sScroll) {
+      return $(this).data("tsb").update(sScroll);
+    };
+
+    Scrollbar = function(root, options) {
+      var drag, end, iMouse, iPosition, iScroll, initialize, oContent, oScrollbar, oSelf, oThumb, oTrack, oViewport, oWrapper, sAxis, sDirection, sSize, setEvents, setSize, start, touchEvents, wheel;
+      initialize = function() {
+        oSelf.update();
+        setEvents();
+        return oSelf;
+      };
+      setSize = function() {
+        var sCssSize;
+        sCssSize = sSize.toLowerCase();
+        oThumb.obj.css(sDirection, iScroll / oScrollbar.ratio);
+        oContent.obj.css(sDirection, -iScroll);
+        iMouse.start = oThumb.obj.offset()[sDirection];
+        oScrollbar.obj.css(sCssSize, oTrack[options.axis]);
+        oTrack.obj.css(sCssSize, oTrack[options.axis]);
+        return oThumb.obj.css(sCssSize, oThumb[options.axis]);
+      };
+      setEvents = function() {
+        if (!touchEvents) {
+          oThumb.obj.bind("mousedown", start);
+          oTrack.obj.bind("mouseup", drag);
+        } else {
+          oViewport.obj[0].ontouchstart = function(event) {
+            if (1 === event.touches.length) {
+              start(event.touches[0]);
+              return event.stopPropagation();
+            }
+          };
+        }
+        if (options.scroll && window.addEventListener) {
+          oWrapper[0].addEventListener("DOMMouseScroll", wheel, false);
+          oWrapper[0].addEventListener("mousewheel", wheel, false);
+          return oWrapper[0].addEventListener("MozMousePixelScroll", (function(event) {
+            return event.preventDefault();
+          }), false);
+        } else {
+          if (options.scroll) {
+            return oWrapper[0].onmousewheel = wheel;
+          }
+        }
+      };
+      start = function(event) {
+        var oThumbDir;
+        $("body").addClass("noSelect");
+        oThumbDir = parseInt(oThumb.obj.css(sDirection), 10);
+        iMouse.start = (sAxis ? event.pageX : event.pageY);
+        iPosition.start = (oThumbDir === "auto" ? 0 : oThumbDir);
+        if (!touchEvents) {
+          $(document).bind("mousemove", drag);
+          $(document).bind("mouseup", end);
+          return oThumb.obj.bind("mouseup", end);
+        } else {
+          document.ontouchmove = function(event) {
+            event.preventDefault();
+            return drag(event.touches[0]);
+          };
+          return document.ontouchend = end;
+        }
+      };
+      wheel = function(event) {
+        var iDelta, iScroll, oEvent;
+        if (oContent.ratio < 1) {
+          oEvent = event || window.event;
+          iDelta = (oEvent.wheelDelta ? oEvent.wheelDelta / 120 : -oEvent.detail / 3);
+          iScroll -= iDelta * options.wheel;
+          iScroll = Math.min(oContent[options.axis] - oViewport[options.axis], Math.max(0, iScroll));
+          oThumb.obj.css(sDirection, iScroll / oScrollbar.ratio);
+          oContent.obj.css(sDirection, -iScroll);
+          if (options.lockscroll || (iScroll !== (oContent[options.axis] - oViewport[options.axis]) && iScroll !== 0)) {
+            oEvent = $.event.fix(oEvent);
+            return oEvent.preventDefault();
+          }
+        }
+      };
+      drag = function(event) {
+        var iScroll;
+        if (oContent.ratio < 1) {
+          if (options.invertscroll && touchEvents) {
+            iPosition.now = Math.min(oTrack[options.axis] - oThumb[options.axis], Math.max(0, iPosition.start + (iMouse.start - (sAxis ? event.pageX : event.pageY))));
+          } else {
+            iPosition.now = Math.min(oTrack[options.axis] - oThumb[options.axis], Math.max(0, iPosition.start + ((sAxis ? event.pageX : event.pageY) - iMouse.start)));
+          }
+          iScroll = iPosition.now * oScrollbar.ratio;
+          oContent.obj.css(sDirection, -iScroll);
+          return oThumb.obj.css(sDirection, iPosition.now);
+        }
+      };
+      end = function() {
+        $("body").removeClass("noSelect");
+        $(document).unbind("mousemove", drag);
+        $(document).unbind("mouseup", end);
+        oThumb.obj.unbind("mouseup", end);
+        return document.ontouchmove = document.ontouchend = null;
+      };
+      oSelf = this;
+      oWrapper = root;
+      oViewport = {
+        obj: $(".viewport", root)
+      };
+      oContent = {
+        obj: $(".overview", root)
+      };
+      oScrollbar = {
+        obj: $(".scrollbar", root)
+      };
+      oTrack = {
+        obj: $(".track", oScrollbar.obj)
+      };
+      oThumb = {
+        obj: $(".thumb", oScrollbar.obj)
+      };
+      sAxis = options.axis === "x";
+      sDirection = (sAxis ? "left" : "top");
+      sSize = (sAxis ? "Width" : "Height");
+      iScroll = 0;
+      iPosition = {
+        start: 0,
+        now: 0
+      };
+      iMouse = {};
+      touchEvents = "ontouchstart" in document.documentElement;
+      this.update = function(sScroll) {
+        oViewport[options.axis] = oViewport.obj[0]["offset" + sSize];
+        oContent[options.axis] = oContent.obj[0]["scroll" + sSize];
+        oContent.ratio = oViewport[options.axis] / oContent[options.axis];
+        oScrollbar.obj.toggleClass("disable", oContent.ratio >= 1);
+        oTrack[options.axis] = (options.size === "auto" ? oViewport[options.axis] : options.size);
+        oThumb[options.axis] = Math.min(oTrack[options.axis], Math.max(0, (options.sizethumb === "auto" ? oTrack[options.axis] * oContent.ratio : options.sizethumb)));
+        oScrollbar.ratio = (options.sizethumb === "auto" ? oContent[options.axis] / oTrack[options.axis] : (oContent[options.axis] - oViewport[options.axis]) / (oTrack[options.axis] - oThumb[options.axis]));
+        iScroll = (sScroll === "relative" && oContent.ratio <= 1 ? Math.min(oContent[options.axis] - oViewport[options.axis], Math.max(0, iScroll)) : 0);
+        iScroll = (sScroll === "bottom" && oContent.ratio <= 1 ? oContent[options.axis] - oViewport[options.axis] : (isNaN(parseInt(sScroll, 10)) ? iScroll : parseInt(sScroll, 10)));
+        return setSize();
+      };
+      return initialize();
+    };
+
+    return ScrollBar;
+
+  })();
+  
+});
 window.require.register("views/templates/home", function(exports, require, module) {
   module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
   attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
@@ -844,7 +1033,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table>');
+  buf.push('<div id="scrollbar1"><div class="viewport"><div class="overview"><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div></div><div class="scrollbar"><div class="track"><div class="thumb"></div></div></div></div>');
   }
   return buf.join("");
   };
@@ -872,18 +1061,18 @@ window.require.register("views/templates/uploader", function(exports, require, m
   };
 });
 window.require.register("views/tracklist", function(exports, require, module) {
-  var BaseView, Track, TrackListView, TrackView, ViewCollection, _ref,
+  var ScrollBar, Track, TrackListView, TrackView, ViewCollection, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  BaseView = require('../lib/base_view');
 
   TrackView = require('./tracklist_item');
 
   Track = require('../models/track');
 
   ViewCollection = require('../lib/view_collection');
+
+  ScrollBar = require('./scrollbar');
 
   module.exports = TrackListView = (function(_super) {
     __extends(TrackListView, _super);
@@ -894,6 +1083,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.toggleSort = __bind(this.toggleSort, this);
       this.onClickTableHead = __bind(this.onClickTableHead, this);
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
+      this.afterRender = __bind(this.afterRender, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -948,7 +1138,13 @@ window.require.register("views/tracklist", function(exports, require, module) {
       TrackListView.__super__.afterRender.apply(this, arguments);
       this.selectedTrack = null;
       $('.tracks-display tr:odd').addClass('odd');
-      return this.updateSortingDisplay();
+      this.updateSortingDisplay();
+      return this.$('#scrollbar1').tinyscrollbar();
+    };
+
+    TrackListView.prototype.remove = function() {
+      TrackListView.__super__.remove.apply(this, arguments);
+      return this.list.getNiceScroll().remove();
     };
 
     TrackListView.prototype.updateSortingDisplay = function() {

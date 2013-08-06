@@ -60,5 +60,7 @@ action 'getAttachment', ->
 
     stream.pipe(res) # this is compound "magic" res = response variable
 
+    # if the client close the, transmit the
     res.on 'close', ->
+        console.log "close"
         stream.abort()

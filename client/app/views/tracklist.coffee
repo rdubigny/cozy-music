@@ -24,10 +24,12 @@ module.exports = class TrackListView extends ViewCollection
         'track:unclick': 'onUnclickTrack'
         # when adding new tracks
         'uploader:addTrack': (e)->
-            # just update display
+            # remove display arrow
             @elementSort = null
             @isReverseOrder= false
             @updateSortingDisplay()
+            # scroll on top of the list
+            @$('.viewport').scrollTop "0"
 
 
     initialize: ->
@@ -53,7 +55,7 @@ module.exports = class TrackListView extends ViewCollection
         #console.log "length : "+@collection.length
         #if @collection.length is 0
         #    Backbone.Mediator.publish('tracklist:isEmpty')
-        @selectedTrack = null
+        @selectedTrackView = null
         $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()
         @$('.viewport').niceScroll(
@@ -65,7 +67,7 @@ module.exports = class TrackListView extends ViewCollection
 
     remove: ->
         super
-        @list.getNiceScroll().remove()
+        @$('.viewport').getNiceScroll().remove()
 
     # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>
@@ -137,13 +139,13 @@ module.exports = class TrackListView extends ViewCollection
         # sort with this new comparator function
         @collection.sort()
 
-    onClickTrack: (track)=>
+    onClickTrack: (trackView)=>
         # unselect previous selected track if there is one
-        unless @selectedTrack is null
-            @selectedTrack.toggleSelect()
+        unless @selectedTrackView is null
+            @selectedTrackView.toggleSelect()
         # register selected track
-        @selectedTrack = track
+        @selectedTrackView = trackView
 
     onUnclickTrack: =>
         # unregister selected track
-        @selectedTrack = null
+        @selectedTrackView = null

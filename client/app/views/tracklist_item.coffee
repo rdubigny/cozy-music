@@ -64,6 +64,8 @@ module.exports = class TrackListItemView extends BaseView
         @model.destroy
             error: =>
                 alert "Server error occured, track was not deleted."
+        # signal trackList view
+        Backbone.Mediator.publish 'trackItem:remove'
 
     playTrack: ->
         fileName = @model.attributes.slug

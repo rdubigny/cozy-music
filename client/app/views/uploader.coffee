@@ -152,9 +152,10 @@ module.exports = class Uploader extends BaseView
 
     handleFiles: (files)=>
         # signal trackList view
-        Backbone.Mediator.publish 'uploader:addTrack'
+        Backbone.Mediator.publish 'uploader:addTracks'
         # handle files
         for file in files
+            Backbone.Mediator.publish 'uploader:addTrack'
             fileAttributes = {}
             fileAttributes.title = file.name
             track = new Track fileAttributes

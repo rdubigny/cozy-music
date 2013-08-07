@@ -9,6 +9,10 @@ module.exports = class TrackListView extends ViewCollection
     template: require('./templates/tracklist')
     itemview: TrackView
     collectionEl: '#track-list'
+
+    # minimum track-list length
+    minTrackListLength: 20
+
     # Register listener
     events:
         'click th.field.title': (event)->
@@ -23,7 +27,7 @@ module.exports = class TrackListView extends ViewCollection
         'track:click': 'onClickTrack'
         'track:unclick': 'onUnclickTrack'
         # when adding new tracks
-        'uploader:addTrack': (e)->
+        'uploader:addTracks': (e)->
             # remove display arrow
             @elementSort = null
             @isReverseOrder= false
@@ -31,6 +35,14 @@ module.exports = class TrackListView extends ViewCollection
             # scroll on top of the list
             @$('.viewport').scrollTop "0"
 
+        'uploader:addTrack': (e)->
+            # remove blank track if necessary
+            @$(".blank:last").remove()
+
+        'trackItem:remove': (e) ->
+            # add blank track if necessary
+            if @collection.length <= @minTrackListLength
+                @appendBlanckTrack()
 
     initialize: ->
         super
@@ -43,7 +55,7 @@ module.exports = class TrackListView extends ViewCollection
         # always render after sorting (except for the first sort)
         # doesn't work
         @listenTo @collection, 'sort', @render
-        # supress that when views_collection is fonctionnal (with onReset)
+        # suppress that when views_collection is functional (with onReset)
         @listenTo @collection, 'sync', (e) ->
             console.log "vue tracklist : \"pense à me supprimer un de ces quatres\""
             if @collection.length is 0
@@ -51,19 +63,35 @@ module.exports = class TrackListView extends ViewCollection
 
     afterRender: =>
         super
-        # uncomment that when views_collection is fonctionnal
+        # uncomment that when views_collection is functional
         #console.log "length : "+@collection.length
         #if @collection.length is 0
         #    Backbone.Mediator.publish('tracklist:isEmpty')
+
         @selectedTrackView = null
-        $('.tracks-display tr:odd').addClass 'odd'
         @updateSortingDisplay()
+
+        # adding scrollbar
         @$('.viewport').niceScroll(
             cursorcolor:"#ddd"
             cursorborder: ""
             cursorwidth:"10px"
             cursorborderradius: "0px"
         )
+
+        # adding blank tracks if there is not enough tracks to display
+        if @collection.length <= @minTrackListLength
+            for i in [@collection.length..@minTrackListLength]
+                @appendBlanckTrack()
+
+        # adding table stripes
+        $('.tracks-display tr:odd').addClass 'odd'
+
+    appendBlanckTrack: =>
+        blankTrack = $(document.createElement('tr'))
+        blankTrack.addClass "track blank"
+        blankTrack.html "<td colspan=\"6\"></td>"
+        @$collectionEl.append blankTrack
 
     remove: ->
         super

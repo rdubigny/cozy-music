@@ -892,6 +892,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.toggleSort = __bind(this.toggleSort, this);
       this.onClickTableHead = __bind(this.onClickTableHead, this);
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
+      this.appendBlanckTrack = __bind(this.appendBlanckTrack, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -906,6 +907,8 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.itemview = TrackView;
 
     TrackListView.prototype.collectionEl = '#track-list';
+
+    TrackListView.prototype.minTrackListLength = 20;
 
     TrackListView.prototype.events = {
       'click th.field.title': function(event) {
@@ -922,11 +925,19 @@ window.require.register("views/tracklist", function(exports, require, module) {
     TrackListView.prototype.subscriptions = {
       'track:click': 'onClickTrack',
       'track:unclick': 'onUnclickTrack',
-      'uploader:addTrack': function(e) {
+      'uploader:addTracks': function(e) {
         this.elementSort = null;
         this.isReverseOrder = false;
         this.updateSortingDisplay();
         return this.$('.viewport').scrollTop("0");
+      },
+      'uploader:addTrack': function(e) {
+        return this.$(".blank:last").remove();
+      },
+      'trackItem:remove': function(e) {
+        if (this.collection.length <= this.minTrackListLength) {
+          return this.appendBlanckTrack();
+        }
       }
     };
 
@@ -945,16 +956,30 @@ window.require.register("views/tracklist", function(exports, require, module) {
     };
 
     TrackListView.prototype.afterRender = function() {
+      var i, _i, _ref1, _ref2;
       TrackListView.__super__.afterRender.apply(this, arguments);
       this.selectedTrackView = null;
-      $('.tracks-display tr:odd').addClass('odd');
       this.updateSortingDisplay();
-      return this.$('.viewport').niceScroll({
+      this.$('.viewport').niceScroll({
         cursorcolor: "#ddd",
         cursorborder: "",
         cursorwidth: "10px",
         cursorborderradius: "0px"
       });
+      if (this.collection.length <= this.minTrackListLength) {
+        for (i = _i = _ref1 = this.collection.length, _ref2 = this.minTrackListLength; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {
+          this.appendBlanckTrack();
+        }
+      }
+      return $('.tracks-display tr:odd').addClass('odd');
+    };
+
+    TrackListView.prototype.appendBlanckTrack = function() {
+      var blankTrack;
+      blankTrack = $(document.createElement('tr'));
+      blankTrack.addClass("track blank");
+      blankTrack.html("<td colspan=\"6\"></td>");
+      return this.$collectionEl.append(blankTrack);
     };
 
     TrackListView.prototype.remove = function() {
@@ -1154,11 +1179,12 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       }
       id = this.model.attributes.id;
       Backbone.Mediator.publish('track:stop', "sound-" + id);
-      return this.model.destroy({
+      this.model.destroy({
         error: function() {
           return alert("Server error occured, track was not deleted.");
         }
       });
+      return Backbone.Mediator.publish('trackItem:remove');
     };
 
     TrackListItemView.prototype.playTrack = function() {
@@ -1450,10 +1476,11 @@ window.require.register("views/uploader", function(exports, require, module) {
     Uploader.prototype.handleFiles = function(files) {
       var file, fileAttributes, track, _i, _len, _results,
         _this = this;
-      Backbone.Mediator.publish('uploader:addTrack');
+      Backbone.Mediator.publish('uploader:addTracks');
       _results = [];
       for (_i = 0, _len = files.length; _i < _len; _i++) {
         file = files[_i];
+        Backbone.Mediator.publish('uploader:addTrack');
         fileAttributes = {};
         fileAttributes.title = file.name;
         track = new Track(fileAttributes);

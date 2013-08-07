@@ -58,6 +58,9 @@ action 'getAttachment', ->
         else
             send 200
 
+    if req.headers['range']?
+        stream.setHeader('range', req.headers['range'])
+
     stream.pipe(res) # this is compound "magic" res = response variable
 
     # if the client close the, transmit the

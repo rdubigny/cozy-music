@@ -43,6 +43,8 @@ module.exports = class TrackListView extends ViewCollection
             # add blank track if necessary
             if @collection.length <= @minTrackListLength
                 @appendBlanckTrack()
+                $('tr.blank:odd').addClass 'odd'
+                $('tr.blank:even').removeClass 'odd'
 
     initialize: ->
         super
@@ -73,10 +75,11 @@ module.exports = class TrackListView extends ViewCollection
 
         # adding scrollbar
         @$('.viewport').niceScroll(
-            cursorcolor:"#ddd"
+            cursorcolor:"#ccc"
             cursorborder: ""
             cursorwidth:"10px"
             cursorborderradius: "0px"
+            horizrailenabled: "false"
         )
 
         # adding blank tracks if there is not enough tracks to display

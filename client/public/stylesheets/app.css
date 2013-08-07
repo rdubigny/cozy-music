@@ -676,6 +676,60 @@ li[class^="icon-"].icon-large:before, li[class*=" icon-"].icon-large:before {
 .icon-paste:before                { content: "\f0ea"; }
 
 .icon-user-md:before              { content: "\f200"; }
+@media (max-width: 350px) {
+  #content #tracks-display table .artist,
+  #content #tracks-display table .album {
+    width: 0%;
+  }
+  #content #tracks-display table .num {
+    width: 0%;
+  }
+}
+@media (min-width: 350px) {
+  #content #tracks-display table .artist,
+  #content #tracks-display table .album {
+    width: 20%;
+  }
+  #content #tracks-display table .num {
+    width: 30px;
+  }
+}
+@media (max-width: 420px) {
+  #content .player .progress {
+    display: none;
+  }
+}
+@media (max-width: 630px) {
+  #content .player .time {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  .layout-container {
+    width: auto;
+  }
+}
+@media (max-width: 767px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  .layout-container {
+    width: auto;
+  }
+}
+@media (min-width: 768px) and (max-width: 979px) {
+  .layout-container {
+    width: 724px;
+  }
+}
+@media (min-width: 1200px) {
+  .layout-container {
+    width: 1170px;
+  }
+}
 * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -691,9 +745,17 @@ input {
   line-height: 1.2;
 }
 .player {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  height: 49px;
+  left: 0;
+  right: 0;
   background-color: #444;
+  color: #fff;
   padding: 5px;
   border: 1px solid #222;
+  text-align: center;
 }
 .player .volume {
   display: inline-block;
@@ -796,7 +858,6 @@ input {
 .player .time {
   display: inline-block;
   vertical-align: middle;
-  color: #fff;
 }
 .player .time.left {
   margin-left: 20px;
@@ -903,76 +964,91 @@ input {
   background-color: #00a;
 }
 body {
-  background-color: #eee;
+  background-color: #900;
+  overflow-x: hidden;
 }
-div.uploader {
+.uploader {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 49px;
+  background-color: #444;
+  color: #fff;
+  padding: 5px;
   -webkit-transition: all 1.5s ease;
   -moz-transition: all 1.5s ease;
   -o-transition: all 1.5s ease;
   -ms-transition: all 1.5s ease;
   transition: all 1.5s ease;
-  background-color: #444;
-  color: #fff;
-  padding: 5px;
   font-weight: bold;
-  height: 100%;
-  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
   cursor: pointer;
 }
-div.uploader.dragover {
+.uploader.dragover {
   background-color: #f00;
 }
-div.uploader table {
+.uploader table {
   width: 100%;
 }
-div.uploader #h1 {
+.uploader #h1 {
   text-align: left;
   font-size: 1.8em;
 }
-div.uploader #h2 {
+.uploader #h2 {
   text-align: right;
   font-size: 1.2em;
 }
 #content {
-  padding: 30px;
-  width: 750px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #fff;
-  margin: auto auto;
-  text-align: center;
-  border: 1px solid #ddd;
+  min-height: 200px;
 }
 #content #tracks-display .viewport {
-  width: 100%;
-  height: 450px;
-  overflow: hidden;
-  position: relative;
+  display: block;
+  padding: 0 10px;
+  position: absolute;
+  top: 49px;
+  left: 0;
+  right: 0;
+  bottom: 49px;
 }
 #content #tracks-display table {
-  margin: auto;
-  width: 95%;
+  width: 100%;
   border: 1px solid #aaa;
+  table-layout: fixed;
+}
+#content #tracks-display table .field {
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+}
+#content #tracks-display table .left {
+  width: 60px;
+}
+#content #tracks-display table .right {
+  width: 30px;
+}
+#content #tracks-display table .title {
+  min-width: 200px;
 }
 #content #tracks-display table thead {
   color: #f00;
   border: 1px solid #aaa;
 }
-#content #tracks-display table thead th.left {
-  width: 60px;
-}
-#content #tracks-display table thead th.right {
-  width: 30px;
-}
 #content #tracks-display table thead th.field {
   cursor: pointer;
-  width: 150px;
-  text-align: left;
-  font-weight: bold;
-}
-#content #tracks-display table thead th.field.title {
-  width: 200px;
-}
-#content #tracks-display table thead th.field.num {
-  width: 30px;
 }
 #content #tracks-display table thead th.field .sortArrow {
   display: inline-block;
@@ -1002,7 +1078,7 @@ div.uploader #h2 {
   transition: all 0.3s ease;
 }
 #content #tracks-display table tbody tr.track.odd {
-  background-color: #eee;
+  background-color: #f3f3f3;
 }
 #content #tracks-display table tbody tr.track.selected {
   background-color: #c8c8c8;
@@ -1020,21 +1096,12 @@ div.uploader #h2 {
 #content #tracks-display table tbody tr.track .button {
   display: none;
 }
+#content #tracks-display table tbody tr.track .right,
+#content #tracks-display table tbody tr.track .left {
+  text-align: center;
+}
 #content #tracks-display table tbody tr.track .field {
-  text-align: left;
-  font-weight: bold;
   font-size: 0.8em;
-  white-space: nowrap;
-  overflow: hidden;
-  -o-text-overflow: ellipsis;
-  text-overflow: ellipsis;
-  max-width: 150px;
-}
-#content #tracks-display table tbody tr.track .field.num {
-  max-width: 30px;
-}
-#content #tracks-display table tbody tr.track .field.title {
-  max-width: 200px;
 }
 #content #tracks-display table tbody tr.track .field .info {
   display: none;
@@ -1156,9 +1223,17 @@ div.uploader #h2 {
 Da damn bear-killer player style
 */
 .player {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  height: 49px;
+  left: 0;
+  right: 0;
   background-color: #444;
+  color: #fff;
   padding: 5px;
   border: 1px solid #222;
+  text-align: center;
 }
 .player .volume {
   display: inline-block;
@@ -1233,7 +1308,6 @@ Da damn bear-killer player style
 .player .time {
   display: inline-block;
   vertical-align: middle;
-  color: #fff;
 }
 .player .time.left {
   margin-left: 20px;
@@ -1328,6 +1402,60 @@ Da damn bear-killer player style
 .button.addto:active {
   border: 2px solid #009;
   background-color: #00a;
+}
+@media (max-width: 350px) {
+  #content #tracks-display table .artist,
+  #content #tracks-display table .album {
+    width: 0%;
+  }
+  #content #tracks-display table .num {
+    width: 0%;
+  }
+}
+@media (min-width: 350px) {
+  #content #tracks-display table .artist,
+  #content #tracks-display table .album {
+    width: 20%;
+  }
+  #content #tracks-display table .num {
+    width: 30px;
+  }
+}
+@media (max-width: 420px) {
+  #content .player .progress {
+    display: none;
+  }
+}
+@media (max-width: 630px) {
+  #content .player .time {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  .layout-container {
+    width: auto;
+  }
+}
+@media (max-width: 767px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  .layout-container {
+    width: auto;
+  }
+}
+@media (min-width: 768px) and (max-width: 979px) {
+  .layout-container {
+    width: 724px;
+  }
+}
+@media (min-width: 1200px) {
+  .layout-container {
+    width: 1170px;
+  }
 }
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }

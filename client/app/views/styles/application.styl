@@ -1,8 +1,9 @@
 // nib is a powerful lib for stylus that provides cross-browser css3 mixins.
 @import 'nib'
 
-// Base Styles
+@import 'responsive'
 
+// Base Styles
 *
   box-sizing: border-box
 
@@ -17,21 +18,24 @@ input
 
 @import 'player'
 
-title-width = 200px
-field-width = 150px
-num-width = 30px
-
 body
-    background-color: #eee
+    background-color: #900
+    overflow-x: hidden
 
-div.uploader
-    transition: all 1.5s ease
+.uploader
+    display: block
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    height: 49px
+
     background-color: #444
-    color: #fff
+    color: white
     padding: 5px
+    transition: all 1.5s ease
     font-weight: bold
-    height: 100%
-    width: 100%
+    overflow: ellipsis
     cursor:pointer
 
     &.dragover
@@ -48,41 +52,45 @@ div.uploader
         font-size: 1.2em
 
 #content
-    padding: 30px
-    width: 750px
-    background-color: #fff
-    margin: auto auto
-    text-align: center
-    border:1px solid #ddd
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    background-color: white
+    min-height: 200px
 
     #tracks-display
         .viewport
-            width: 100%
-            height: 450px
-            overflow: hidden
-            position: relative
+            display: block
+            padding: 0 10px
+            position: absolute
+            top: 49px
+            left: 0
+            right: 0
+            bottom: 49px
 
         table
-            margin auto
-            width: 95%
+            width: 100%
             border:1px solid #aaa
+            table-layout: fixed
+            .field
+                text-align: left
+                font-weight: bold
+                overflow: ellipsis
+            .left
+                width: 60px
+            .right
+                width: 30px
+            .title
+                min-width: 200px
+
             thead
                 color: #f00
                 border:1px solid #aaa
                 th
-                    &.left
-                        width: 60px
-                    &.right
-                        width: 30px
                     &.field
                         cursor: pointer
-                        width: field-width
-                        text-align: left
-                        font-weight: bold
-                        &.title
-                            width: title-width
-                        &.num
-                            width: num-width
 
                         .sortArrow
                             display: inline-block
@@ -100,13 +108,13 @@ div.uploader
 
             tbody
                 tr.track
-                    background-color: #fff
+                    background-color: white
                     color: #444
                     height: 30px
                     transition: all 0.3s ease
 
                     &.odd
-                        background-color: #eee
+                        background-color: #f3f3f3
 
 
                     &.selected
@@ -114,7 +122,7 @@ div.uploader
 
                     &:hover
                         background-color: #444
-                        color: #fff
+                        color: white
                         .button
                             display: inline-block
                         .uploadProgress
@@ -123,16 +131,12 @@ div.uploader
                     .button
                         display: none
 
+                    .right,
+                    .left
+                        text-align: center
+
                     .field
-                        text-align: left
-                        font-weight: bold
                         font-size: 0.8em
-                        overflow: ellipsis
-                        max-width: field-width
-                        &.num
-                            max-width: num-width
-                        &.title
-                            max-width: title-width
 
                         .info
                             display: none
@@ -141,7 +145,7 @@ div.uploader
                             display: block
                             position: absolute
                             background-color: #666
-                            color: #fff
+                            color: white
                             padding: 5px
 
                     .uploadProgress

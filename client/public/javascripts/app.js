@@ -855,7 +855,7 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<td id="state"><div class="button addto"></div><div class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td><div class="button delete"></div></td>');
+  buf.push('<td id="state" class="left"><div class="button addto"></div><div class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div class="button delete"></div></td>');
   }
   return buf.join("");
   };
@@ -936,7 +936,9 @@ window.require.register("views/tracklist", function(exports, require, module) {
       },
       'trackItem:remove': function(e) {
         if (this.collection.length <= this.minTrackListLength) {
-          return this.appendBlanckTrack();
+          this.appendBlanckTrack();
+          $('tr.blank:odd').addClass('odd');
+          return $('tr.blank:even').removeClass('odd');
         }
       }
     };
@@ -961,10 +963,11 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.selectedTrackView = null;
       this.updateSortingDisplay();
       this.$('.viewport').niceScroll({
-        cursorcolor: "#ddd",
+        cursorcolor: "#ccc",
         cursorborder: "",
         cursorwidth: "10px",
-        cursorborderradius: "0px"
+        cursorborderradius: "0px",
+        horizrailenabled: "false"
       });
       if (this.collection.length <= this.minTrackListLength) {
         for (i = _i = _ref1 = this.collection.length, _ref2 = this.minTrackListLength; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {

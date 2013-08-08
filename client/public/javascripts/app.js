@@ -584,9 +584,9 @@ window.require.register("views/player/player", function(exports, require, module
       }
     };
 
-    Player.prototype.onPlayTrack = function(id, dataLocation) {
+    Player.prototype.onPlayTrack = function(data) {
       if (this.currentTrack != null) {
-        if (this.currentTrack.id === id) {
+        if (this.currentTrack.id === data.id) {
           this.currentTrack.setPosition(0);
           this.updateProgressDisplay();
           return;
@@ -594,8 +594,8 @@ window.require.register("views/player/player", function(exports, require, module
         this.stopTrack();
       }
       this.currentTrack = app.soundManager.createSound({
-        id: id,
-        url: dataLocation,
+        id: data.id,
+        url: data.dataLocation,
         usePolicyFile: true,
         volume: this.volume,
         onfinish: this.stopTrack,
@@ -610,7 +610,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.playButton.removeClass("stopped");
       this.isStopped = false;
       this.playButton.removeClass("paused");
-      return this.isPaused = false;
+      this.isPaused = false;
+      return this.$('.id3-info').html("" + data.title + " - <i>" + data.artist + "</i>");
     };
 
     Player.prototype.stopTrack = function() {
@@ -624,7 +625,8 @@ window.require.register("views/player/player", function(exports, require, module
       this.isPaused = false;
       this.progressInner.width("0%");
       this.elapsedTime.html("&nbsp;0:00");
-      return this.remainingTime.html("&nbsp;0:00");
+      this.remainingTime.html("&nbsp;0:00");
+      return this.$('.id3-info').html("-");
     };
 
     Player.prototype.onVolumeChange = function(volume) {
@@ -817,7 +819,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="time left"><span id="elapsedTime"></span></div><div class="progress"><div class="inner"></div></div><div class="time right"><span id="remainingTime"></span></div></div><div class="player-element"><span id="volume"></span></div>');
+  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="time left"><span id="elapsedTime"></span></div><div class="track-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="time right"><span id="remainingTime"></span></div></div><div class="player-element"><span id="volume"></span></div>');
   }
   return buf.join("");
   };
@@ -1188,11 +1190,16 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     };
 
     TrackListItemView.prototype.playTrack = function() {
-      var dataLocation, fileName, id;
+      var data, fileName, modelId;
       fileName = this.model.attributes.slug;
-      id = this.model.attributes.id;
-      dataLocation = "tracks/" + id + "/attach/" + fileName;
-      return Backbone.Mediator.publish('track:play', "sound-" + id, dataLocation);
+      modelId = this.model.attributes.id;
+      data = {
+        id: "sound-" + modelId,
+        dataLocation: "tracks/" + modelId + "/attach/" + fileName,
+        title: this.model.attributes.title,
+        artist: this.model.attributes.artist
+      };
+      return Backbone.Mediator.publish('track:play', data);
     };
 
     TrackListItemView.prototype.onPlayClick = function(event) {

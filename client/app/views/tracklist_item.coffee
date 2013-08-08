@@ -69,10 +69,14 @@ module.exports = class TrackListItemView extends BaseView
 
     playTrack: ->
         fileName = @model.attributes.slug
-        id = @model.attributes.id
-        dataLocation = "tracks/#{id}/attach/#{fileName}"
+        modelId = @model.attributes.id
+        data =
+            id : "sound-#{modelId}"
+            dataLocation : "tracks/#{modelId}/attach/#{fileName}"
+            title : @model.attributes.title
+            artist : @model.attributes.artist
         # signal the player to play this track
-        Backbone.Mediator.publish 'track:play', "sound-#{id}", dataLocation
+        Backbone.Mediator.publish 'track:play', data
 
     onPlayClick: (event)->
         event.preventDefault()

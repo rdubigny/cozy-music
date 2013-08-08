@@ -75,20 +75,29 @@ Da damn bear-killer player style
                         &:active
                             background: linear-gradient(top left, #aaa, #eee)
 
-    .progress
-        display:inline-block
-        vertical-align:middle
-        margin:0 10px
-        width: 40%
-        height:20px
-        cursor:pointer
-        background-color: white
-        .inner
+    .track-info
+            display:inline-block
+            vertical-align: middle
             height: 100%
-            background: linear-gradient(left, #eee, #aaa)
-    .time
-        display:inline-block
-        vertical-align:middle
+            width: 40%
+            margin:0 10px
+        .id3-info
+            color: white
+            display:block
+            padding-right: 5px
+            overflow: ellipsis
+        .progress
+            display:block
+            width: 100%
+            height:10px
+            cursor:pointer
+            background-color: white
+            .inner
+                height: 100%
+                background: linear-gradient(left, #ddd, #999)
+        .time
+            display:inline-block
+            vertical-align:middle
 
 .button
     display:inline-block

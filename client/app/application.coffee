@@ -37,7 +37,6 @@ module.exports =
             ontimeout: ->
                 $('.button.play').toggleClass('unplayable loading')
 
-
         Backbone.history.start()
 
         # Makes this object immuable.

@@ -84,11 +84,11 @@ module.exports = class Player extends BaseView
                 @currentTrack.setPosition @currentTrack.durationEstimate*percent
                 @updateProgressDisplay()
 
-    onPlayTrack: (id, dataLocation)->
+    onPlayTrack: (data)->
         if @currentTrack?
             # if this is the same track there is no need to destruct the song
             # then recreate it. Set the position to zero is enough.
-            if @currentTrack.id is id
+            if @currentTrack.id is data.id
                 @currentTrack.setPosition 0
                 @updateProgressDisplay()
                 return
@@ -98,8 +98,8 @@ module.exports = class Player extends BaseView
         # here @currentTrack is null, we can proceed the track loading
         # loading the track
         @currentTrack = app.soundManager.createSound
-            id: id
-            url: dataLocation
+            id: data.id
+            url: data.dataLocation
             usePolicyFile: true
             volume: @volume
             #muted: @isMutted # doesn't seem to work
@@ -119,6 +119,8 @@ module.exports = class Player extends BaseView
         @playButton.removeClass("paused")
         @isPaused = false
 
+        @$('.id3-info').html "#{data.title} - <i>#{data.artist}</i>"
+
     # stop means destroy, this function destroy the track and update the display
     stopTrack: =>
         if @currentTrack?
@@ -131,6 +133,7 @@ module.exports = class Player extends BaseView
         @progressInner.width "0%"
         @elapsedTime.html "&nbsp;0:00"
         @remainingTime.html "&nbsp;0:00"
+        @$('.id3-info').html "-"
 
     # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>

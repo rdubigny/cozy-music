@@ -146,29 +146,26 @@ module.exports = class TrackListView extends ViewCollection
             elementArray = [element, null, null, null]
 
         # override the comparator function
-        if @isReverseOrder
-            @collection.comparator = (t1, t2)->
-                return -1 if t1.get(elementArray[0]) > t2.get(elementArray[0])
-                return 1 if t1.get(elementArray[0]) < t2.get(elementArray[0])
-                return -1 if t1.get(elementArray[1]) > t2.get(elementArray[1])
-                return 1 if t1.get(elementArray[1]) < t2.get(elementArray[1])
-                return -1 if t1.get(elementArray[2]) > t2.get(elementArray[2])
-                return 1 if t1.get(elementArray[2]) < t2.get(elementArray[2])
-                return -1 if t1.get(elementArray[3]) > t2.get(elementArray[3])
-                return 1 if t1.get(elementArray[3]) < t2.get(elementArray[3])
-                0
-        else
-            @collection.comparator = (t1, t2)->
-                return -1 if t1.get(elementArray[0]) < t2.get(elementArray[0])
-                return 1 if t1.get(elementArray[0]) > t2.get(elementArray[0])
-                return -1 if t1.get(elementArray[1]) < t2.get(elementArray[1])
-                return 1 if t1.get(elementArray[1]) > t2.get(elementArray[1])
-                return -1 if t1.get(elementArray[2]) < t2.get(elementArray[2])
-                return 1 if t1.get(elementArray[2]) > t2.get(elementArray[2])
-                return -1 if t1.get(elementArray[3]) < t2.get(elementArray[3])
-                return 1 if t1.get(elementArray[3]) > t2.get(elementArray[3])
-                0
+        compare = (t1, t2)->
+            for i in [0..3]
+                field1 = t1.get(elementArray[i])
+                field2 = t2.get(elementArray[i])
+                # ^[1-9][0-9]*\/[0-9]+$ -> n/n
+                # ^[0-9]+$ -> n
+                if (field1.match(/^[0-9]+$/))? and (field2.match(/^[0-9]+$/))?
+                    field1 = parseInt(field1)
+                    field2 = parseInt(field2)
+                return -1 if field1 < field2
+                return 1 if field1 > field2
+            0
 
+
+        if @isReverseOrder
+            @collection.comparator = (t1, t2)=>
+                compare t2, t1
+        else
+            @collection.comparator = (t1, t2)=>
+                compare t1, t2
         # sort with this new comparator function
         @collection.sort()
 

@@ -1010,7 +1010,8 @@ window.require.register("views/tracklist", function(exports, require, module) {
     };
 
     TrackListView.prototype.toggleSort = function(element) {
-      var elementArray;
+      var compare, elementArray,
+        _this = this;
       if (this.elementSort === element) {
         this.isReverseOrder = !this.isReverseOrder;
       } else {
@@ -1026,61 +1027,31 @@ window.require.register("views/tracklist", function(exports, require, module) {
       } else {
         elementArray = [element, null, null, null];
       }
+      compare = function(t1, t2) {
+        var field1, field2, i, _i;
+        for (i = _i = 0; _i <= 3; i = ++_i) {
+          field1 = t1.get(elementArray[i]);
+          field2 = t2.get(elementArray[i]);
+          if (((field1.match(/^[0-9]+$/)) != null) && ((field2.match(/^[0-9]+$/)) != null)) {
+            field1 = parseInt(field1);
+            field2 = parseInt(field2);
+          }
+          if (field1 < field2) {
+            return -1;
+          }
+          if (field1 > field2) {
+            return 1;
+          }
+        }
+        return 0;
+      };
       if (this.isReverseOrder) {
         this.collection.comparator = function(t1, t2) {
-          if (t1.get(elementArray[0]) > t2.get(elementArray[0])) {
-            return -1;
-          }
-          if (t1.get(elementArray[0]) < t2.get(elementArray[0])) {
-            return 1;
-          }
-          if (t1.get(elementArray[1]) > t2.get(elementArray[1])) {
-            return -1;
-          }
-          if (t1.get(elementArray[1]) < t2.get(elementArray[1])) {
-            return 1;
-          }
-          if (t1.get(elementArray[2]) > t2.get(elementArray[2])) {
-            return -1;
-          }
-          if (t1.get(elementArray[2]) < t2.get(elementArray[2])) {
-            return 1;
-          }
-          if (t1.get(elementArray[3]) > t2.get(elementArray[3])) {
-            return -1;
-          }
-          if (t1.get(elementArray[3]) < t2.get(elementArray[3])) {
-            return 1;
-          }
-          return 0;
+          return compare(t2, t1);
         };
       } else {
         this.collection.comparator = function(t1, t2) {
-          if (t1.get(elementArray[0]) < t2.get(elementArray[0])) {
-            return -1;
-          }
-          if (t1.get(elementArray[0]) > t2.get(elementArray[0])) {
-            return 1;
-          }
-          if (t1.get(elementArray[1]) < t2.get(elementArray[1])) {
-            return -1;
-          }
-          if (t1.get(elementArray[1]) > t2.get(elementArray[1])) {
-            return 1;
-          }
-          if (t1.get(elementArray[2]) < t2.get(elementArray[2])) {
-            return -1;
-          }
-          if (t1.get(elementArray[2]) > t2.get(elementArray[2])) {
-            return 1;
-          }
-          if (t1.get(elementArray[3]) < t2.get(elementArray[3])) {
-            return -1;
-          }
-          if (t1.get(elementArray[3]) > t2.get(elementArray[3])) {
-            return 1;
-          }
-          return 0;
+          return compare(t1, t2);
         };
       }
       return this.collection.sort();

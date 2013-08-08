@@ -4,7 +4,7 @@ Cozic is a basical music player developped to fill my needs for my Cozy Cloud. I
 
 ### NB
 
-For now, compatibility is ensured for chrome only (not for chromium nor FF).
+For now, it's impossible to upload file from IE.
 
 # Run
 

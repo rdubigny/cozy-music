@@ -16,10 +16,13 @@ Da damn bear-killer player style
     border:1px solid #222
     text-align: center
 
+    .player-element
+        display:inline
+        margin:0 2%
+
     .volume
         display:inline-block
         vertical-align:middle
-        margin:0 10px
         width: 100px
         height:20px
         cursor:pointer
@@ -86,10 +89,6 @@ Da damn bear-killer player style
     .time
         display:inline-block
         vertical-align:middle
-        &.left
-            margin-left: 20px
-        &.right
-            margin-right: 20px
 
 .button
     display:inline-block
@@ -99,7 +98,7 @@ Da damn bear-killer player style
     background-color: #ccc
     background-image: url("../images/glyphicons-halflings.png")
     cursor:pointer
-    transition: all 0.2s ease
+    transition: all 0s ease
     &:hover
         background-image: url("../images/glyphicons-halflings-white.png")
     &:active
@@ -114,10 +113,15 @@ Da damn bear-killer player style
             background-position: -256px 94px
         &.stopped
             background-position: -256px 94px
-        &.unPlayable
+        &.unplayable
             border:2px solid #b00
             background-color: #c00
             background-position: -137px 45px
+        &.loading
+            background-image: url("../images/glyphicons-halflings-red.png")
+            background-position: -256px 94px
+            //background-position: -208px 70px
+
     &.rwd
         width: 24px
         height: 24px

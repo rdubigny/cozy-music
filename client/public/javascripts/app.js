@@ -97,14 +97,20 @@ window.require.register("application", function(exports, require, module) {
       });
       this.soundManager = soundManager;
       this.soundManager.setup({
-        debugMode: true,
+        debugMode: false,
         debugFlash: false,
         preferFlash: true,
         useFlashBlock: false,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
         url: "../swf/",
-        flashVersion: 9
+        flashVersion: 9,
+        onready: function() {
+          return $('.button.play').toggleClass('stopped loading');
+        },
+        ontimeout: function() {
+          return $('.button.play').toggleClass('unplayable loading');
+        }
       });
       Backbone.history.start();
       if (typeof Object.freeze === 'function') {
@@ -595,7 +601,6 @@ window.require.register("views/player/player", function(exports, require, module
         onfinish: this.stopTrack,
         onstop: this.stopTrack,
         whileplaying: this.updateProgressDisplay,
-        whileloading: this.printLoadingInfo,
         multiShot: false
       });
       this.currentTrack.play();
@@ -812,7 +817,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="button rwd"></div><div class="button play stopped"></div><div class="button fwd"></div><div class="time left"><span id="elapsedTime"></span></div><div class="progress"><div class="inner"></div></div><div class="time right"><span id="remainingTime"></span></div><span id="volume"></span>');
+  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="time left"><span id="elapsedTime"></span></div><div class="progress"><div class="inner"></div></div><div class="time right"><span id="remainingTime"></span></div></div><div class="player-element"><span id="volume"></span></div>');
   }
   return buf.join("");
   };
@@ -958,7 +963,8 @@ window.require.register("views/tracklist", function(exports, require, module) {
         cursorwidth: "10px",
         cursorborderradius: "0px",
         horizrailenabled: "false",
-        cursoropacitymin: "0.3"
+        cursoropacitymin: "0.3",
+        hidecursordelay: "700"
       });
       if (this.collection.length <= this.minTrackListLength) {
         for (i = _i = _ref1 = this.collection.length, _ref2 = this.minTrackListLength; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {

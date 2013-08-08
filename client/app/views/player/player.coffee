@@ -107,7 +107,7 @@ module.exports = class Player extends BaseView
             onfinish: @stopTrack
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
-            whileloading: @printLoadingInfo # debbugging
+            # whileloading: @printLoadingInfo # debbugging tool
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
         @currentTrack.play() # works better than 'autoload: true'

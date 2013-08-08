@@ -20,7 +20,7 @@ module.exports =
 
         @soundManager.setup
             # disable or enable debug output
-            debugMode: true
+            debugMode: false
             debugFlash: false
             # use HTML5 audio for MP3/MP4, if available
             preferFlash: true
@@ -32,6 +32,11 @@ module.exports =
             url: "../swf/"
             # optional: enable MPEG-4/AAC support (requires flash 9)
             flashVersion: 9
+            onready: ->
+                $('.button.play').toggleClass('stopped loading')
+            ontimeout: ->
+                $('.button.play').toggleClass('unplayable loading')
+
 
         Backbone.history.start()
 

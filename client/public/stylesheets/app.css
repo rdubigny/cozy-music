@@ -694,12 +694,12 @@ li[class^="icon-"].icon-large:before, li[class*=" icon-"].icon-large:before {
     width: 30px;
   }
 }
-@media (max-width: 420px) {
+@media (max-width: 465px) {
   #content .player .progress {
     display: none;
   }
 }
-@media (max-width: 630px) {
+@media (max-width: 640px) {
   #content .player .time {
     display: none;
   }
@@ -757,10 +757,13 @@ input {
   border: 1px solid #222;
   text-align: center;
 }
+.player .player-element {
+  display: inline;
+  margin: 0 2%;
+}
 .player .volume {
   display: inline-block;
   vertical-align: middle;
-  margin: 0 10px;
   width: 100px;
   height: 20px;
   cursor: pointer;
@@ -859,12 +862,6 @@ input {
   display: inline-block;
   vertical-align: middle;
 }
-.player .time.left {
-  margin-left: 20px;
-}
-.player .time.right {
-  margin-right: 20px;
-}
 .button {
   display: inline-block;
   vertical-align: middle;
@@ -873,11 +870,11 @@ input {
   background-color: #ccc;
   background-image: url("../images/glyphicons-halflings.png");
   cursor: pointer;
-  -webkit-transition: all 0.2s ease;
-  -moz-transition: all 0.2s ease;
-  -o-transition: all 0.2s ease;
-  -ms-transition: all 0.2s ease;
-  transition: all 0.2s ease;
+  -webkit-transition: all 0s ease;
+  -moz-transition: all 0s ease;
+  -o-transition: all 0s ease;
+  -ms-transition: all 0s ease;
+  transition: all 0s ease;
 }
 .button:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
@@ -899,10 +896,14 @@ input {
 .button.play.stopped {
   background-position: -256px 94px;
 }
-.button.play.unPlayable {
+.button.play.unplayable {
   border: 2px solid #b00;
   background-color: #c00;
   background-position: -137px 45px;
+}
+.button.play.loading {
+  background-image: url("../images/glyphicons-halflings-red.png");
+  background-position: -256px 94px;
 }
 .button.rwd {
   width: 24px;
@@ -1235,10 +1236,13 @@ Da damn bear-killer player style
   border: 1px solid #222;
   text-align: center;
 }
+.player .player-element {
+  display: inline;
+  margin: 0 2%;
+}
 .player .volume {
   display: inline-block;
   vertical-align: middle;
-  margin: 0 10px;
   width: 100px;
   height: 20px;
   cursor: pointer;
@@ -1309,12 +1313,6 @@ Da damn bear-killer player style
   display: inline-block;
   vertical-align: middle;
 }
-.player .time.left {
-  margin-left: 20px;
-}
-.player .time.right {
-  margin-right: 20px;
-}
 .button {
   display: inline-block;
   vertical-align: middle;
@@ -1323,7 +1321,7 @@ Da damn bear-killer player style
   background-color: #ccc;
   background-image: url("../images/glyphicons-halflings.png");
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0s ease;
 }
 .button:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
@@ -1344,10 +1342,14 @@ Da damn bear-killer player style
 .button.play.stopped {
   background-position: -256px 94px;
 }
-.button.play.unPlayable {
+.button.play.unplayable {
   border: 2px solid #b00;
   background-color: #c00;
   background-position: -137px 45px;
+}
+.button.play.loading {
+  background-image: url("../images/glyphicons-halflings-red.png");
+  background-position: -256px 94px;
 }
 .button.rwd {
   width: 24px;
@@ -1421,12 +1423,12 @@ Da damn bear-killer player style
     width: 30px;
   }
 }
-@media (max-width: 420px) {
+@media (max-width: 465px) {
   #content .player .progress {
     display: none;
   }
 }
-@media (max-width: 630px) {
+@media (max-width: 640px) {
   #content .player .time {
     display: none;
   }

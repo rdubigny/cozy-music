@@ -81,8 +81,7 @@ module.exports = class TrackListView extends ViewCollection
             cursorborderradius: "0px"
             horizrailenabled: "false"
             cursoropacitymin: "0.3"
-            #hidecursordelay: "1000"
-            #autohidemode: "false"
+            hidecursordelay: "700"
         )
 
         # adding blank tracks if there is not enough tracks to display

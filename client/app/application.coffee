@@ -23,19 +23,17 @@ module.exports =
             debugMode: true
             debugFlash: false
             # use HTML5 audio for MP3/MP4, if available
-            preferFlash: false
-            useFlashBlock: true
+            preferFlash: true
+            useFlashBlock: false
             # setup the display update rate while reading songs (in ms)
             flashPollingInterval: 500
             html5PollingInterval: 500
-            consoleOnly: true
             # path to directory containing SM2 SWF
             url: "../swf/"
             # optional: enable MPEG-4/AAC support (requires flash 9)
             flashVersion: 9
 
-        @soundManager.onready ->
-            Backbone.history.start()
+        Backbone.history.start()
 
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'

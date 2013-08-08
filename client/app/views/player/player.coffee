@@ -102,19 +102,14 @@ module.exports = class Player extends BaseView
             url: dataLocation
             usePolicyFile: true
             volume: @volume
-            #muted: @isMutted #doesn't seem to work
+            #muted: @isMutted # doesn't seem to work
             #autoload: true # removed because of a soundManager bug, see below
             onfinish: @stopTrack
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
-            whileloading: @printLoadingInfo
+            whileloading: @printLoadingInfo # debbugging
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
-            onload: (success)->
-                if success
-                    console.log "onLoad successful"
-                else
-                    console.log "onLoad failed"
         @currentTrack.play() # works better than 'autoload: true'
         @currentTrack.mute() if @isMutted
 
@@ -157,6 +152,7 @@ module.exports = class Player extends BaseView
         m = "&nbsp;#{m}" if m < 10
         "#{m}:#{s}"
 
+    # debugging function : to delete
     printLoadingInfo: =>
         tot = @currentTrack.durationEstimate
         console.log "is buffering : #{@currentTrack.isBuffering}"
@@ -166,8 +162,6 @@ module.exports = class Player extends BaseView
         printBuf @currentTrack.buffered[i] for buf, i in @currentTrack.buffered
         console.log "bytes loaded : #{Math.floor(@currentTrack.bytesLoaded/@currentTrack.bytesTotal*100)}"
         console.log ""
-
-
 
     # update both left and right timers and the progress bar
     updateProgressDisplay: =>

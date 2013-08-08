@@ -99,17 +99,14 @@ window.require.register("application", function(exports, require, module) {
       this.soundManager.setup({
         debugMode: true,
         debugFlash: false,
-        preferFlash: false,
-        useFlashBlock: true,
+        preferFlash: true,
+        useFlashBlock: false,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
-        consoleOnly: true,
         url: "../swf/",
         flashVersion: 9
       });
-      this.soundManager.onready(function() {
-        return Backbone.history.start();
-      });
+      Backbone.history.start();
       if (typeof Object.freeze === 'function') {
         return Object.freeze(this);
       }
@@ -599,14 +596,7 @@ window.require.register("views/player/player", function(exports, require, module
         onstop: this.stopTrack,
         whileplaying: this.updateProgressDisplay,
         whileloading: this.printLoadingInfo,
-        multiShot: false,
-        onload: function(success) {
-          if (success) {
-            return console.log("onLoad successful");
-          } else {
-            return console.log("onLoad failed");
-          }
-        }
+        multiShot: false
       });
       this.currentTrack.play();
       if (this.isMutted) {
@@ -963,11 +953,12 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.selectedTrackView = null;
       this.updateSortingDisplay();
       this.$('.viewport').niceScroll({
-        cursorcolor: "#ccc",
+        cursorcolor: "#444",
         cursorborder: "",
         cursorwidth: "10px",
         cursorborderradius: "0px",
-        horizrailenabled: "false"
+        horizrailenabled: "false",
+        cursoropacitymin: "0.3"
       });
       if (this.collection.length <= this.minTrackListLength) {
         for (i = _i = _ref1 = this.collection.length, _ref2 = this.minTrackListLength; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {

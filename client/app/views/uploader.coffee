@@ -120,7 +120,6 @@ module.exports = class Uploader extends BaseView
             processData: false # tell jQuery not to process the data
             contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
             data: formdata
-            sort: false # doesn't work but we want our most rescent tracks to be on top
             success: (model)->
                 track.set model # to get the generated id
                 cb()

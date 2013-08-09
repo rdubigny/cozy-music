@@ -150,15 +150,16 @@ module.exports = class TrackListView extends ViewCollection
             for i in [0..3]
                 field1 = t1.get(elementArray[i])
                 field2 = t2.get(elementArray[i])
-                # ^[1-9][0-9]*\/[0-9]+$ -> n/n
-                # ^[0-9]+$ -> n
                 if (field1.match(/^[0-9]+$/))? and (field2.match(/^[0-9]+$/))?
                     field1 = parseInt(field1)
                     field2 = parseInt(field2)
+                else if (field1.match(/^[0-9]+\/[0-9]+$/))? and (field2.match(/^[0-9]+\/[0-9]+$/))?
+                    #if field1.match(/\/[0-9]+$/) is field2.match(/\/[0-9]+$/)
+                    field1 = parseInt(field1.match(/^[0-9]+/))
+                    field2 = parseInt(field2.match(/^[0-9]+/))
                 return -1 if field1 < field2
                 return 1 if field1 > field2
             0
-
 
         if @isReverseOrder
             @collection.comparator = (t1, t2)=>
@@ -166,6 +167,7 @@ module.exports = class TrackListView extends ViewCollection
         else
             @collection.comparator = (t1, t2)=>
                 compare t1, t2
+
         # sort with this new comparator function
         @collection.sort()
 

@@ -7,27 +7,33 @@ app = require '../../application'
 
 module.exports = class Player extends BaseView
 
-    className: "player"
-    tagName: "div"
+    className: 'player'
+    tagName: 'div'
     template: require('../templates/player/player')
 
     events:
-        "click .button.play": "onClickPlay"
-        "click .button.rwd": "onClickRwd"
-        "mousedown .progress": "onMouseDownProgress"
+        'click .button.play': 'onClickPlay'
+        'click .button.rwd': 'onClickRwd'
+        'click .button.fwd': 'onClickFwd'
+        'mousedown .progress': 'onMouseDownProgress'
 
     subscriptions:
-        # these channels are shared with views/trackList_item.coffee
-        "track:play": "onPlayTrack"
-        "track:stop": (id) ->
-            if @currentTrack?.id is id
+        # these events should be fired by tracklist_item view
+        'track:queue': 'onQueueTrack'
+        'track:playImmediate': 'onPlayImmediate'
+
+        'track:stop': (id) ->
+            if @currentSound?.id is id
                 @stopTrack()
 
         # these channels are shared with views/player/volumeManager.coffee
-        "volumeManager:toggleMute": "onToggleMute"
-        "volumeManager:volumeChanged": "onVolumeChange"
+        'volumeManager:toggleMute': 'onToggleMute'
+        'volumeManager:volumeChanged': 'onVolumeChange'
 
     afterRender: =>
+        # create play queue
+        PlayQueue = require 'collections/playqueue'
+        @playQueue = new PlayQueue()
 
         # bind play button
         @playButton = @$(".button.play")
@@ -48,7 +54,7 @@ module.exports = class Player extends BaseView
         @progressInner = @$('.progress .inner')
 
         # initializing variables
-        @currentTrack = null
+        @currentSound = null
         @progressInner.width "0%"
         @elapsedTime.html "&nbsp;0:00"
         @remainingTime.html "&nbsp;0:00"
@@ -56,76 +62,120 @@ module.exports = class Player extends BaseView
         @isPaused = false
 
     onClickPlay: ->
-        if @currentTrack?
-            if @isStopped
-                @currentTrack.play()
-                @playButton.removeClass("stopped")
-                @isStopped = false
-            else if @isPaused
-                @currentTrack.play()
-                @playButton.removeClass("paused")
-                @isPaused = false
-            else if not @isPaused and not @isStopped # <=> isPlaying
-                @currentTrack.pause()
-                @playButton.addClass("paused")
-                @isPaused = true
+        if not @playButton.hasClass 'loading'
+            if not @playButton.hasClass 'unplayable'
+                if @currentSound?
+                    if @isStopped
+                        @currentSound.play()
+                        @playButton.removeClass("stopped")
+                        @isStopped = false
+                    else if @isPaused
+                        @currentSound.play()
+                        @playButton.removeClass("paused")
+                        @isPaused = false
+                    else if not @isPaused and not @isStopped # <=> isPlaying
+                        @currentSound.pause()
+                        @playButton.addClass("paused")
+                        @isPaused = true
+                else if @playQueue.getCurrentTrack()?
+                    if @isStopped
+                        @playButton.removeClass("stopped")
+                        @isStopped = false
+                        @onPlayTrack(@playQueue.getCurrentTrack())
+            else
+                alert "application error : unable to play track"
 
     onClickRwd: ->
-        if @currentTrack? and not @isStopped
-                @currentTrack.setPosition 0
-                @updateProgressDisplay()
+        # go to the start of the current sound
+        if @currentSound? and not @isStopped and @currentSound.position > 3000
+            @currentSound.setPosition 0
+            @updateProgressDisplay()
+        # get the previous sound
+        else
+            prevTrack = @playQueue.getPrevTrack()
+            if prevTrack?
+                # stop and destruct sound
+                @stopTrack()
+                # then play previous track
+                @onPlayTrack prevTrack
+
+    onClickFwd: ->
+        nextTrack = @playQueue.getNextTrack()
+        if nextTrack?
+            # stop and destruct sound
+            @stopTrack()
+            # then play next track
+            @onPlayTrack nextTrack
+
 
     onMouseDownProgress: (event)->
-        if @currentTrack?
+        if @currentSound?
             event.preventDefault()
             handlePositionPx = event.clientX - @progress.offset().left
             percent = handlePositionPx/@progress.width()
-            if @currentTrack.durationEstimate*percent < @currentTrack.duration
-                @currentTrack.setPosition @currentTrack.durationEstimate*percent
+            if @currentSound.durationEstimate*percent < @currentSound.duration
+                @currentSound.setPosition @currentSound.durationEstimate*percent
                 @updateProgressDisplay()
 
-    onPlayTrack: (data)->
-        if @currentTrack?
-            # if this is the same track there is no need to destruct the song
-            # then recreate it. Set the position to zero is enough.
-            if @currentTrack.id is data.id
-                @currentTrack.setPosition 0
-                @updateProgressDisplay()
-                return
-            # else destroy the current track
-            @stopTrack()
+    onQueueTrack: (track)->
+        @playQueue.queue track
 
-        # here @currentTrack is null, we can proceed the track loading
+    onPlayImmediate: (track)->
+        @playQueue.pushNext track
+        # if the queue was empty before the above instruction
+        if @playQueue.length is 1
+            nextTrack = @playQueue.getCurrentTrack()
+        else
+            nextTrack = @playQueue.getNextTrack()
+            # stop and destruct previous sound
+            if @currentSound?
+                # if this is the same sound, no need to destroy it
+                if @currentSound.id is "sound-#{nextTrack.get('id')}"
+                    @currentSound.setPosition 0
+                    @updateProgressDisplay()
+                    return
+                # else destroy the current track
+                @stopTrack()
+        # launch newTrack
+        @onPlayTrack(nextTrack)
+
+    onPlayTrack: (track)->
+        # here @currentSound must be null so we can proceed the track loading
         # loading the track
-        @currentTrack = app.soundManager.createSound
-            id: data.id
-            url: data.dataLocation
+        @currentSound = app.soundManager.createSound
+            id: "sound-#{track.get('id')}"
+            url: "tracks/#{track.get('id')}/attach/#{track.get('slug')}"
             usePolicyFile: true
             volume: @volume
             #muted: @isMutted # doesn't seem to work
-            #autoload: true # removed because of a soundManager bug, see below
-            onfinish: @stopTrack
+            autoPlay: true
+            onfinish: =>
+                # stop and destruct sound
+                @stopTrack()
+                # then play next track
+                nextTrack = @playQueue.getNextTrack()
+                if nextTrack?
+                    @onPlayTrack(nextTrack)
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
             # whileloading: @printLoadingInfo # debbugging tool
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
-        @currentTrack.play() # works better than 'autoload: true'
-        @currentTrack.mute() if @isMutted
+        @currentSound.mute() if @isMutted
 
         # update display and variables
         @playButton.removeClass("stopped")
         @isStopped = false
         @playButton.removeClass("paused")
         @isPaused = false
+        nfo = "#{track.get('title')} - <i>#{track.get('artist')}</i>"
+        @$('.id3-info').html nfo
 
-        @$('.id3-info').html "#{data.title} - <i>#{data.artist}</i>"
-
-    # stop means destroy, this function destroy the track and update the display
+    # stop means destroy, this function destroy the sound and update the display
     stopTrack: =>
-        if @currentTrack?
-            @currentTrack.destruct()
-            @currentTrack = null
+        if @currentSound?
+            @currentSound.destruct()
+            @currentSound = null
         @playButton.addClass("stopped")
         @isStopped = true
         @playButton.removeClass("paused")
@@ -138,16 +188,16 @@ module.exports = class Player extends BaseView
     # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>
         @volume = volume
-        if @currentTrack?
-            @currentTrack.setVolume volume
+        if @currentSound?
+            @currentSound.setVolume volume
 
     # on mute handler, same thing but for the muted value
     onToggleMute: =>
         @isMutted = not @isMutted
-        if @currentTrack?
-            @currentTrack.toggleMute()
+        if @currentSound?
+            @currentSound.toggleMute()
 
-    # transform milliseconds to a cool readable string format : "mm:ss" or " m:ss"
+    # convert milliseconds to a cool readable string format : "mm:ss" or " m:ss"
     formatMs: (ms)->
         s = Math.floor ((ms/1000) % 60)
         s = "0#{s}" if s < 10
@@ -157,19 +207,19 @@ module.exports = class Player extends BaseView
 
     # debugging function : to delete
     printLoadingInfo: =>
-        tot = @currentTrack.durationEstimate
-        console.log "is buffering : #{@currentTrack.isBuffering}"
+        tot = @currentSound.durationEstimate
+        console.log "is buffering : #{@currentSound.isBuffering}"
         console.log "buffered :"
         printBuf = (buf)=>
             console.log "[#{Math.floor(buf.start/tot*100)}% - #{Math.floor(buf.end/tot*100)}%]"
-        printBuf @currentTrack.buffered[i] for buf, i in @currentTrack.buffered
-        console.log "bytes loaded : #{Math.floor(@currentTrack.bytesLoaded/@currentTrack.bytesTotal*100)}"
+        printBuf @currentSound.buffered[i] for buf, i in @currentSound.buffered
+        console.log "bytes loaded : #{Math.floor(@currentSound.bytesLoaded/@currentSound.bytesTotal*100)}"
         console.log ""
 
     # update both left and right timers and the progress bar
     updateProgressDisplay: =>
-        newWidth = @currentTrack.position/@currentTrack.durationEstimate*100
+        newWidth = @currentSound.position/@currentSound.durationEstimate*100
         @progressInner.width "#{newWidth}%"
-        @elapsedTime.html @formatMs(@currentTrack.position)
-        remainingTime = @currentTrack.durationEstimate - @currentTrack.position
+        @elapsedTime.html @formatMs(@currentSound.position)
+        remainingTime = @currentSound.durationEstimate - @currentSound.position
         @remainingTime.html @formatMs(remainingTime)

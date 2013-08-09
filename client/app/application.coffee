@@ -8,9 +8,8 @@ module.exports =
         Router = require 'router'
         @router = new Router()
 
-        TrackCollection = require 'collections/track'
+        TrackCollection = require 'collections/track_collection'
         @tracks = new TrackCollection()
-        # @$collectionEl.html '<td id=load colspan=5>loading...</em>'
         @tracks.fetch
             error: =>
                 msg = "Files couldn't be retrieved due to a server error."
@@ -22,9 +21,9 @@ module.exports =
             # disable or enable debug output
             debugMode: false
             debugFlash: false
-            # use HTML5 audio for MP3/MP4, if available
-            preferFlash: true
             useFlashBlock: false
+            # always prefer flash even for MP3/MP4 when HTML5 audio is available
+            preferFlash: true
             # setup the display update rate while reading songs (in ms)
             flashPollingInterval: 500
             html5PollingInterval: 500

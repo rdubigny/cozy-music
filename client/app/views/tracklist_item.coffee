@@ -14,7 +14,7 @@ module.exports = class TrackListItemView extends BaseView
     events:
         'click .button.delete': 'onDeleteClicked'
         'click .button.puttoplay': 'onPlayClick'
-        'dblclick': 'onPlayClick'
+        'dblclick': 'onDblClick'
         'click': 'onClick'
 
     # Called after the constructor
@@ -29,7 +29,7 @@ module.exports = class TrackListItemView extends BaseView
         @listenTo @model, 'change:album', (event)=>
             @$('td.field.album').html @model.attributes.album
         @listenTo @model, 'change:track', (event)=>
-            @$('td.field.track').html @model.attributes.track
+            @$('td.field.num').html @model.attributes.track
 
     afterRender: ->
         # in case the view is rendered during the upload (ex: because of a sort)
@@ -67,23 +67,20 @@ module.exports = class TrackListItemView extends BaseView
         # signal trackList view
         Backbone.Mediator.publish 'trackItem:remove'
 
-    playTrack: ->
-        fileName = @model.attributes.slug
-        modelId = @model.attributes.id
-        data =
-            id : "sound-#{modelId}"
-            dataLocation : "tracks/#{modelId}/attach/#{fileName}"
-            title : @model.attributes.title
-            artist : @model.attributes.artist
-        # signal the player to play this track
-        Backbone.Mediator.publish 'track:play', data
+    onDblClick: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        # if the file is not backed up yet, disable the play launch
+        if @model.attributes.state is 'server'
+            Backbone.Mediator.publish 'track:playImmediate', @model
+
 
     onPlayClick: (event)->
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
         if @model.attributes.state is 'server'
-            @playTrack()
+            Backbone.Mediator.publish 'track:queue', @model
 
     toggleSelect: ->
         if @$el.hasClass 'selected'

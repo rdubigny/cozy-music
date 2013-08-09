@@ -86,7 +86,7 @@ window.require.register("application", function(exports, require, module) {
         _this = this;
       Router = require('router');
       this.router = new Router();
-      TrackCollection = require('collections/track');
+      TrackCollection = require('collections/track_collection');
       this.tracks = new TrackCollection();
       this.tracks.fetch({
         error: function() {
@@ -99,8 +99,8 @@ window.require.register("application", function(exports, require, module) {
       this.soundManager.setup({
         debugMode: false,
         debugFlash: false,
-        preferFlash: true,
         useFlashBlock: false,
+        preferFlash: true,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
         url: "../swf/",
@@ -120,7 +120,90 @@ window.require.register("application", function(exports, require, module) {
   };
   
 });
-window.require.register("collections/track", function(exports, require, module) {
+window.require.register("collections/playqueue", function(exports, require, module) {
+  var PlayQueue, Track, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Track = require('../models/track');
+
+  module.exports = PlayQueue = (function(_super) {
+    __extends(PlayQueue, _super);
+
+    function PlayQueue() {
+      _ref = PlayQueue.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    PlayQueue.prototype.atPlay = 0;
+
+    PlayQueue.prototype.model = Track;
+
+    PlayQueue.prototype.url = 'playqueue';
+
+    PlayQueue.prototype.getCurrentTrack = function() {
+      var _ref1;
+      if ((0 <= (_ref1 = this.atPlay) && _ref1 < this.length)) {
+        return this.at(this.atPlay);
+      } else {
+        return null;
+      }
+    };
+
+    PlayQueue.prototype.getNextTrack = function() {
+      if (this.atPlay < this.length - 1) {
+        this.atPlay += 1;
+        return this.at(this.atPlay);
+      } else {
+        return null;
+      }
+    };
+
+    PlayQueue.prototype.getPrevTrack = function() {
+      if (this.atPlay > 0) {
+        this.atPlay -= 1;
+        return this.at(this.atPlay);
+      } else {
+        return null;
+      }
+    };
+
+    PlayQueue.prototype.queue = function(track) {
+      this.push(track, {
+        sort: false
+      });
+      return this.show();
+    };
+
+    PlayQueue.prototype.pushNext = function(track) {
+      if (this.length > 0) {
+        this.add(track, {
+          at: this.atPlay + 1
+        });
+      } else {
+        this.add(track);
+      }
+      return this.show();
+    };
+
+    PlayQueue.prototype.show = function() {
+      var curM, i, _i, _ref1;
+      console.log("PlayQueue content :");
+      if (this.length >= 1) {
+        for (i = _i = 0, _ref1 = this.length - 1; 0 <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+          curM = this.models[i];
+          console.log(i + ") " + curM.attributes.title);
+        }
+      }
+      return console.log("at Play : " + this.atPlay);
+    };
+
+    return PlayQueue;
+
+  })(Backbone.Collection);
+  
+});
+window.require.register("collections/track_collection", function(exports, require, module) {
   var Track, TrackCollection, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -501,31 +584,36 @@ window.require.register("views/player/player", function(exports, require, module
       return _ref;
     }
 
-    Player.prototype.className = "player";
+    Player.prototype.className = 'player';
 
-    Player.prototype.tagName = "div";
+    Player.prototype.tagName = 'div';
 
     Player.prototype.template = require('../templates/player/player');
 
     Player.prototype.events = {
-      "click .button.play": "onClickPlay",
-      "click .button.rwd": "onClickRwd",
-      "mousedown .progress": "onMouseDownProgress"
+      'click .button.play': 'onClickPlay',
+      'click .button.rwd': 'onClickRwd',
+      'click .button.fwd': 'onClickFwd',
+      'mousedown .progress': 'onMouseDownProgress'
     };
 
     Player.prototype.subscriptions = {
-      "track:play": "onPlayTrack",
-      "track:stop": function(id) {
+      'track:queue': 'onQueueTrack',
+      'track:playImmediate': 'onPlayImmediate',
+      'track:stop': function(id) {
         var _ref1;
-        if (((_ref1 = this.currentTrack) != null ? _ref1.id : void 0) === id) {
+        if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === id) {
           return this.stopTrack();
         }
       },
-      "volumeManager:toggleMute": "onToggleMute",
-      "volumeManager:volumeChanged": "onVolumeChange"
+      'volumeManager:toggleMute': 'onToggleMute',
+      'volumeManager:volumeChanged': 'onVolumeChange'
     };
 
     Player.prototype.afterRender = function() {
+      var PlayQueue;
+      PlayQueue = require('collections/playqueue');
+      this.playQueue = new PlayQueue();
       this.playButton = this.$(".button.play");
       this.volume = 50;
       this.isMutted = false;
@@ -538,7 +626,7 @@ window.require.register("views/player/player", function(exports, require, module
       this.remainingTime = this.$('#remainingTime');
       this.progress = this.$('.progress');
       this.progressInner = this.$('.progress .inner');
-      this.currentTrack = null;
+      this.currentSound = null;
       this.progressInner.width("0%");
       this.elapsedTime.html("&nbsp;0:00");
       this.remainingTime.html("&nbsp;0:00");
@@ -547,77 +635,130 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onClickPlay = function() {
-      if (this.currentTrack != null) {
-        if (this.isStopped) {
-          this.currentTrack.play();
-          this.playButton.removeClass("stopped");
-          return this.isStopped = false;
-        } else if (this.isPaused) {
-          this.currentTrack.play();
-          this.playButton.removeClass("paused");
-          return this.isPaused = false;
-        } else if (!this.isPaused && !this.isStopped) {
-          this.currentTrack.pause();
-          this.playButton.addClass("paused");
-          return this.isPaused = true;
+      if (!this.playButton.hasClass('loading')) {
+        if (!this.playButton.hasClass('unplayable')) {
+          if (this.currentSound != null) {
+            if (this.isStopped) {
+              this.currentSound.play();
+              this.playButton.removeClass("stopped");
+              return this.isStopped = false;
+            } else if (this.isPaused) {
+              this.currentSound.play();
+              this.playButton.removeClass("paused");
+              return this.isPaused = false;
+            } else if (!this.isPaused && !this.isStopped) {
+              this.currentSound.pause();
+              this.playButton.addClass("paused");
+              return this.isPaused = true;
+            }
+          } else if (this.playQueue.getCurrentTrack() != null) {
+            if (this.isStopped) {
+              this.playButton.removeClass("stopped");
+              this.isStopped = false;
+              return this.onPlayTrack(this.playQueue.getCurrentTrack());
+            }
+          }
+        } else {
+          return alert("application error : unable to play track");
         }
       }
     };
 
     Player.prototype.onClickRwd = function() {
-      if ((this.currentTrack != null) && !this.isStopped) {
-        this.currentTrack.setPosition(0);
+      var prevTrack;
+      if ((this.currentSound != null) && !this.isStopped && this.currentSound.position > 3000) {
+        this.currentSound.setPosition(0);
         return this.updateProgressDisplay();
+      } else {
+        prevTrack = this.playQueue.getPrevTrack();
+        if (prevTrack != null) {
+          this.stopTrack();
+          return this.onPlayTrack(prevTrack);
+        }
+      }
+    };
+
+    Player.prototype.onClickFwd = function() {
+      var nextTrack;
+      nextTrack = this.playQueue.getNextTrack();
+      if (nextTrack != null) {
+        this.stopTrack();
+        return this.onPlayTrack(nextTrack);
       }
     };
 
     Player.prototype.onMouseDownProgress = function(event) {
       var handlePositionPx, percent;
-      if (this.currentTrack != null) {
+      if (this.currentSound != null) {
         event.preventDefault();
         handlePositionPx = event.clientX - this.progress.offset().left;
         percent = handlePositionPx / this.progress.width();
-        if (this.currentTrack.durationEstimate * percent < this.currentTrack.duration) {
-          this.currentTrack.setPosition(this.currentTrack.durationEstimate * percent);
+        if (this.currentSound.durationEstimate * percent < this.currentSound.duration) {
+          this.currentSound.setPosition(this.currentSound.durationEstimate * percent);
           return this.updateProgressDisplay();
         }
       }
     };
 
-    Player.prototype.onPlayTrack = function(data) {
-      if (this.currentTrack != null) {
-        if (this.currentTrack.id === data.id) {
-          this.currentTrack.setPosition(0);
-          this.updateProgressDisplay();
-          return;
+    Player.prototype.onQueueTrack = function(track) {
+      return this.playQueue.queue(track);
+    };
+
+    Player.prototype.onPlayImmediate = function(track) {
+      var nextTrack;
+      this.playQueue.pushNext(track);
+      if (this.playQueue.length === 1) {
+        nextTrack = this.playQueue.getCurrentTrack();
+      } else {
+        nextTrack = this.playQueue.getNextTrack();
+        if (this.currentSound != null) {
+          if (this.currentSound.id === ("sound-" + (nextTrack.get('id')))) {
+            this.currentSound.setPosition(0);
+            this.updateProgressDisplay();
+            return;
+          }
+          this.stopTrack();
         }
-        this.stopTrack();
       }
-      this.currentTrack = app.soundManager.createSound({
-        id: data.id,
-        url: data.dataLocation,
+      return this.onPlayTrack(nextTrack);
+    };
+
+    Player.prototype.onPlayTrack = function(track) {
+      var nfo,
+        _this = this;
+      this.currentSound = app.soundManager.createSound({
+        id: "sound-" + (track.get('id')),
+        url: "tracks/" + (track.get('id')) + "/attach/" + (track.get('slug')),
         usePolicyFile: true,
         volume: this.volume,
-        onfinish: this.stopTrack,
+        autoPlay: true,
+        onfinish: function() {
+          var nextTrack;
+          _this.stopTrack();
+          nextTrack = _this.playQueue.getNextTrack();
+          if (nextTrack != null) {
+            return _this.onPlayTrack(nextTrack);
+          }
+        },
         onstop: this.stopTrack,
         whileplaying: this.updateProgressDisplay,
         multiShot: false
       });
-      this.currentTrack.play();
       if (this.isMutted) {
-        this.currentTrack.mute();
+        this.currentSound.mute();
       }
       this.playButton.removeClass("stopped");
       this.isStopped = false;
       this.playButton.removeClass("paused");
       this.isPaused = false;
-      return this.$('.id3-info').html("" + data.title + " - <i>" + data.artist + "</i>");
+      nfo = "" + (track.get('title')) + " - <i>" + (track.get('artist')) + "</i>";
+      return this.$('.id3-info').html(nfo);
     };
 
     Player.prototype.stopTrack = function() {
-      if (this.currentTrack != null) {
-        this.currentTrack.destruct();
-        this.currentTrack = null;
+      if (this.currentSound != null) {
+        this.currentSound.destruct();
+        this.currentSound = null;
       }
       this.playButton.addClass("stopped");
       this.isStopped = true;
@@ -631,15 +772,15 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onVolumeChange = function(volume) {
       this.volume = volume;
-      if (this.currentTrack != null) {
-        return this.currentTrack.setVolume(volume);
+      if (this.currentSound != null) {
+        return this.currentSound.setVolume(volume);
       }
     };
 
     Player.prototype.onToggleMute = function() {
       this.isMutted = !this.isMutted;
-      if (this.currentTrack != null) {
-        return this.currentTrack.toggleMute();
+      if (this.currentSound != null) {
+        return this.currentSound.toggleMute();
       }
     };
 
@@ -659,27 +800,27 @@ window.require.register("views/player/player", function(exports, require, module
     Player.prototype.printLoadingInfo = function() {
       var buf, i, printBuf, tot, _i, _len, _ref1,
         _this = this;
-      tot = this.currentTrack.durationEstimate;
-      console.log("is buffering : " + this.currentTrack.isBuffering);
+      tot = this.currentSound.durationEstimate;
+      console.log("is buffering : " + this.currentSound.isBuffering);
       console.log("buffered :");
       printBuf = function(buf) {
         return console.log("[" + (Math.floor(buf.start / tot * 100)) + "% - " + (Math.floor(buf.end / tot * 100)) + "%]");
       };
-      _ref1 = this.currentTrack.buffered;
+      _ref1 = this.currentSound.buffered;
       for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
         buf = _ref1[i];
-        printBuf(this.currentTrack.buffered[i]);
+        printBuf(this.currentSound.buffered[i]);
       }
-      console.log("bytes loaded : " + (Math.floor(this.currentTrack.bytesLoaded / this.currentTrack.bytesTotal * 100)));
+      console.log("bytes loaded : " + (Math.floor(this.currentSound.bytesLoaded / this.currentSound.bytesTotal * 100)));
       return console.log("");
     };
 
     Player.prototype.updateProgressDisplay = function() {
       var newWidth, remainingTime;
-      newWidth = this.currentTrack.position / this.currentTrack.durationEstimate * 100;
+      newWidth = this.currentSound.position / this.currentSound.durationEstimate * 100;
       this.progressInner.width("" + newWidth + "%");
-      this.elapsedTime.html(this.formatMs(this.currentTrack.position));
-      remainingTime = this.currentTrack.durationEstimate - this.currentTrack.position;
+      this.elapsedTime.html(this.formatMs(this.currentSound.position));
+      remainingTime = this.currentSound.durationEstimate - this.currentSound.position;
       return this.remainingTime.html(this.formatMs(remainingTime));
     };
 
@@ -1035,6 +1176,9 @@ window.require.register("views/tracklist", function(exports, require, module) {
           if (((field1.match(/^[0-9]+$/)) != null) && ((field2.match(/^[0-9]+$/)) != null)) {
             field1 = parseInt(field1);
             field2 = parseInt(field2);
+          } else if (((field1.match(/^[0-9]+\/[0-9]+$/)) != null) && ((field2.match(/^[0-9]+\/[0-9]+$/)) != null)) {
+            field1 = parseInt(field1.match(/^[0-9]+/));
+            field2 = parseInt(field2.match(/^[0-9]+/));
           }
           if (field1 < field2) {
             return -1;
@@ -1102,7 +1246,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.events = {
       'click .button.delete': 'onDeleteClicked',
       'click .button.puttoplay': 'onPlayClick',
-      'dblclick': 'onPlayClick',
+      'dblclick': 'onDblClick',
       'click': 'onClick'
     };
 
@@ -1120,7 +1264,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
         return _this.$('td.field.album').html(_this.model.attributes.album);
       });
       return this.listenTo(this.model, 'change:track', function(event) {
-        return _this.$('td.field.track').html(_this.model.attributes.track);
+        return _this.$('td.field.num').html(_this.model.attributes.track);
       });
     };
 
@@ -1160,24 +1304,19 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       return Backbone.Mediator.publish('trackItem:remove');
     };
 
-    TrackListItemView.prototype.playTrack = function() {
-      var data, fileName, modelId;
-      fileName = this.model.attributes.slug;
-      modelId = this.model.attributes.id;
-      data = {
-        id: "sound-" + modelId,
-        dataLocation: "tracks/" + modelId + "/attach/" + fileName,
-        title: this.model.attributes.title,
-        artist: this.model.attributes.artist
-      };
-      return Backbone.Mediator.publish('track:play', data);
+    TrackListItemView.prototype.onDblClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.model.attributes.state === 'server') {
+        return Backbone.Mediator.publish('track:playImmediate', this.model);
+      }
     };
 
     TrackListItemView.prototype.onPlayClick = function(event) {
       event.preventDefault();
       event.stopPropagation();
       if (this.model.attributes.state === 'server') {
-        return this.playTrack();
+        return Backbone.Mediator.publish('track:queue', this.model);
       }
     };
 
@@ -1410,7 +1549,6 @@ window.require.register("views/uploader", function(exports, require, module) {
         processData: false,
         contentType: false,
         data: formdata,
-        sort: false,
         success: function(model) {
           track.set(model);
           return cb();

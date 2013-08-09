@@ -28,7 +28,7 @@ module.exports =
             flashPollingInterval: 500
             html5PollingInterval: 500
             # path to directory containing SM2 SWF
-            url: "./music/swf/"
+            url: "../swf/"
             # optional: enable MPEG-4/AAC support (requires flash 9)
             flashVersion: 9
             onready: ->

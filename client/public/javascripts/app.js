@@ -103,7 +103,7 @@ window.require.register("application", function(exports, require, module) {
         preferFlash: true,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
-        url: "./music/swf/",
+        url: "../swf/",
         flashVersion: 9,
         onready: function() {
           return $('.button.play').toggleClass('stopped loading');

@@ -55,4 +55,3 @@ module.exports = class PlayQueue extends Backbone.Collection
             for i in [0..@length-1]
                 curM = @models[i]
                 console.log i+") "+curM.attributes.title
-        console.log "at Play : "+@atPlay

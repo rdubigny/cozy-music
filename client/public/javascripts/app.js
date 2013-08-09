@@ -103,7 +103,7 @@ window.require.register("application", function(exports, require, module) {
         preferFlash: true,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
-        url: "../swf/",
+        url: "./swf/",
         flashVersion: 9,
         onready: function() {
           return $('.button.play').toggleClass('stopped loading');
@@ -187,15 +187,16 @@ window.require.register("collections/playqueue", function(exports, require, modu
     };
 
     PlayQueue.prototype.show = function() {
-      var curM, i, _i, _ref1;
+      var curM, i, _i, _ref1, _results;
       console.log("PlayQueue content :");
       if (this.length >= 1) {
+        _results = [];
         for (i = _i = 0, _ref1 = this.length - 1; 0 <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
           curM = this.models[i];
-          console.log(i + ") " + curM.attributes.title);
+          _results.push(console.log(i + ") " + curM.attributes.title));
         }
+        return _results;
       }
-      return console.log("at Play : " + this.atPlay);
     };
 
     return PlayQueue;
@@ -1046,7 +1047,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.collectionEl = '#track-list';
 
-    TrackListView.prototype.minTrackListLength = 20;
+    TrackListView.prototype.minTrackListLength = 40;
 
     TrackListView.prototype.events = {
       'click th.field.title': function(event) {

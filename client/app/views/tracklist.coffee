@@ -11,7 +11,7 @@ module.exports = class TrackListView extends ViewCollection
     collectionEl: '#track-list'
 
     # minimum track-list length
-    minTrackListLength: 20
+    minTrackListLength: 40
 
     # Register listener
     events:

@@ -38,6 +38,9 @@ module.exports = class TrackListView extends ViewCollection
         'uploader:addTrack': (e)->
             # remove blank track if necessary
             @$(".blank:last").remove()
+            # add stripes
+            unless @$(".track:nth-child(2)").hasClass 'odd'
+                @$(".track:first").addClass 'odd'
 
         'trackItem:remove': (e) ->
             # add blank track if necessary

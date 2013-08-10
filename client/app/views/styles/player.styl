@@ -13,7 +13,6 @@ Da damn bear-killer player style
     background-color: #444
     color: white
     padding: 5px
-    border:1px solid #222
     text-align: center
 
     .player-element
@@ -75,13 +74,15 @@ Da damn bear-killer player style
                         &:active
                             background: linear-gradient(top left, #aaa, #eee)
 
-    .track-info
-            display:inline-block
-            vertical-align: middle
-            height: 100%
-            width: 40%
-            margin:0 10px
+    .progress-info
+        display:inline-block
+        vertical-align: middle
+        height: 100%
+        width: 40%
+        margin:0 10px
         .id3-info
+            height: 20px
+            margin: 3px 0
             color: white
             display:block
             padding-right: 5px
@@ -95,9 +96,32 @@ Da damn bear-killer player style
             .inner
                 height: 100%
                 background: linear-gradient(left, #ddd, #999)
+
+    .progress-side
+        display: inline-block
+        vertical-align: middle
+        height: 100%
+        width: 45px
+        .list-control
+            display:block
+            margin: auto
+            height: 20px
+            width: 24px
+            background-image: url("../images/glyphicons-halflings.png")
+            cursor:pointer
+            transition: all 0s ease
+            &:hover
+                background-image: url("../images/glyphicons-halflings-white.png")
+            &:active
+                background-image: url("../images/glyphicons-halflings-red.png")
+            &.random
+                background-position: -212px 42px
+            &.loop
+                background-position: -331px 42px
+
         .time
-            display:inline-block
-            vertical-align:middle
+            display:block
+            overflow: clip
 
 .button
     display:inline-block

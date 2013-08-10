@@ -3,13 +3,17 @@
     .button.play.loading
     .button.fwd
 .player-element
-    .time.left
-        span#elapsedTime
-    .track-info
+    .progress-side
+        .list-control.loop
+        .time.left
+            span#elapsedTime
+    .progress-info
         .id3-info -
         .progress
             .inner
-    .time.right
-        span#remainingTime
+    .progress-side
+        .list-control.random
+        .time.right
+            span#remainingTime
 .player-element
     span#volume

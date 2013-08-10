@@ -695,12 +695,12 @@ li[class^="icon-"].icon-large:before, li[class*=" icon-"].icon-large:before {
   }
 }
 @media (max-width: 465px) {
-  #content .player .track-info {
+  #content .player .progress-info {
     display: none;
   }
 }
-@media (max-width: 640px) {
-  #content .player .time {
+@media (max-width: 650px) {
+  #content .player .progress-side {
     display: none;
   }
 }
@@ -754,7 +754,6 @@ input {
   background-color: #444;
   color: #fff;
   padding: 5px;
-  border: 1px solid #222;
   text-align: center;
 }
 .player .player-element {
@@ -840,14 +839,16 @@ input {
   background: -ms-linear-gradient(top left, #aaa 0%, #eee 100%);
   background: linear-gradient(top left, #aaa 0%, #eee 100%);
 }
-.player .track-info {
+.player .progress-info {
   display: inline-block;
   vertical-align: middle;
   height: 100%;
   width: 40%;
   margin: 0 10px;
 }
-.player .id3-info {
+.player .progress-info .id3-info {
+  height: 20px;
+  margin: 3px 0;
   color: #fff;
   display: block;
   padding-right: 5px;
@@ -856,14 +857,14 @@ input {
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
 }
-.player .progress {
+.player .progress-info .progress {
   display: block;
   width: 100%;
   height: 10px;
   cursor: pointer;
   background-color: #fff;
 }
-.player .progress .inner {
+.player .progress-info .progress .inner {
   height: 100%;
   background: -webkit-gradient(linear, left top, right top, color-stop(0, #ddd), color-stop(1, #999));
   background: -webkit-linear-gradient(left, #ddd 0%, #999 100%);
@@ -872,9 +873,40 @@ input {
   background: -ms-linear-gradient(left, #ddd 0%, #999 100%);
   background: linear-gradient(left, #ddd 0%, #999 100%);
 }
-.player .time {
+.player .progress-side {
   display: inline-block;
   vertical-align: middle;
+  height: 100%;
+  width: 45px;
+}
+.player .progress-side .list-control {
+  display: block;
+  margin: auto;
+  height: 20px;
+  width: 24px;
+  background-image: url("../images/glyphicons-halflings.png");
+  cursor: pointer;
+  -webkit-transition: all 0s ease;
+  -moz-transition: all 0s ease;
+  -o-transition: all 0s ease;
+  -ms-transition: all 0s ease;
+  transition: all 0s ease;
+}
+.player .progress-side .list-control:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .progress-side .list-control:active {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
+.player .progress-side .list-control.random {
+  background-position: -212px 42px;
+}
+.player .progress-side .list-control.loop {
+  background-position: -331px 42px;
+}
+.player .progress-side .time {
+  display: block;
+  overflow: clip;
 }
 .button {
   display: inline-block;
@@ -1251,7 +1283,6 @@ Da damn bear-killer player style
   background-color: #444;
   color: #fff;
   padding: 5px;
-  border: 1px solid #222;
   text-align: center;
 }
 .player .player-element {
@@ -1314,33 +1345,62 @@ Da damn bear-killer player style
 .player .volume .slider .slider-container .slider-inner .slider-handle:active {
   background: linear-gradient(top left, #aaa, #eee);
 }
-.player .track-info {
+.player .progress-info {
   display: inline-block;
   vertical-align: middle;
   height: 100%;
   width: 40%;
   margin: 0 10px;
 }
-.player .id3-info {
+.player .progress-info .id3-info {
+  height: 20px;
+  margin: 3px 0;
   color: #fff;
   display: block;
   padding-right: 5px;
   overflow: ellipsis;
 }
-.player .progress {
+.player .progress-info .progress {
   display: block;
   width: 100%;
   height: 10px;
   cursor: pointer;
   background-color: #fff;
 }
-.player .progress .inner {
+.player .progress-info .progress .inner {
   height: 100%;
   background: linear-gradient(left, #ddd, #999);
 }
-.player .time {
+.player .progress-side {
   display: inline-block;
   vertical-align: middle;
+  height: 100%;
+  width: 45px;
+}
+.player .progress-side .list-control {
+  display: block;
+  margin: auto;
+  height: 20px;
+  width: 24px;
+  background-image: url("../images/glyphicons-halflings.png");
+  cursor: pointer;
+  transition: all 0s ease;
+}
+.player .progress-side .list-control:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .progress-side .list-control:active {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
+.player .progress-side .list-control.random {
+  background-position: -212px 42px;
+}
+.player .progress-side .list-control.loop {
+  background-position: -331px 42px;
+}
+.player .progress-side .time {
+  display: block;
+  overflow: clip;
 }
 .button {
   display: inline-block;
@@ -1453,12 +1513,12 @@ Da damn bear-killer player style
   }
 }
 @media (max-width: 465px) {
-  #content .player .track-info {
+  #content .player .progress-info {
     display: none;
   }
 }
-@media (max-width: 640px) {
-  #content .player .time {
+@media (max-width: 650px) {
+  #content .player .progress-side {
     display: none;
   }
 }

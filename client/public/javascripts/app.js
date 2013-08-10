@@ -961,7 +961,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="time left"><span id="elapsedTime"></span></div><div class="track-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="time right"><span id="remainingTime"></span></div></div><div class="player-element"><span id="volume"></span></div>');
+  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="progress-side"><div class="list-control loop"></div><div class="time left"><span id="elapsedTime"></span></div></div><div class="progress-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="progress-side"><div class="list-control random"></div><div class="time right"><span id="remainingTime"></span></div></div></div><div class="player-element"><span id="volume"></span></div>');
   }
   return buf.join("");
   };
@@ -1071,7 +1071,10 @@ window.require.register("views/tracklist", function(exports, require, module) {
         return this.$('.viewport').scrollTop("0");
       },
       'uploader:addTrack': function(e) {
-        return this.$(".blank:last").remove();
+        this.$(".blank:last").remove();
+        if (!this.$(".track:nth-child(2)").hasClass('odd')) {
+          return this.$(".track:first").addClass('odd');
+        }
       },
       'trackItem:remove': function(e) {
         if (this.collection.length <= this.minTrackListLength) {
@@ -1597,7 +1600,6 @@ window.require.register("views/uploader", function(exports, require, module) {
       _results = [];
       for (_i = 0, _len = files.length; _i < _len; _i++) {
         file = files[_i];
-        Backbone.Mediator.publish('uploader:addTrack');
         fileAttributes = {};
         fileAttributes.title = file.name;
         track = new Track(fileAttributes);
@@ -1608,6 +1610,7 @@ window.require.register("views/uploader", function(exports, require, module) {
         track.set({
           state: 'client'
         });
+        Backbone.Mediator.publish('uploader:addTrack');
         _results.push(this.uploadQueue.push(track, function(err, track) {
           if (err) {
             console.log(err);

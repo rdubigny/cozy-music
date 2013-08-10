@@ -154,7 +154,6 @@ module.exports = class Uploader extends BaseView
         Backbone.Mediator.publish 'uploader:addTracks'
         # handle files
         for file in files
-            Backbone.Mediator.publish 'uploader:addTrack'
             fileAttributes = {}
             fileAttributes.title = file.name
             track = new Track fileAttributes
@@ -163,6 +162,7 @@ module.exports = class Uploader extends BaseView
                 sort: false
             track.set
                 state: 'client'
+            Backbone.Mediator.publish 'uploader:addTrack'
 
             @uploadQueue.push track , (err, track) =>
                 if err

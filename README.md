@@ -2,6 +2,15 @@
 
 Cozic is a music player developed to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript library.
 
+shortcuts enabled :
+- spacebar : play/pause
+- "b" : previous track
+- "n" : next track
+- "-" : volume down
+- "+" : volume up
+- "m" : mute
+
+
 ### NB
 
 For now, it's impossible to upload file from IE.

@@ -834,12 +834,14 @@ window.require.register("views/player/player", function(exports, require, module
     Player.prototype.onPlayTrack = function(track) {
       var nfo;
       if (this.currentSound != null) {
-        this.currentSound.setPosition(0);
-        this.currentSound.play();
-        this.updateProgressDisplay();
-        return;
-      } else {
-        this.stopTrack();
+        if (this.currentSound.id === ("sound-" + (track.get('id')))) {
+          this.currentSound.setPosition(0);
+          this.currentSound.play();
+          this.updateProgressDisplay();
+          return;
+        } else {
+          this.stopTrack();
+        }
       }
       this.currentSound = app.soundManager.createSound({
         id: "sound-" + (track.get('id')),

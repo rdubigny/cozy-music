@@ -22,8 +22,7 @@ module.exports = class AppView extends BaseView
         @$('#uploader').append @uploader.$el
         @uploader.render()
 
-        # list of traks
-
+        # list of tracks
         if @idList is -1
             list = new TrackList
                 collection: app.tracks

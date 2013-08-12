@@ -156,6 +156,7 @@ module.exports = class Player extends BaseView
         # stop and destruct previous sound if necessary
         if @currentSound?
             # if this is the same sound, no need to destroy it
+            if @currentSound.id is "sound-#{track.get('id')}"
                 @currentSound.setPosition 0
                 @currentSound.play()
                 @updateProgressDisplay()

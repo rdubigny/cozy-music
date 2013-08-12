@@ -501,12 +501,20 @@ window.require.register("router", function(exports, require, module) {
     }
 
     Router.prototype.routes = {
-      '': 'main'
+      '': 'main',
+      'playlist/:albumid': 'playlist'
     };
 
     Router.prototype.main = function() {
       var mainView;
       mainView = new AppView();
+      return mainView.render();
+    };
+
+    Router.prototype.playlist = function(id) {
+      var mainView;
+      mainView = new AppView();
+      console.log(id);
       return mainView.render();
     };
 
@@ -550,15 +558,20 @@ window.require.register("views/app_view", function(exports, require, module) {
       }
     };
 
+    AppView.prototype.idList = -1;
+
     AppView.prototype.afterRender = function() {
+      var list;
       this.uploader = new Uploader;
       this.$('#uploader').append(this.uploader.$el);
       this.uploader.render();
-      this.trackList = new TrackList({
-        collection: app.tracks
-      });
-      this.$('#tracks-display').append(this.trackList.$el);
-      this.trackList.render();
+      if (this.idList === -1) {
+        list = new TrackList({
+          collection: app.tracks
+        });
+      }
+      this.$('#tracks-display').append(list.$el);
+      list.render();
       this.player = new Player();
       this.$('#player').append(this.player.$el);
       this.player.render();
@@ -597,17 +610,27 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
 
     OffScreenNav.prototype.template = require('./templates/off_screen_nav');
 
+    OffScreenNav.prototype.events = {
+      'click .off-screen-nav-toggle': 'toggleNav'
+    };
+
     OffScreenNav.prototype.afterRender = function() {
-      var _this = this;
-      this.nav = $("off-screen-nav");
-      this.closeButton = $("off-screen-nav-close");
-      return $('#off-screen-nav').on('click', function(e) {
-        return _this.$el.toggleClass('off-screen-nav-show');
-      });
+      return this.updateDisplay();
     };
 
     OffScreenNav.prototype.toggleNav = function() {
-      return this.$el.toggleClass('off-screen-nav-show');
+      this.$('.off-screen-nav-content').toggleClass('off-screen-nav-show');
+      return this.updateDisplay();
+    };
+
+    OffScreenNav.prototype.updateDisplay = function() {
+      if (this.$('.off-screen-nav-content').hasClass('off-screen-nav-show')) {
+        this.$('.off-screen-nav-toggle-handler').height("100%");
+        return this.$('.off-screen-nav-toggle-arrow').addClass('on');
+      } else {
+        this.$('.off-screen-nav-toggle-handler').height("20%");
+        return this.$('.off-screen-nav-toggle-arrow').removeClass('on');
+      }
     };
 
     return OffScreenNav;
@@ -640,6 +663,13 @@ window.require.register("views/player/player", function(exports, require, module
       this.onToggleMute = __bind(this.onToggleMute, this);
       this.onVolumeChange = __bind(this.onVolumeChange, this);
       this.stopTrack = __bind(this.stopTrack, this);
+      this.onPlayFinish = __bind(this.onPlayFinish, this);
+      this.onPlayTrack = __bind(this.onPlayTrack, this);
+      this.onPlayImmediate = __bind(this.onPlayImmediate, this);
+      this.onPushNext = __bind(this.onPushNext, this);
+      this.onQueueTrack = __bind(this.onQueueTrack, this);
+      this.onClickFwd = __bind(this.onClickFwd, this);
+      this.onClickRwd = __bind(this.onClickRwd, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = Player.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -746,7 +776,6 @@ window.require.register("views/player/player", function(exports, require, module
       } else {
         prevTrack = this.playQueue.getPrevTrack();
         if (prevTrack != null) {
-          this.stopTrack();
           return this.onPlayTrack(prevTrack);
         }
       }
@@ -756,7 +785,6 @@ window.require.register("views/player/player", function(exports, require, module
       var nextTrack;
       nextTrack = this.playQueue.getNextTrack();
       if (nextTrack != null) {
-        this.stopTrack();
         return this.onPlayTrack(nextTrack);
       }
     };
@@ -775,20 +803,20 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onQueueTrack = function(track) {
-      var nextTrack;
       this.playQueue.queue(track);
       if (this.playQueue.length === 1) {
-        nextTrack = this.playQueue.getCurrentTrack();
-        return this.onPlayTrack(nextTrack);
+        return this.onPlayTrack(this.playQueue.getCurrentTrack());
+      } else if (this.playQueue.length - 2 === this.playQueue.atPlay && this.isStopped) {
+        return this.onPlayTrack(this.playQueue.getNextTrack());
       }
     };
 
     Player.prototype.onPushNext = function(track) {
-      var nextTrack;
       this.playQueue.pushNext(track);
       if (this.playQueue.length === 1) {
-        nextTrack = this.playQueue.getCurrentTrack();
-        return this.onPlayTrack(nextTrack);
+        return this.onPlayTrack(this.playQueue.getCurrentTrack());
+      } else if (this.playQueue.length - 2 === this.playQueue.atPlay && this.isStopped) {
+        return this.onPlayTrack(this.playQueue.getNextTrack());
       }
     };
 
@@ -799,35 +827,27 @@ window.require.register("views/player/player", function(exports, require, module
         nextTrack = this.playQueue.getCurrentTrack();
       } else {
         nextTrack = this.playQueue.getNextTrack();
-        if (this.currentSound != null) {
-          if (this.currentSound.id === ("sound-" + (nextTrack.get('id')))) {
-            this.currentSound.setPosition(0);
-            this.updateProgressDisplay();
-            return;
-          }
-          this.stopTrack();
-        }
       }
       return this.onPlayTrack(nextTrack);
     };
 
     Player.prototype.onPlayTrack = function(track) {
-      var nfo,
-        _this = this;
+      var nfo;
+      if (this.currentSound != null) {
+        this.currentSound.setPosition(0);
+        this.currentSound.play();
+        this.updateProgressDisplay();
+        return;
+      } else {
+        this.stopTrack();
+      }
       this.currentSound = app.soundManager.createSound({
         id: "sound-" + (track.get('id')),
         url: "tracks/" + (track.get('id')) + "/attach/" + (track.get('slug')),
         usePolicyFile: true,
         volume: this.volume,
         autoPlay: true,
-        onfinish: function() {
-          var nextTrack;
-          _this.stopTrack();
-          nextTrack = _this.playQueue.getNextTrack();
-          if (nextTrack != null) {
-            return _this.onPlayTrack(nextTrack);
-          }
-        },
+        onfinish: this.onPlayFinish,
         onstop: this.stopTrack,
         whileplaying: this.updateProgressDisplay,
         multiShot: false
@@ -841,6 +861,14 @@ window.require.register("views/player/player", function(exports, require, module
       this.isPaused = false;
       nfo = "" + (track.get('title')) + " - <i>" + (track.get('artist')) + "</i>";
       return this.$('.id3-info').html(nfo);
+    };
+
+    Player.prototype.onPlayFinish = function() {
+      var nextTrack;
+      nextTrack = this.playQueue.getNextTrack();
+      if (nextTrack != null) {
+        return this.onPlayTrack(nextTrack);
+      }
     };
 
     Player.prototype.stopTrack = function() {
@@ -924,7 +952,7 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onClickRandom = function() {
-      return alert('unavailable yet');
+      return alert('not available yet');
     };
 
     return Player;
@@ -1086,7 +1114,7 @@ window.require.register("views/templates/off_screen_nav", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="off-screen-nav-title">Content</div><ul><li>My Songs</li><li>Play Queue</li><li>ma liste de courses</li><li>quand je cours nu dans mon appart</li><li>jogging</li></ul>');
+  buf.push('<div class="off-screen-nav-toggle"><div class="off-screen-nav-toggle-handler"><div class="off-screen-nav-toggle-arrow"></div></div></div><div class="off-screen-nav-content"><div class="off-screen-nav-title">Content</div><ul><li>My Songs</li><li>Play Queue</li><li>ma liste de courses</li><li>quand je cours nu dans mon appart</li><li>jogging</li></ul></div>');
   }
   return buf.join("");
   };

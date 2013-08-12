@@ -10,8 +10,11 @@ module.exports = class AppView extends BaseView
     el: 'body.application'
     template: require('./templates/home')
     events:
+        # handle all keyboard events
         'keypress': (e)->
             Backbone.Mediator.publish 'keyboard:keypress', e
+
+    idList : -1
 
     afterRender: ->
         # header used as uploader
@@ -19,11 +22,13 @@ module.exports = class AppView extends BaseView
         @$('#uploader').append @uploader.$el
         @uploader.render()
 
-        # list of all tracks available
-        @trackList = new TrackList
-            collection: app.tracks
-        @$('#tracks-display').append @trackList.$el
-        @trackList.render()
+        # list of traks
+
+        if @idList is -1
+            list = new TrackList
+                collection: app.tracks
+        @$('#tracks-display').append list.$el
+        list.render()
 
         @player = new Player()
         @$('#player').append @player.$el

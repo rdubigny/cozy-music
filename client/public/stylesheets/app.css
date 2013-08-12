@@ -1185,19 +1185,40 @@ body {
   -ms-animation-iteration-count: 1;
   animation-iteration-count: 1;
 }
-#content #off-screen-nav {
+#content #off-screen-nav .off-screen-nav-toggle {
   display: block;
-  position: fixed;
-  z-index: 999;
+  position: absolute;
+  z-index: 1001;
   top: 49px;
   left: 0;
   bottom: 49px;
   width: 15px;
-  visibility: visible;
 }
-#content #off-screen-nav .off-screen-nav {
+#content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler {
+  background: #444;
+  width: 15px;
+  min-height: 30px;
+  vertical-align: bottom;
+}
+#content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler .off-screen-nav-toggle-arrow {
+  vertical-align: bottom;
+  display: inline-block;
+  margin: auto;
+  width: 12px;
+  height: 14px;
+  background-position: -457px -72px;
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+#content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler .off-screen-nav-toggle-arrow.on {
+  background-position: -431px -72px;
+}
+#content #off-screen-nav .off-screen-nav-toggle:hover .off-screen-nav-toggle-arrow {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
+#content #off-screen-nav .off-screen-nav-content {
+  overflow-y: hidden;
   display: block;
-  position: fixed;
+  position: absolute;
   z-index: 1000;
   top: 49px;
   left: 0px;
@@ -1219,7 +1240,8 @@ body {
   -ms-transition: 500ms cubic-bezier(0.09, 0.68, 0, 0.99);
   transition: 500ms cubic-bezier(0.09, 0.68, 0, 0.99);
 }
-#content #off-screen-nav .off-screen-nav.off-screen-nav-show {
+#content #off-screen-nav .off-screen-nav-content.off-screen-nav-show {
+  overflow-y: hidden;
   -webkit-transform: translateX(0);
   -moz-transform: translateX(0);
   -o-transform: translateX(0);
@@ -1227,7 +1249,7 @@ body {
   transform: translateX(0);
   visibility: visible;
 }
-#content #off-screen-nav .off-screen-nav .off-screen-nav-title {
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-title {
   color: #fff;
   border-bottom: 1px solid #eee;
   padding: 1rem 0.5rem 0.2rem 0;
@@ -1239,12 +1261,12 @@ body {
   display: block;
   font-weight: bold;
 }
-#content #off-screen-nav .off-screen-nav ul {
+#content #off-screen-nav .off-screen-nav-content ul {
   margin: 0 1rem 1rem;
   padding: 0;
   list-style: none;
 }
-#content #off-screen-nav .off-screen-nav ul li {
+#content #off-screen-nav .off-screen-nav-content ul li {
   margin: 0;
   display: list-item;
   display: block;
@@ -1253,7 +1275,7 @@ body {
   border-bottom: 1px solid #555;
   cursor: pointer;
 }
-#content #off-screen-nav .off-screen-nav ul li:hover {
+#content #off-screen-nav .off-screen-nav-content ul li:hover {
   background: #555;
 }
 @-moz-keyframes dropText {

@@ -95,7 +95,7 @@ module.exports = class Player extends BaseView
             else
                 alert "application error : unable to play track"
 
-    onClickRwd: ->
+    onClickRwd: =>
         # go to the start of the current sound
         if @currentSound? and not @isStopped and @currentSound.position > 3000
             @currentSound.setPosition 0
@@ -104,16 +104,12 @@ module.exports = class Player extends BaseView
         else
             prevTrack = @playQueue.getPrevTrack()
             if prevTrack?
-                # stop and destruct sound
-                @stopTrack()
                 # then play previous track
                 @onPlayTrack prevTrack
 
-    onClickFwd: ->
+    onClickFwd: =>
         nextTrack = @playQueue.getNextTrack()
         if nextTrack?
-            # stop and destruct sound
-            @stopTrack()
             # then play next track
             @onPlayTrack nextTrack
 
@@ -127,38 +123,47 @@ module.exports = class Player extends BaseView
                 @currentSound.setPosition @currentSound.durationEstimate*percent
                 @updateProgressDisplay()
 
-    onQueueTrack: (track)->
+    onQueueTrack: (track)=>
         @playQueue.queue track
+        # autoplay
         if @playQueue.length is 1
-            nextTrack = @playQueue.getCurrentTrack()
-            @onPlayTrack nextTrack
+            @onPlayTrack @playQueue.getCurrentTrack()
+        # if current playlist have been play entirely
+        else if @playQueue.length-2 is @playQueue.atPlay and @isStopped
+            @onPlayTrack @playQueue.getNextTrack()
 
-    onPushNext: (track)->
+
+    onPushNext: (track)=>
         @playQueue.pushNext track
+        # autoplay
         if @playQueue.length is 1
-            nextTrack = @playQueue.getCurrentTrack()
-            @onPlayTrack nextTrack
+            @onPlayTrack @playQueue.getCurrentTrack()
+        else if @playQueue.length-2 is @playQueue.atPlay and @isStopped
+            @onPlayTrack @playQueue.getNextTrack()
 
-    onPlayImmediate: (track)->
+    onPlayImmediate: (track)=>
         @playQueue.pushNext track
         # if the queue was empty before the above instruction
         if @playQueue.length is 1
             nextTrack = @playQueue.getCurrentTrack()
         else
             nextTrack = @playQueue.getNextTrack()
-            # stop and destruct previous sound
-            if @currentSound?
-                # if this is the same sound, no need to destroy it
-                if @currentSound.id is "sound-#{nextTrack.get('id')}"
-                    @currentSound.setPosition 0
-                    @updateProgressDisplay()
-                    return
-                # else destroy the current track
-                @stopTrack()
         # launch newTrack
-        @onPlayTrack(nextTrack)
+        @onPlayTrack nextTrack
 
-    onPlayTrack: (track)->
+
+    onPlayTrack: (track)=>
+        # stop and destruct previous sound if necessary
+        if @currentSound?
+            # if this is the same sound, no need to destroy it
+                @currentSound.setPosition 0
+                @currentSound.play()
+                @updateProgressDisplay()
+                return
+            # else destroy the current track
+            else
+                @stopTrack()
+
         # here @currentSound must be null so we can proceed the track loading
         # loading the track
         @currentSound = app.soundManager.createSound
@@ -168,13 +173,7 @@ module.exports = class Player extends BaseView
             volume: @volume
             #muted: @isMutted # doesn't seem to work
             autoPlay: true
-            onfinish: =>
-                # stop and destruct sound
-                @stopTrack()
-                # then play next track
-                nextTrack = @playQueue.getNextTrack()
-                if nextTrack?
-                    @onPlayTrack(nextTrack)
+            onfinish: @onPlayFinish
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
             # whileloading: @printLoadingInfo # debbugging tool
@@ -189,6 +188,12 @@ module.exports = class Player extends BaseView
         @isPaused = false
         nfo = "#{track.get('title')} - <i>#{track.get('artist')}</i>"
         @$('.id3-info').html nfo
+
+    # at the end of track, play next track
+    onPlayFinish: =>
+        nextTrack = @playQueue.getNextTrack()
+        if nextTrack?
+            @onPlayTrack(nextTrack)
 
     # stop means destroy, this function destroy the sound and update the display
     stopTrack: =>
@@ -252,4 +257,4 @@ module.exports = class Player extends BaseView
             @playQueue.playLoop = false
 
     onClickRandom: ->
-        alert 'unavailable yet'
+        alert 'not available yet'

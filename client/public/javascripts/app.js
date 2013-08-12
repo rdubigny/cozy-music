@@ -141,6 +141,8 @@ window.require.register("collections/playqueue", function(exports, require, modu
 
     PlayQueue.prototype.url = 'playqueue';
 
+    PlayQueue.prototype.playLoop = false;
+
     PlayQueue.prototype.getCurrentTrack = function() {
       var _ref1;
       if ((0 <= (_ref1 = this.atPlay) && _ref1 < this.length)) {
@@ -154,6 +156,9 @@ window.require.register("collections/playqueue", function(exports, require, modu
       if (this.atPlay < this.length - 1) {
         this.atPlay += 1;
         return this.at(this.atPlay);
+      } else if (this.playLoop && this.length > 0) {
+        this.atPlay = 0;
+        return this.at(this.atPlay);
       } else {
         return null;
       }
@@ -162,6 +167,9 @@ window.require.register("collections/playqueue", function(exports, require, modu
     PlayQueue.prototype.getPrevTrack = function() {
       if (this.atPlay > 0) {
         this.atPlay -= 1;
+        return this.at(this.atPlay);
+      } else if (this.playLoop && this.length > 0) {
+        this.atPlay = this.length - 1;
         return this.at(this.atPlay);
       } else {
         return null;
@@ -595,7 +603,8 @@ window.require.register("views/player/player", function(exports, require, module
       'click .button.play': 'onClickPlay',
       'click .button.rwd': 'onClickRwd',
       'click .button.fwd': 'onClickFwd',
-      'mousedown .progress': 'onMouseDownProgress'
+      'mousedown .progress': 'onMouseDownProgress',
+      'click .loop': 'onClickLoop'
     };
 
     Player.prototype.subscriptions = {
@@ -823,6 +832,17 @@ window.require.register("views/player/player", function(exports, require, module
       this.elapsedTime.html(this.formatMs(this.currentSound.position));
       remainingTime = this.currentSound.durationEstimate - this.currentSound.position;
       return this.remainingTime.html(this.formatMs(remainingTime));
+    };
+
+    Player.prototype.onClickLoop = function() {
+      var loopButton;
+      loopButton = this.$('.loop');
+      loopButton.toggleClass('on');
+      if (loopButton.hasClass('on')) {
+        return this.playQueue.playLoop = true;
+      } else {
+        return this.playQueue.playLoop = false;
+      }
     };
 
     return Player;

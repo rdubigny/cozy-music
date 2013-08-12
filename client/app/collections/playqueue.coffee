@@ -10,6 +10,8 @@ module.exports = class PlayQueue extends Backbone.Collection
     # This is where ajax requests the backend.
     url: 'playqueue'
 
+    playLoop: false
+
     # return current track pointed by atPlay if it exist
     getCurrentTrack: ->
         if 0 <= @atPlay < @length
@@ -23,6 +25,9 @@ module.exports = class PlayQueue extends Backbone.Collection
         if @atPlay < @length-1
             @atPlay += 1
             return @at(@atPlay)
+        else if @playLoop and @length > 0
+            @atPlay = 0
+            return @at(@atPlay)
         else
             return null
 
@@ -30,6 +35,9 @@ module.exports = class PlayQueue extends Backbone.Collection
     getPrevTrack: ->
         if @atPlay > 0
             @atPlay -= 1
+            return @at(@atPlay)
+        else if @playLoop and @length > 0
+            @atPlay = @length - 1
             return @at(@atPlay)
         else
             return null

@@ -16,6 +16,7 @@ module.exports = class Player extends BaseView
         'click .button.rwd': 'onClickRwd'
         'click .button.fwd': 'onClickFwd'
         'mousedown .progress': 'onMouseDownProgress'
+        'click .loop': 'onClickLoop'
 
     subscriptions:
         # these events should be fired by tracklist_item view
@@ -223,3 +224,11 @@ module.exports = class Player extends BaseView
         @elapsedTime.html @formatMs(@currentSound.position)
         remainingTime = @currentSound.durationEstimate - @currentSound.position
         @remainingTime.html @formatMs(remainingTime)
+
+    onClickLoop: ->
+        loopButton = @$('.loop')
+        loopButton.toggleClass('on')
+        if loopButton.hasClass('on')
+            @playQueue.playLoop = true
+        else
+            @playQueue.playLoop = false

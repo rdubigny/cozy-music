@@ -892,11 +892,11 @@ input {
   -ms-transition: all 0s ease;
   transition: all 0s ease;
 }
+.player .progress-side .list-control.on {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
 .player .progress-side .list-control:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
-}
-.player .progress-side .list-control:active {
-  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .progress-side .list-control.random {
   background-position: -212px 42px;
@@ -1386,11 +1386,11 @@ Da damn bear-killer player style
   cursor: pointer;
   transition: all 0s ease;
 }
+.player .progress-side .list-control.on {
+  background-image: url("../images/glyphicons-halflings-red.png");
+}
 .player .progress-side .list-control:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
-}
-.player .progress-side .list-control:active {
-  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .progress-side .list-control.random {
   background-position: -212px 42px;

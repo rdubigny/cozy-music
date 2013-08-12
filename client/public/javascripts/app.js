@@ -625,10 +625,8 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
 
     OffScreenNav.prototype.updateDisplay = function() {
       if (this.$('.off-screen-nav-content').hasClass('off-screen-nav-show')) {
-        this.$('.off-screen-nav-toggle-handler').height("100%");
         return this.$('.off-screen-nav-toggle-arrow').addClass('on');
       } else {
-        this.$('.off-screen-nav-toggle-handler').height("20%");
         return this.$('.off-screen-nav-toggle-arrow').removeClass('on');
       }
     };
@@ -720,7 +718,7 @@ window.require.register("views/player/player", function(exports, require, module
       this.playQueue = new PlayQueue();
       this.playButton = this.$(".button.play");
       this.volume = 50;
-      this.isMutted = false;
+      this.isMuted = false;
       this.volumeManager = new VolumeManager({
         initVol: this.volume
       });
@@ -854,7 +852,7 @@ window.require.register("views/player/player", function(exports, require, module
         whileplaying: this.updateProgressDisplay,
         multiShot: false
       });
-      if (this.isMutted) {
+      if (this.isMuted) {
         this.currentSound.mute();
       }
       this.playButton.removeClass("stopped");
@@ -870,6 +868,8 @@ window.require.register("views/player/player", function(exports, require, module
       nextTrack = this.playQueue.getNextTrack();
       if (nextTrack != null) {
         return this.onPlayTrack(nextTrack);
+      } else {
+        return this.stopTrack();
       }
     };
 
@@ -896,7 +896,7 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onToggleMute = function() {
-      this.isMutted = !this.isMutted;
+      this.isMuted = !this.isMuted;
       if (this.currentSound != null) {
         return this.currentSound.toggleMute();
       }

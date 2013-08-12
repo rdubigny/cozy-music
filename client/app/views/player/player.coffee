@@ -50,7 +50,7 @@ module.exports = class Player extends BaseView
 
         # initializing variables related to volumeManager
         @volume = 50 # default volume value
-        @isMutted = false
+        @isMuted = false
 
         # create, bind and display the volume bar
         @volumeManager = new VolumeManager({initVol: @volume})
@@ -172,7 +172,7 @@ module.exports = class Player extends BaseView
             url: "tracks/#{track.get('id')}/attach/#{track.get('slug')}"
             usePolicyFile: true
             volume: @volume
-            #muted: @isMutted # doesn't seem to work
+            #muted: @isMuted # doesn't seem to work
             autoPlay: true
             onfinish: @onPlayFinish
             onstop: @stopTrack
@@ -180,7 +180,7 @@ module.exports = class Player extends BaseView
             # whileloading: @printLoadingInfo # debbugging tool
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
-        @currentSound.mute() if @isMutted
+        @currentSound.mute() if @isMuted
 
         # update display and variables
         @playButton.removeClass("stopped")
@@ -194,7 +194,9 @@ module.exports = class Player extends BaseView
     onPlayFinish: =>
         nextTrack = @playQueue.getNextTrack()
         if nextTrack?
-            @onPlayTrack(nextTrack)
+            @onPlayTrack nextTrack
+        else
+            @stopTrack()
 
     # stop means destroy, this function destroy the sound and update the display
     stopTrack: =>
@@ -218,7 +220,7 @@ module.exports = class Player extends BaseView
 
     # on mute handler, same thing but for the muted value
     onToggleMute: =>
-        @isMutted = not @isMutted
+        @isMuted = not @isMuted
         if @currentSound?
             @currentSound.toggleMute()
 

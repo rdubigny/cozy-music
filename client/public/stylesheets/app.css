@@ -892,11 +892,11 @@ input {
   -ms-transition: all 0s ease;
   transition: all 0s ease;
 }
-.player .progress-side .list-control.on {
-  background-image: url("../images/glyphicons-halflings-red.png");
-}
 .player .progress-side .list-control:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .progress-side .list-control.on {
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .progress-side .list-control.random {
   background-position: -212px 42px;
@@ -1195,15 +1195,22 @@ body {
   width: 15px;
 }
 #content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler {
-  background: #444;
+  position: absolute;
+  top: 50%;
+  margin-top: -30px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background: #555;
+  height: 60px;
   width: 15px;
   min-height: 30px;
+  font-size: 10em;
   vertical-align: bottom;
 }
 #content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler .off-screen-nav-toggle-arrow {
-  vertical-align: bottom;
-  display: inline-block;
-  margin: auto;
+  position: relative;
+  top: 50%;
+  margin-top: -7px;
   width: 12px;
   height: 14px;
   background-position: -457px -72px;
@@ -1479,11 +1486,11 @@ Da damn bear-killer player style
   cursor: pointer;
   transition: all 0s ease;
 }
-.player .progress-side .list-control.on {
-  background-image: url("../images/glyphicons-halflings-red.png");
-}
 .player .progress-side .list-control:hover {
   background-image: url("../images/glyphicons-halflings-white.png");
+}
+.player .progress-side .list-control.on {
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .progress-side .list-control.random {
   background-position: -212px 42px;

@@ -19,7 +19,7 @@ module.exports =
 
         @soundManager.setup
             # disable or enable debug output
-            debugMode: true
+            debugMode: false
             debugFlash: false
             useFlashBlock: false
             # always prefer flash even for MP3/MP4 when HTML5 audio is available

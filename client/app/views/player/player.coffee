@@ -122,9 +122,15 @@ module.exports = class Player extends BaseView
 
     onQueueTrack: (track)->
         @playQueue.queue track
+        if @playQueue.length is 1
+            nextTrack = @playQueue.getCurrentTrack()
+            @onPlayTrack nextTrack
 
     onPushNext: (track)->
         @playQueue.pushNext track
+        if @playQueue.length is 1
+            nextTrack = @playQueue.getCurrentTrack()
+            @onPlayTrack nextTrack
 
     onPlayImmediate: (track)->
         @playQueue.pushNext track

@@ -1,10 +1,14 @@
 # Description
 
-Cozic is a basical music player developped to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript librairy.
+Cozic is a music player developed to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript library.
 
 ### NB
 
 For now, it's impossible to upload file from IE.
+
+### Warning
+
+Don't try to upload songs from multiple devices simultaneously or you'll regret it.
 
 # Run
 

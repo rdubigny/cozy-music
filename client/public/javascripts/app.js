@@ -97,7 +97,7 @@ window.require.register("application", function(exports, require, module) {
       });
       this.soundManager = soundManager;
       this.soundManager.setup({
-        debugMode: true,
+        debugMode: false,
         debugFlash: false,
         useFlashBlock: false,
         preferFlash: true,
@@ -759,11 +759,21 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onQueueTrack = function(track) {
-      return this.playQueue.queue(track);
+      var nextTrack;
+      this.playQueue.queue(track);
+      if (this.playQueue.length === 1) {
+        nextTrack = this.playQueue.getCurrentTrack();
+        return this.onPlayTrack(nextTrack);
+      }
     };
 
     Player.prototype.onPushNext = function(track) {
-      return this.playQueue.pushNext(track);
+      var nextTrack;
+      this.playQueue.pushNext(track);
+      if (this.playQueue.length === 1) {
+        nextTrack = this.playQueue.getCurrentTrack();
+        return this.onPlayTrack(nextTrack);
+      }
     };
 
     Player.prototype.onPlayImmediate = function(track) {

@@ -10,6 +10,13 @@ module.exports = class VolumeManager extends BaseView
         "mousedown .slider": "onMouseDownSlider"
         "click .volume-switch": "onClickToggleMute"
 
+    subscriptions:
+        'keyboard:keypress' : (e)->
+            switch e.keyCode
+                when 109 then @toggleMute() # M key
+                when 43 then @volUp() # "+" key
+                when 45 then @volDown() # "-" key
+
     initialize: (options)->
         super
         @volumeValue = options.initVol
@@ -41,6 +48,14 @@ module.exports = class VolumeManager extends BaseView
     onClickToggleMute: (event) ->
         event.preventDefault()
         @toggleMute()
+
+    volUp: ->
+        @volumeValue += 10
+        @controlVolumeValue()
+
+    volDown: ->
+        @volumeValue -= 10
+        @controlVolumeValue()
 
     retrieveVolumeValue: (event)->
         handlePositionPx = event.clientX - @sliderContainer.offset().left

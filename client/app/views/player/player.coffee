@@ -33,6 +33,13 @@ module.exports = class Player extends BaseView
         'volumeManager:toggleMute': 'onToggleMute'
         'volumeManager:volumeChanged': 'onVolumeChange'
 
+        # keyboard events
+        'keyboard:keypress' : (e)->
+            switch e.keyCode
+                when 32 then @onClickPlay() # spacebar
+                when 98 then @onClickRwd() # "B" key
+                when 110 then @onClickFwd() # "N" key
+
     afterRender: =>
         # create play queue
         PlayQueue = require 'collections/playqueue'

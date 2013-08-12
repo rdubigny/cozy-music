@@ -544,6 +544,12 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.template = require('./templates/home');
 
+    AppView.prototype.events = {
+      'keypress': function(e) {
+        return Backbone.Mediator.publish('keyboard:keypress', e);
+      }
+    };
+
     AppView.prototype.afterRender = function() {
       this.uploader = new Uploader;
       this.$('#uploader').append(this.uploader.$el);
@@ -665,7 +671,17 @@ window.require.register("views/player/player", function(exports, require, module
         }
       },
       'volumeManager:toggleMute': 'onToggleMute',
-      'volumeManager:volumeChanged': 'onVolumeChange'
+      'volumeManager:volumeChanged': 'onVolumeChange',
+      'keyboard:keypress': function(e) {
+        switch (e.keyCode) {
+          case 32:
+            return this.onClickPlay();
+          case 98:
+            return this.onClickRwd();
+          case 110:
+            return this.onClickFwd();
+        }
+      }
     };
 
     Player.prototype.afterRender = function() {
@@ -945,6 +961,19 @@ window.require.register("views/player/volumeManager", function(exports, require,
       "click .volume-switch": "onClickToggleMute"
     };
 
+    VolumeManager.prototype.subscriptions = {
+      'keyboard:keypress': function(e) {
+        switch (e.keyCode) {
+          case 109:
+            return this.toggleMute();
+          case 43:
+            return this.volUp();
+          case 45:
+            return this.volDown();
+        }
+      }
+    };
+
     VolumeManager.prototype.initialize = function(options) {
       VolumeManager.__super__.initialize.apply(this, arguments);
       return this.volumeValue = options.initVol;
@@ -981,6 +1010,16 @@ window.require.register("views/player/volumeManager", function(exports, require,
     VolumeManager.prototype.onClickToggleMute = function(event) {
       event.preventDefault();
       return this.toggleMute();
+    };
+
+    VolumeManager.prototype.volUp = function() {
+      this.volumeValue += 10;
+      return this.controlVolumeValue();
+    };
+
+    VolumeManager.prototype.volDown = function() {
+      this.volumeValue -= 10;
+      return this.controlVolumeValue();
     };
 
     VolumeManager.prototype.retrieveVolumeValue = function(event) {
@@ -1206,9 +1245,11 @@ window.require.register("views/tracklist", function(exports, require, module) {
         cursorborder: "",
         cursorwidth: "15px",
         cursorborderradius: "0px",
-        horizrailenabled: "false",
+        horizrailenabled: false,
         cursoropacitymin: "0.3",
-        hidecursordelay: "700"
+        hidecursordelay: "700",
+        spacebarenabled: false,
+        enablekeyboard: false
       });
       if (this.collection.length <= this.minTrackListLength) {
         for (i = _i = _ref1 = this.collection.length, _ref2 = this.minTrackListLength; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {

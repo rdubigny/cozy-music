@@ -9,6 +9,10 @@ module.exports = class AppView extends BaseView
 
     el: 'body.application'
     template: require('./templates/home')
+    events:
+        'keypress': (e)->
+            Backbone.Mediator.publish 'keyboard:keypress', e
+
     afterRender: ->
         # header used as uploader
         @uploader = new Uploader

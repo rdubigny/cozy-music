@@ -79,12 +79,14 @@ module.exports = class TrackListView extends ViewCollection
         # adding scrollbar
         @$('.viewport').niceScroll(
             cursorcolor:"#444"
-            cursorborder: ""
+            cursorborder: "" #1px solid #555
             cursorwidth:"15px"
             cursorborderradius: "0px"
-            horizrailenabled: "false"
+            horizrailenabled: false
             cursoropacitymin: "0.3"
             hidecursordelay: "700"
+            spacebarenabled: false
+            enablekeyboard: false
         )
 
         # adding blank tracks if there is not enough tracks to display

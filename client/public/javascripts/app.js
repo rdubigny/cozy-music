@@ -511,12 +511,13 @@ window.require.register("router", function(exports, require, module) {
       return mainView.render();
     };
 
-    Router.prototype.playlist = function(id) {
-      var mainView;
-      mainView = new AppView();
-      console.log(id);
-      return mainView.render();
-    };
+
+    /*
+    playlist: (id)->
+        mainView = new AppView()
+        console.log id #params.fileName('playlist') #mainView.idList = -1
+        mainView.render()
+    */
 
     return Router;
 

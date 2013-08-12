@@ -97,13 +97,13 @@ window.require.register("application", function(exports, require, module) {
       });
       this.soundManager = soundManager;
       this.soundManager.setup({
-        debugMode: false,
+        debugMode: true,
         debugFlash: false,
         useFlashBlock: false,
         preferFlash: true,
         flashPollingInterval: 500,
         html5PollingInterval: 500,
-        url: "../swf/",
+        url: "swf/",
         flashVersion: 9,
         onready: function() {
           return $('.button.play').toggleClass('stopped loading');
@@ -516,7 +516,7 @@ window.require.register("router", function(exports, require, module) {
   
 });
 window.require.register("views/app_view", function(exports, require, module) {
-  var AppView, BaseView, Player, TrackList, Uploader, app, _ref,
+  var AppView, BaseView, OffScreenNav, Player, TrackList, Uploader, app, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -527,6 +527,8 @@ window.require.register("views/app_view", function(exports, require, module) {
   TrackList = require('./tracklist');
 
   Player = require('./player/player');
+
+  OffScreenNav = require('./off_screen_nav');
 
   app = require('application');
 
@@ -542,8 +544,6 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.template = require('./templates/home');
 
-    AppView.prototype.player = null;
-
     AppView.prototype.afterRender = function() {
       this.uploader = new Uploader;
       this.$('#uploader').append(this.uploader.$el);
@@ -555,10 +555,56 @@ window.require.register("views/app_view", function(exports, require, module) {
       this.trackList.render();
       this.player = new Player();
       this.$('#player').append(this.player.$el);
-      return this.player.render();
+      this.player.render();
+      this.offScreenNav = new OffScreenNav();
+      this.$('#off-screen-nav').append(this.offScreenNav.$el);
+      return this.offScreenNav.render();
     };
 
     return AppView;
+
+  })(BaseView);
+  
+});
+window.require.register("views/off_screen_nav", function(exports, require, module) {
+  
+  /*
+    Off screen nav view
+  */
+  var BaseView, OffScreenNav, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseView = require('../../lib/base_view');
+
+  module.exports = OffScreenNav = (function(_super) {
+    __extends(OffScreenNav, _super);
+
+    function OffScreenNav() {
+      _ref = OffScreenNav.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    OffScreenNav.prototype.className = 'off-screen-nav';
+
+    OffScreenNav.prototype.tagName = 'div';
+
+    OffScreenNav.prototype.template = require('./templates/off_screen_nav');
+
+    OffScreenNav.prototype.afterRender = function() {
+      var _this = this;
+      this.nav = $("off-screen-nav");
+      this.closeButton = $("off-screen-nav-close");
+      return $('#off-screen-nav').on('click', function(e) {
+        return _this.$el.toggleClass('off-screen-nav-show');
+      });
+    };
+
+    OffScreenNav.prototype.toggleNav = function() {
+      return this.$el.toggleClass('off-screen-nav-show');
+    };
+
+    return OffScreenNav;
 
   })(BaseView);
   
@@ -604,12 +650,14 @@ window.require.register("views/player/player", function(exports, require, module
       'click .button.rwd': 'onClickRwd',
       'click .button.fwd': 'onClickFwd',
       'mousedown .progress': 'onMouseDownProgress',
-      'click .loop': 'onClickLoop'
+      'click .loop': 'onClickLoop',
+      'click .random': 'onClickRandom'
     };
 
     Player.prototype.subscriptions = {
       'track:queue': 'onQueueTrack',
       'track:playImmediate': 'onPlayImmediate',
+      'track:pushNext': 'onPushNext',
       'track:stop': function(id) {
         var _ref1;
         if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === id) {
@@ -712,6 +760,10 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onQueueTrack = function(track) {
       return this.playQueue.queue(track);
+    };
+
+    Player.prototype.onPushNext = function(track) {
+      return this.playQueue.pushNext(track);
     };
 
     Player.prototype.onPlayImmediate = function(track) {
@@ -845,6 +897,10 @@ window.require.register("views/player/player", function(exports, require, module
       }
     };
 
+    Player.prototype.onClickRandom = function() {
+      return alert('unavailable yet');
+    };
+
     return Player;
 
   })(BaseView);
@@ -970,7 +1026,18 @@ window.require.register("views/templates/home", function(exports, require, modul
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="content"><div id="uploader"></div><div id="tracks-display"></div><div id="player"></div></div>');
+  buf.push('<div id="content"><div id="uploader"></div><div id="off-screen-nav"></div><div id="tracks-display"></div><div id="player"></div></div>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/off_screen_nav", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<div class="off-screen-nav-title">Content</div><ul><li>My Songs</li><li>Play Queue</li><li>ma liste de courses</li><li>quand je cours nu dans mon appart</li><li>jogging</li></ul>');
   }
   return buf.join("");
   };
@@ -1127,7 +1194,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
       this.$('.viewport').niceScroll({
         cursorcolor: "#444",
         cursorborder: "",
-        cursorwidth: "10px",
+        cursorwidth: "15px",
         cursorborderradius: "0px",
         horizrailenabled: "false",
         cursoropacitymin: "0.3",
@@ -1256,7 +1323,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       this.returnToNormal = __bind(this.returnToNormal, this);
       this.onUploadProgressChange = __bind(this.onUploadProgressChange, this);
       this.onClick = __bind(this.onClick, this);
-      this.onDeleteClicked = __bind(this.onDeleteClicked, this);
+      this.onDeleteClick = __bind(this.onDeleteClick, this);
       _ref = TrackListItemView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1268,8 +1335,18 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.template = require('./templates/tracklist_item');
 
     TrackListItemView.prototype.events = {
-      'click .button.delete': 'onDeleteClicked',
-      'click .button.puttoplay': 'onPlayClick',
+      'click .button.delete': 'onDeleteClick',
+      'click .button.puttoplay': function(e) {
+        if (e.ctrlKey) {
+          return this.onPlayDblClick(e);
+        } else {
+          return this.onPlayClick(e);
+        }
+      },
+      'dblclick .button.puttoplay': function(event) {
+        event.preventDefault();
+        return event.stopPropagation();
+      },
       'dblclick': 'onDblClick',
       'click': 'onClick'
     };
@@ -1303,7 +1380,7 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       }
     };
 
-    TrackListItemView.prototype.onDeleteClicked = function(event) {
+    TrackListItemView.prototype.onDeleteClick = function(event) {
       var id, state,
         _this = this;
       event.preventDefault();
@@ -1341,6 +1418,14 @@ window.require.register("views/tracklist_item", function(exports, require, modul
       event.stopPropagation();
       if (this.model.attributes.state === 'server') {
         return Backbone.Mediator.publish('track:queue', this.model);
+      }
+    };
+
+    TrackListItemView.prototype.onPlayDblClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.model.attributes.state === 'server') {
+        return Backbone.Mediator.publish('track:pushNext', this.model);
       }
     };
 
@@ -1395,11 +1480,11 @@ window.require.register("views/tracklist_item", function(exports, require, modul
 
     TrackListItemView.prototype.startUpload = function() {
       this.$('.uploadProgress').html('0%');
-      return this.listenTo(this.model, "progress", this.onUploadProgressChange);
+      return this.listenTo(this.model, 'progress', this.onUploadProgressChange);
     };
 
     TrackListItemView.prototype.endUpload = function() {
-      this.stopListening(this.model, "progress");
+      this.stopListening(this.model, 'progress');
       this.$('.uploadProgress').html('DONE');
       return this.$('.uploadProgress').delay(1000).fadeOut(1000, this.returnToNormal);
     };

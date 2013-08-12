@@ -12,8 +12,15 @@ module.exports = class TrackListItemView extends BaseView
     template: require './templates/tracklist_item'
 
     events:
-        'click .button.delete': 'onDeleteClicked'
-        'click .button.puttoplay': 'onPlayClick'
+        'click .button.delete': 'onDeleteClick'
+        'click .button.puttoplay': (e)->
+            if e.ctrlKey
+                @onPlayDblClick(e)
+            else
+                @onPlayClick(e)
+        'dblclick .button.puttoplay': (event)->
+            event.preventDefault()
+            event.stopPropagation()
         'dblclick': 'onDblClick'
         'click': 'onClick'
 
@@ -40,7 +47,7 @@ module.exports = class TrackListItemView extends BaseView
             @initUpload()
             @startUpload()
 
-    onDeleteClicked: (event)=>
+    onDeleteClick: (event)=>
         event.preventDefault()
         event.stopPropagation()
 
@@ -81,6 +88,13 @@ module.exports = class TrackListItemView extends BaseView
         # if the file is not backed up yet, disable the play launch
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:queue', @model
+
+    onPlayDblClick: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        # if the file is not backed up yet, disable the play launch
+        if @model.attributes.state is 'server'
+            Backbone.Mediator.publish 'track:pushNext', @model
 
     toggleSelect: ->
         if @$el.hasClass 'selected'
@@ -134,10 +148,10 @@ module.exports = class TrackListItemView extends BaseView
 
     startUpload: ->
         @$('.uploadProgress').html '0%'
-        @listenTo @model, "progress", @onUploadProgressChange
+        @listenTo @model, 'progress', @onUploadProgressChange
 
     endUpload: ->
-        @stopListening @model, "progress"
+        @stopListening @model, 'progress'
         @$('.uploadProgress').html 'DONE'
         @$('.uploadProgress').delay(1000).fadeOut 1000, @returnToNormal
 

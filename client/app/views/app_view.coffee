@@ -2,15 +2,13 @@ BaseView = require '../lib/base_view'
 Uploader = require './uploader'
 TrackList = require './tracklist'
 Player = require './player/player'
+OffScreenNav = require './off_screen_nav'
 app = require 'application'
 
 module.exports = class AppView extends BaseView
 
     el: 'body.application'
     template: require('./templates/home')
-
-    player: null
-
     afterRender: ->
         # header used as uploader
         @uploader = new Uploader
@@ -23,7 +21,10 @@ module.exports = class AppView extends BaseView
         @$('#tracks-display').append @trackList.$el
         @trackList.render()
 
-        # soundManager is ready to be called here (cf. application.coffee)
         @player = new Player()
         @$('#player').append @player.$el
         @player.render()
+
+        @offScreenNav = new OffScreenNav()
+        @$('#off-screen-nav').append @offScreenNav.$el
+        @offScreenNav.render()

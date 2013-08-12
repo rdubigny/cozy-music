@@ -80,7 +80,7 @@ module.exports = class TrackListView extends ViewCollection
         @$('.viewport').niceScroll(
             cursorcolor:"#444"
             cursorborder: ""
-            cursorwidth:"10px"
+            cursorwidth:"15px"
             cursorborderradius: "0px"
             horizrailenabled: "false"
             cursoropacitymin: "0.3"

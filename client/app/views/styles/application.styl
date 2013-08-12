@@ -63,7 +63,7 @@ body
     #tracks-display
         .viewport
             display: block
-            padding: 0 10px
+            padding: 0 15px
             position: absolute
             top: 49px
             left: 0
@@ -158,6 +158,64 @@ body
                         animation-name: dropText
                         animation-duration: 0.1s
                         animation-iteration-count: 1
+
+    #off-screen-nav
+        display: block
+        position: fixed
+        z-index: 999
+        top: 49px
+        left: 0
+        bottom: 49px
+        //background: red
+        width: 15px
+        visibility: visible
+
+        .off-screen-nav
+            display: block
+            position: fixed
+            z-index: 1000
+            top: 49px
+            left: 0px
+            bottom: 49px
+            overflow-y: auto
+            background: #444
+            border-top: 1px solid #666
+            border-bottom: 1px solid #666
+            visibility: hidden
+            width: 12rem
+            transform: translateX(-100%)
+            transition: 500ms cubic-bezier(0.09, 0.68, 0, 0.99)
+            &.off-screen-nav-show
+                transform: translateX(0)
+                visibility: visible
+
+            .off-screen-nav-title
+                color: white
+                border-bottom: 1px solid #eee
+                padding: 1rem 0.5rem 0.2rem 0
+                margin: 0 1rem 1rem
+                text-transform: uppercase
+                font-size: 0.75rem
+                letter-spacing: 0.1rem
+                position: relative
+                display: block
+                font-weight: bold
+
+            ul
+                margin: 0 1rem 1rem
+                padding: 0
+                list-style: none
+                li
+                    margin: 0
+                    display: list-item
+                    display: block
+                    padding: 0.3rem 1rem
+                    color: white
+                    border-bottom: 1px solid #555
+                    cursor: pointer
+                    &:hover
+                        background: #555
+
 
 @keyframes dropText
     from{transform:scale(1.3);}

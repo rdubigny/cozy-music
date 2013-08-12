@@ -17,11 +17,13 @@ module.exports = class Player extends BaseView
         'click .button.fwd': 'onClickFwd'
         'mousedown .progress': 'onMouseDownProgress'
         'click .loop': 'onClickLoop'
+        'click .random': 'onClickRandom'
 
     subscriptions:
         # these events should be fired by tracklist_item view
         'track:queue': 'onQueueTrack'
         'track:playImmediate': 'onPlayImmediate'
+        'track:pushNext': 'onPushNext'
 
         'track:stop': (id) ->
             if @currentSound?.id is id
@@ -120,6 +122,9 @@ module.exports = class Player extends BaseView
 
     onQueueTrack: (track)->
         @playQueue.queue track
+
+    onPushNext: (track)->
+        @playQueue.pushNext track
 
     onPlayImmediate: (track)->
         @playQueue.pushNext track
@@ -232,3 +237,6 @@ module.exports = class Player extends BaseView
             @playQueue.playLoop = true
         else
             @playQueue.playLoop = false
+
+    onClickRandom: ->
+        alert 'unavailable yet'

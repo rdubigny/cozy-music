@@ -9,17 +9,45 @@ module.exports = class OffScreenNav extends BaseView
     tagName: 'div'
     template: require('./templates/off_screen_nav')
 
-    events:
-        'click .off-screen-nav-toggle': 'toggleNav'
+    magicCounterSensibility : 6
+    magicCounter : @magicCounterSensibility
 
-    afterRender: ->
-        #@nav = $("off-screen-nav")
-        #@closeButton = $("off-screen-nav-close")
-        #$('#off-screen-nav').on 'click', (e)=>
-        #    @$el.toggleClass 'off-screen-nav-show'
+    afterRender: =>
+        #@$el.hover ->
+        #    console.log 'ha!'
+        #, ->
+        #    console.log 'ho...'
+        @$el.on 'click', @toggleNav
+        @$el.on 'click', @onToggleOn
+        @$el.on 'mousemove', @magicToggle
+
         @updateDisplay()
 
-    toggleNav: ->
+    magicToggle: (e)=>
+        if e.pageX is 0
+            @magicCounter -= 1
+        else
+            @magicCounter = @magicCounterSensibility
+        if @magicCounter is 0
+            @magicCounter = @magicCounterSensibility
+            @onToggleOn()
+            @toggleNav()
+
+    onToggleOn: =>
+        @$el.off 'click', @onToggleOn
+        @$el.on 'click', @onToggleOff
+        @$el.off 'mousemove', @magicToggle
+        @$el.on 'mouseleave', @onToggleOff
+        @$el.on 'mouseleave', @toggleNav
+
+    onToggleOff: =>
+        @$el.on 'click', @onToggleOn
+        @$el.off 'click', @onToggleOff
+        @$el.on 'mousemove', @magicToggle
+        @$el.off 'mouseleave', @onToggleOff
+        @$el.off 'mouseleave', @toggleNav
+
+    toggleNav: =>
         @$('.off-screen-nav-content').toggleClass 'off-screen-nav-show'
         @updateDisplay()
 

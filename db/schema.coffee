@@ -5,3 +5,7 @@ Track = define 'Track', ->
     property 'track', String
     property 'slug', String
     property '_attachments', Object
+    property 'playlists', Object
+
+Playlist = define 'Playlist', ->
+    property 'title', String

@@ -57,6 +57,10 @@ module.exports = class PlayQueue extends Backbone.Collection
             @add track
         @show()
 
+    # delete the spe
+    removeItem: (track)->
+        @remove track
+
     show: ->
         console.log "PlayQueue content :"
         if @length >= 1

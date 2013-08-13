@@ -15,6 +15,10 @@ module.exports =
                 msg = "Files couldn't be retrieved due to a server error."
                 alert msg
 
+        # create play queue
+        PlayQueue = require 'collections/playqueue'
+        @playQueue = new PlayQueue()
+
         @soundManager = soundManager
 
         @soundManager.setup

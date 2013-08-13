@@ -1,6 +1,7 @@
 BaseView = require '../lib/base_view'
 Uploader = require './uploader'
-TrackList = require './tracklist'
+Tracks = require './tracks'
+PlayQueue = require './playqueue'
 Player = require './player/player'
 OffScreenNav = require './off_screen_nav'
 app = require 'application'
@@ -14,20 +15,11 @@ module.exports = class AppView extends BaseView
         'keypress': (e)->
             Backbone.Mediator.publish 'keyboard:keypress', e
 
-    idList : -1
-
     afterRender: ->
         # header used as uploader
         @uploader = new Uploader
         @$('#uploader').append @uploader.$el
         @uploader.render()
-
-        # list of tracks
-        if @idList is -1
-            list = new TrackList
-                collection: app.tracks
-        @$('#tracks-display').append list.$el
-        list.render()
 
         @player = new Player()
         @$('#player').append @player.$el
@@ -36,3 +28,21 @@ module.exports = class AppView extends BaseView
         @offScreenNav = new OffScreenNav()
         @$('#off-screen-nav').append @offScreenNav.$el
         @offScreenNav.render()
+
+    showTrackList: =>
+        if @queueList?
+            @queueList.$el.detach()
+        unless @tracklist?
+            @tracklist = new Tracks
+                    collection: app.tracks
+        @$('#tracks-display').append @tracklist.$el
+        @tracklist.render()
+
+    showPlayQueue: =>
+        if @tracklist?
+            @tracklist.$el.detach()
+        unless @queueList?
+            @queueList = new PlayQueue
+                    collection: app.playQueue
+        @$('#tracks-display').append @queueList.$el
+        @queueList.render()

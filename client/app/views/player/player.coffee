@@ -25,9 +25,9 @@ module.exports = class Player extends BaseView
         'track:playImmediate': 'onPlayImmediate'
         'track:pushNext': 'onPushNext'
 
-        'track:stop': (id) ->
+        'track:delete': (id) ->
             if @currentSound?.id is id
-                @stopTrack()
+                @onPlayFinish()
 
         # these channels are shared with views/player/volumeManager.coffee
         'volumeManager:toggleMute': 'onToggleMute'
@@ -41,10 +41,6 @@ module.exports = class Player extends BaseView
                 when 110 then @onClickFwd() # "N" key
 
     afterRender: =>
-        # create play queue
-        PlayQueue = require 'collections/playqueue'
-        @playQueue = new PlayQueue()
-
         # bind play button
         @playButton = @$(".button.play")
 
@@ -87,11 +83,11 @@ module.exports = class Player extends BaseView
                         @currentSound.pause()
                         @playButton.addClass("paused")
                         @isPaused = true
-                else if @playQueue.getCurrentTrack()?
+                else if app.playQueue.getCurrentTrack()?
                     if @isStopped
                         @playButton.removeClass("stopped")
                         @isStopped = false
-                        @onPlayTrack(@playQueue.getCurrentTrack())
+                        @onPlayTrack(app.playQueue.getCurrentTrack())
             else
                 alert "application error : unable to play track"
 
@@ -102,13 +98,13 @@ module.exports = class Player extends BaseView
             @updateProgressDisplay()
         # get the previous sound
         else
-            prevTrack = @playQueue.getPrevTrack()
+            prevTrack = app.playQueue.getPrevTrack()
             if prevTrack?
                 # then play previous track
                 @onPlayTrack prevTrack
 
     onClickFwd: =>
-        nextTrack = @playQueue.getNextTrack()
+        nextTrack = app.playQueue.getNextTrack()
         if nextTrack?
             # then play next track
             @onPlayTrack nextTrack
@@ -124,30 +120,30 @@ module.exports = class Player extends BaseView
                 @updateProgressDisplay()
 
     onQueueTrack: (track)=>
-        @playQueue.queue track
+        app.playQueue.queue track
         # autoplay
-        if @playQueue.length is 1
-            @onPlayTrack @playQueue.getCurrentTrack()
+        if app.playQueue.length is 1
+            @onPlayTrack app.playQueue.getCurrentTrack()
         # if current playlist have been play entirely
-        else if @playQueue.length-2 is @playQueue.atPlay and @isStopped
-            @onPlayTrack @playQueue.getNextTrack()
+        else if app.playQueue.length-2 is app.playQueue.atPlay and @isStopped
+            @onPlayTrack app.playQueue.getNextTrack()
 
 
     onPushNext: (track)=>
-        @playQueue.pushNext track
+        app.playQueue.pushNext track
         # autoplay
-        if @playQueue.length is 1
-            @onPlayTrack @playQueue.getCurrentTrack()
-        else if @playQueue.length-2 is @playQueue.atPlay and @isStopped
-            @onPlayTrack @playQueue.getNextTrack()
+        if app.playQueue.length is 1
+            @onPlayTrack app.playQueue.getCurrentTrack()
+        else if app.playQueue.length-2 is app.playQueue.atPlay and @isStopped
+            @onPlayTrack app.playQueue.getNextTrack()
 
     onPlayImmediate: (track)=>
-        @playQueue.pushNext track
+        app.playQueue.pushNext track
         # if the queue was empty before the above instruction
-        if @playQueue.length is 1
-            nextTrack = @playQueue.getCurrentTrack()
+        if app.playQueue.length is 1
+            nextTrack = app.playQueue.getCurrentTrack()
         else
-            nextTrack = @playQueue.getNextTrack()
+            nextTrack = app.playQueue.getNextTrack()
         # launch newTrack
         @onPlayTrack nextTrack
 
@@ -192,9 +188,10 @@ module.exports = class Player extends BaseView
 
     # at the end of track, play next track
     onPlayFinish: =>
-        nextTrack = @playQueue.getNextTrack()
+        nextTrack = app.playQueue.getNextTrack()
         if nextTrack?
             @onPlayTrack nextTrack
+        # if there is no more track just stop the current one.
         else
             @stopTrack()
 
@@ -255,9 +252,9 @@ module.exports = class Player extends BaseView
         loopButton = @$('.loop')
         loopButton.toggleClass('on')
         if loopButton.hasClass('on')
-            @playQueue.playLoop = true
+            app.playQueue.playLoop = true
         else
-            @playQueue.playLoop = false
+            app.playQueue.playLoop = false
 
     onClickRandom: ->
         alert 'not available yet'

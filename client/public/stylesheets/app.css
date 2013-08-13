@@ -1280,10 +1280,13 @@ body {
   padding: 0.3rem 1rem;
   color: #fff;
   border-bottom: 1px solid #555;
-  cursor: pointer;
 }
 #content #off-screen-nav .off-screen-nav-content ul li:hover {
   background: #555;
+}
+#content #off-screen-nav .off-screen-nav-content ul a {
+  color: #fff;
+  text-decoration: none;
 }
 @-moz-keyframes dropText {
   0% {

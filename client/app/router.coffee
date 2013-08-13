@@ -4,15 +4,18 @@ module.exports = class Router extends Backbone.Router
 
     routes:
         '': 'main'
-        'playlist/:albumid'     : 'playlist'
+        'playlist/:playlistId': 'playlist'
 
     main: ->
-        mainView = new AppView()
-        mainView.render()
+        unless @mainView?
+            @mainView = new AppView()
+            @mainView.render()
+        @mainView.showTrackList()
 
-    ###
+
     playlist: (id)->
-        mainView = new AppView()
-        console.log id #params.fileName('playlist') #mainView.idList = -1
-        mainView.render()
-    ###
+        unless @mainView?
+            @mainView = new AppView()
+            @mainView.render()
+        if id is "playqueue"
+            @mainView.showPlayQueue()

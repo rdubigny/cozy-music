@@ -1,6 +1,7 @@
 ###
   Off screen nav view
 ###
+app = require '../application'
 BaseView = require '../../lib/base_view'
 
 module.exports = class OffScreenNav extends BaseView
@@ -12,16 +13,24 @@ module.exports = class OffScreenNav extends BaseView
     magicCounterSensibility : 6
     magicCounter : @magicCounterSensibility
 
+    subscriptions:
+        # keyboard events
+        'keyboard:keypress' : (e)->
+            switch e.keyCode
+                when 118 then @onVKey() # "V" key
+
     afterRender: =>
-        #@$el.hover ->
-        #    console.log 'ha!'
-        #, ->
-        #    console.log 'ho...'
-        @$el.on 'click', @toggleNav
         @$el.on 'click', @onToggleOn
         @$el.on 'mousemove', @magicToggle
+        @notOnHome = $(location).attr('href').match(/playqueue$/)?
 
-        @updateDisplay()
+    onVKey: =>
+        # toggle between the 2 views
+        if @notOnHome
+            app.router.navigate '#', true
+        else
+            app.router.navigate '#playqueue', true
+        @notOnHome = !@notOnHome
 
     magicToggle: (e)=>
         if e.pageX is 0
@@ -31,21 +40,20 @@ module.exports = class OffScreenNav extends BaseView
         if @magicCounter is 0
             @magicCounter = @magicCounterSensibility
             @onToggleOn()
-            @toggleNav()
 
     onToggleOn: =>
         @$el.off 'click', @onToggleOn
         @$el.on 'click', @onToggleOff
         @$el.off 'mousemove', @magicToggle
         @$el.on 'mouseleave', @onToggleOff
-        @$el.on 'mouseleave', @toggleNav
+        @toggleNav()
 
     onToggleOff: =>
-        @$el.on 'click', @onToggleOn
         @$el.off 'click', @onToggleOff
-        @$el.on 'mousemove', @magicToggle
+        @$el.on 'click', @onToggleOn
         @$el.off 'mouseleave', @onToggleOff
-        @$el.off 'mouseleave', @toggleNav
+        @$el.on 'mousemove', @magicToggle
+        @toggleNav()
 
     toggleNav: =>
         @$('.off-screen-nav-content').toggleClass 'off-screen-nav-show'

@@ -46,21 +46,33 @@ module.exports = class PlayQueue extends Backbone.Collection
     queue: (track)->
         @push track,
             sort: false
-        @show()
+            unique: false
 
     # add the track at the index atPlay+1
     pushNext: (track)->
         if @length > 0
             @add track,
                 at : @atPlay+1
+                merge: true
         else
-            @add track
-        @show()
+            @add track,
+                merge: true
 
-    # delete the spe
+    moveItem: (track, position)->
+        if @indexOf(track) is @atPlay
+            @atPlay = position
+        @remove track
+        @add track,
+            at: position
+            merge: true
+
+    # delete track
     removeItem: (track)->
         @remove track
+        if @atPlay is @length and @length isnt 0
+            @atPlay -= 1
 
+    # debug function
     show: ->
         console.log "PlayQueue content :"
         if @length >= 1

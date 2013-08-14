@@ -130,6 +130,18 @@ body
                         .uploadProgress
                             color: white
 
+                    &.ui-sortable-helper
+                        transition: all 0s ease
+                        background-color: #444
+                        color: white
+                        &:hover
+                            .button
+                                display: none
+
+                    &.sortable-placeholder
+                        transition: all 0s ease
+                        background-color: #777
+
                     .button
                         display: none
 

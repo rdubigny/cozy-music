@@ -179,25 +179,41 @@ window.require.register("collections/playqueue", function(exports, require, modu
     };
 
     PlayQueue.prototype.queue = function(track) {
-      this.push(track, {
-        sort: false
+      return this.push(track, {
+        sort: false,
+        unique: false
       });
-      return this.show();
     };
 
     PlayQueue.prototype.pushNext = function(track) {
       if (this.length > 0) {
-        this.add(track, {
-          at: this.atPlay + 1
+        return this.add(track, {
+          at: this.atPlay + 1,
+          merge: true
         });
       } else {
-        this.add(track);
+        return this.add(track, {
+          merge: true
+        });
       }
-      return this.show();
+    };
+
+    PlayQueue.prototype.moveItem = function(track, position) {
+      if (this.indexOf(track) === this.atPlay) {
+        this.atPlay = position;
+      }
+      this.remove(track);
+      return this.add(track, {
+        at: position,
+        merge: true
+      });
     };
 
     PlayQueue.prototype.removeItem = function(track) {
-      return this.remove(track);
+      this.remove(track);
+      if (this.atPlay === this.length && this.length !== 0) {
+        return this.atPlay -= 1;
+      }
     };
 
     PlayQueue.prototype.show = function() {
@@ -508,6 +524,7 @@ window.require.register("router", function(exports, require, module) {
 
     Router.prototype.routes = {
       '': 'main',
+      'playqueue': 'playqueue',
       'playlist/:playlistId': 'playlist'
     };
 
@@ -520,13 +537,15 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
+      return alert("not implemented yet");
+    };
+
+    Router.prototype.playqueue = function() {
       if (this.mainView == null) {
         this.mainView = new AppView();
         this.mainView.render();
       }
-      if (id === "playqueue") {
-        return this.mainView.showPlayQueue();
-      }
+      return this.mainView.showPlayQueue();
     };
 
     return Router;
@@ -622,10 +641,12 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
   /*
     Off screen nav view
   */
-  var BaseView, OffScreenNav, _ref,
+  var BaseView, OffScreenNav, app, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  app = require('../application');
 
   BaseView = require('../../lib/base_view');
 
@@ -637,6 +658,7 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
       this.onToggleOff = __bind(this.onToggleOff, this);
       this.onToggleOn = __bind(this.onToggleOn, this);
       this.magicToggle = __bind(this.magicToggle, this);
+      this.onVKey = __bind(this.onVKey, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = OffScreenNav.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -652,11 +674,28 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
 
     OffScreenNav.prototype.magicCounter = OffScreenNav.magicCounterSensibility;
 
+    OffScreenNav.prototype.subscriptions = {
+      'keyboard:keypress': function(e) {
+        switch (e.keyCode) {
+          case 118:
+            return this.onVKey();
+        }
+      }
+    };
+
     OffScreenNav.prototype.afterRender = function() {
-      this.$el.on('click', this.toggleNav);
       this.$el.on('click', this.onToggleOn);
       this.$el.on('mousemove', this.magicToggle);
-      return this.updateDisplay();
+      return this.notOnHome = $(location).attr('href').match(/playqueue$/) != null;
+    };
+
+    OffScreenNav.prototype.onVKey = function() {
+      if (this.notOnHome) {
+        app.router.navigate('#', true);
+      } else {
+        app.router.navigate('#playqueue', true);
+      }
+      return this.notOnHome = !this.notOnHome;
     };
 
     OffScreenNav.prototype.magicToggle = function(e) {
@@ -667,8 +706,7 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
       }
       if (this.magicCounter === 0) {
         this.magicCounter = this.magicCounterSensibility;
-        this.onToggleOn();
-        return this.toggleNav();
+        return this.onToggleOn();
       }
     };
 
@@ -677,15 +715,15 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
       this.$el.on('click', this.onToggleOff);
       this.$el.off('mousemove', this.magicToggle);
       this.$el.on('mouseleave', this.onToggleOff);
-      return this.$el.on('mouseleave', this.toggleNav);
+      return this.toggleNav();
     };
 
     OffScreenNav.prototype.onToggleOff = function() {
-      this.$el.on('click', this.onToggleOn);
       this.$el.off('click', this.onToggleOff);
-      this.$el.on('mousemove', this.magicToggle);
+      this.$el.on('click', this.onToggleOn);
       this.$el.off('mouseleave', this.onToggleOff);
-      return this.$el.off('mouseleave', this.toggleNav);
+      this.$el.on('mousemove', this.magicToggle);
+      return this.toggleNav();
     };
 
     OffScreenNav.prototype.toggleNav = function() {
@@ -762,10 +800,10 @@ window.require.register("views/player/player", function(exports, require, module
       'track:queue': 'onQueueTrack',
       'track:playImmediate': 'onPlayImmediate',
       'track:pushNext': 'onPushNext',
-      'track:delete': function(id) {
+      'track:delete': function(soundId) {
         var _ref1;
-        if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === id) {
-          return this.onPlayFinish();
+        if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === soundId) {
+          return this.stopTrack();
         }
       },
       'volumeManager:toggleMute': 'onToggleMute',
@@ -822,8 +860,6 @@ window.require.register("views/player/player", function(exports, require, module
             }
           } else if (app.playQueue.getCurrentTrack() != null) {
             if (this.isStopped) {
-              this.playButton.removeClass("stopped");
-              this.isStopped = false;
               return this.onPlayTrack(app.playQueue.getCurrentTrack());
             }
           }
@@ -1190,6 +1226,10 @@ window.require.register("views/playqueue", function(exports, require, module) {
 
     PlayQueueView.prototype.itemview = TrackView;
 
+    PlayQueueView.prototype.events = {
+      'update-sort': 'updateSort'
+    };
+
     PlayQueueView.prototype.subscriptions = {
       'playQueueItem:remove': function(track) {
         return this.collection.removeItem(track);
@@ -1198,7 +1238,32 @@ window.require.register("views/playqueue", function(exports, require, module) {
 
     PlayQueueView.prototype.afterRender = function() {
       PlayQueueView.__super__.afterRender.apply(this, arguments);
-      return $('.tracks-display tr:odd').addClass('odd');
+      $('.tracks-display tr:odd').addClass('odd');
+      return this.$('#track-list').sortable({
+        opacity: 0.8,
+        delay: 150,
+        containment: "parent",
+        axis: "y",
+        placeholder: "track sortable-placeholder",
+        tolerance: "pointer",
+        helper: function(e, tr) {
+          var $helper, $originals;
+          $originals = tr.children();
+          $helper = tr.clone();
+          $helper.children().each(function(index) {
+            return $(this).width($originals.eq(index).width());
+          });
+          return $helper;
+        },
+        stop: function(event, ui) {
+          return ui.item.trigger('drop', ui.item.index());
+        }
+      });
+    };
+
+    PlayQueueView.prototype.updateSort = function(event, track, position) {
+      this.collection.moveItem(track, position);
+      return this.render();
     };
 
     return PlayQueueView;
@@ -1223,13 +1288,11 @@ window.require.register("views/playqueue_item", function(exports, require, modul
       return _ref;
     }
 
-    PlayQueueItemView.prototype.events = {
-      'click .button.delete': 'onDeleteClick'
-    };
+    PlayQueueItemView.prototype.template = require('./templates/playqueue_item');
 
-    PlayQueueItemView.prototype.afterRender = function() {
-      PlayQueueItemView.__super__.afterRender.apply(this, arguments);
-      return this.$('#state').remove('.button');
+    PlayQueueItemView.prototype.events = {
+      'click .button.delete': 'onDeleteClick',
+      'drop': 'drop'
     };
 
     PlayQueueItemView.prototype.onDeleteClick = function(event) {
@@ -1239,6 +1302,10 @@ window.require.register("views/playqueue_item", function(exports, require, modul
       id = this.model.attributes.id;
       Backbone.Mediator.publish('track:delete', "sound-" + id);
       return Backbone.Mediator.publish('playQueueItem:remove', this.model);
+    };
+
+    PlayQueueItemView.prototype.drop = function(event, index) {
+      return this.$el.trigger('update-sort', [this.model, index]);
     };
 
     return PlayQueueItemView;
@@ -1263,7 +1330,7 @@ window.require.register("views/templates/off_screen_nav", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="off-screen-nav-toggle"><div class="off-screen-nav-toggle-handler"><div class="off-screen-nav-toggle-arrow"></div></div></div><div class="off-screen-nav-content"><div class="off-screen-nav-title">Content</div><ul><a href="#"><li>My Songs</li></a><a href="#playlist/playqueue"><li>Play Queue</li></a></ul><div class="off-screen-nav-title">Playlists</div><ul><li>not available yet</li></ul></div>');
+  buf.push('<div class="off-screen-nav-toggle"><div class="off-screen-nav-toggle-handler"><div class="off-screen-nav-toggle-arrow"></div></div></div><div class="off-screen-nav-content"><div class="off-screen-nav-title">Content</div><ul><a href="#" class="home"><li>My Songs</li></a><a href="#playqueue" class="playqueue"><li>Play Queue</li></a></ul><div class="off-screen-nav-title">Playlists</div><ul><li>not available yet</li></ul></div>');
   }
   return buf.join("");
   };
@@ -1286,6 +1353,17 @@ window.require.register("views/templates/player/volumeManager", function(exports
   with (locals || {}) {
   var interp;
   buf.push('<div class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-inner"><div class="slider-handle"></div></div></div></div>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/playqueue_item", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<td id="state" class="left"><div class="button delete"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"></td>');
   }
   return buf.join("");
   };

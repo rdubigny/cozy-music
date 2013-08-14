@@ -25,9 +25,9 @@ module.exports = class Player extends BaseView
         'track:playImmediate': 'onPlayImmediate'
         'track:pushNext': 'onPushNext'
 
-        'track:delete': (id) ->
-            if @currentSound?.id is id
-                @onPlayFinish()
+        'track:delete': (soundId) ->
+            if @currentSound?.id is soundId
+                @stopTrack()
 
         # these channels are shared with views/player/volumeManager.coffee
         'volumeManager:toggleMute': 'onToggleMute'
@@ -85,8 +85,6 @@ module.exports = class Player extends BaseView
                         @isPaused = true
                 else if app.playQueue.getCurrentTrack()?
                     if @isStopped
-                        @playButton.removeClass("stopped")
-                        @isStopped = false
                         @onPlayTrack(app.playQueue.getCurrentTrack())
             else
                 alert "application error : unable to play track"

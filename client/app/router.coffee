@@ -4,6 +4,7 @@ module.exports = class Router extends Backbone.Router
 
     routes:
         '': 'main'
+        'playqueue': 'playqueue'
         'playlist/:playlistId': 'playlist'
 
     main: ->
@@ -14,8 +15,10 @@ module.exports = class Router extends Backbone.Router
 
 
     playlist: (id)->
+        alert "not implemented yet"
+
+    playqueue: ->
         unless @mainView?
             @mainView = new AppView()
             @mainView.render()
-        if id is "playqueue"
-            @mainView.showPlayQueue()
+        @mainView.showPlayQueue()

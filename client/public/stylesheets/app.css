@@ -1144,6 +1144,26 @@ body {
 #content #tracks-display table tbody tr.track:hover .uploadProgress {
   color: #fff;
 }
+#content #tracks-display table tbody tr.track.ui-sortable-helper {
+  -webkit-transition: all 0s ease;
+  -moz-transition: all 0s ease;
+  -o-transition: all 0s ease;
+  -ms-transition: all 0s ease;
+  transition: all 0s ease;
+  background-color: #444;
+  color: #fff;
+}
+#content #tracks-display table tbody tr.track.ui-sortable-helper:hover .button {
+  display: none;
+}
+#content #tracks-display table tbody tr.track.sortable-placeholder {
+  -webkit-transition: all 0s ease;
+  -moz-transition: all 0s ease;
+  -o-transition: all 0s ease;
+  -ms-transition: all 0s ease;
+  transition: all 0s ease;
+  background-color: #777;
+}
 #content #tracks-display table tbody tr.track .button {
   display: none;
 }

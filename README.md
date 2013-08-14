@@ -9,7 +9,7 @@ shortcuts enabled :
 - "-" : volume down
 - "+" : volume up
 - "m" : mute
-
+- "v" : switch between tracks view and play-queue view
 
 ### NB
 

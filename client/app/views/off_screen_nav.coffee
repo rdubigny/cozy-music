@@ -10,14 +10,13 @@ module.exports = class OffScreenNav extends BaseView
     tagName: 'div'
     template: require('./templates/off_screen_nav')
 
-    magicCounterSensibility : 6
+    magicCounterSensibility : 2
     magicCounter : @magicCounterSensibility
 
-    subscriptions:
-        # keyboard events
-        'keyboard:keypress' : (e)->
-            switch e.keyCode
-                when 118 then @onVKey() # "V" key
+    initialize: (options)->
+        super
+        # bind keyboard events
+        Mousetrap.bind 'v', @onVKey
 
     afterRender: =>
         @$el.on 'click', @onToggleOn

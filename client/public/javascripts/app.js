@@ -587,12 +587,6 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.template = require('./templates/home');
 
-    AppView.prototype.events = {
-      'keypress': function(e) {
-        return Backbone.Mediator.publish('keyboard:keypress', e);
-      }
-    };
-
     AppView.prototype.afterRender = function() {
       this.uploader = new Uploader;
       this.$('#uploader').append(this.uploader.$el);
@@ -607,6 +601,7 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.showTrackList = function() {
       if (this.queueList != null) {
+        this.queueList.removeScrollBar();
         this.queueList.$el.detach();
       }
       if (this.tracklist == null) {
@@ -620,6 +615,7 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.showPlayQueue = function() {
       if (this.tracklist != null) {
+        this.tracklist.removeScrollBar();
         this.tracklist.$el.detach();
       }
       if (this.queueList == null) {
@@ -670,17 +666,13 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
 
     OffScreenNav.prototype.template = require('./templates/off_screen_nav');
 
-    OffScreenNav.prototype.magicCounterSensibility = 6;
+    OffScreenNav.prototype.magicCounterSensibility = 2;
 
     OffScreenNav.prototype.magicCounter = OffScreenNav.magicCounterSensibility;
 
-    OffScreenNav.prototype.subscriptions = {
-      'keyboard:keypress': function(e) {
-        switch (e.keyCode) {
-          case 118:
-            return this.onVKey();
-        }
-      }
+    OffScreenNav.prototype.initialize = function(options) {
+      OffScreenNav.__super__.initialize.apply(this, arguments);
+      return Mousetrap.bind('v', this.onVKey);
     };
 
     OffScreenNav.prototype.afterRender = function() {
@@ -776,6 +768,7 @@ window.require.register("views/player/player", function(exports, require, module
       this.onQueueTrack = __bind(this.onQueueTrack, this);
       this.onClickFwd = __bind(this.onClickFwd, this);
       this.onClickRwd = __bind(this.onClickRwd, this);
+      this.onClickPlay = __bind(this.onClickPlay, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = Player.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -807,17 +800,14 @@ window.require.register("views/player/player", function(exports, require, module
         }
       },
       'volumeManager:toggleMute': 'onToggleMute',
-      'volumeManager:volumeChanged': 'onVolumeChange',
-      'keyboard:keypress': function(e) {
-        switch (e.keyCode) {
-          case 32:
-            return this.onClickPlay();
-          case 98:
-            return this.onClickRwd();
-          case 110:
-            return this.onClickFwd();
-        }
-      }
+      'volumeManager:volumeChanged': 'onVolumeChange'
+    };
+
+    Player.prototype.initialize = function(options) {
+      Player.__super__.initialize.apply(this, arguments);
+      Mousetrap.bind('space', this.onClickPlay);
+      Mousetrap.bind('b', this.onClickRwd);
+      return Mousetrap.bind('n', this.onClickFwd);
     };
 
     Player.prototype.afterRender = function() {
@@ -1077,6 +1067,10 @@ window.require.register("views/player/volumeManager", function(exports, require,
     __extends(VolumeManager, _super);
 
     function VolumeManager() {
+      this.toggleMute = __bind(this.toggleMute, this);
+      this.volDown = __bind(this.volDown, this);
+      this.volUp = __bind(this.volUp, this);
+      this.onClickToggleMute = __bind(this.onClickToggleMute, this);
       this.onMouseUpSlider = __bind(this.onMouseUpSlider, this);
       this.onMouseMoveSlider = __bind(this.onMouseMoveSlider, this);
       _ref = VolumeManager.__super__.constructor.apply(this, arguments);
@@ -1094,22 +1088,12 @@ window.require.register("views/player/volumeManager", function(exports, require,
       "click .volume-switch": "onClickToggleMute"
     };
 
-    VolumeManager.prototype.subscriptions = {
-      'keyboard:keypress': function(e) {
-        switch (e.keyCode) {
-          case 109:
-            return this.toggleMute();
-          case 43:
-            return this.volUp();
-          case 45:
-            return this.volDown();
-        }
-      }
-    };
-
     VolumeManager.prototype.initialize = function(options) {
       VolumeManager.__super__.initialize.apply(this, arguments);
-      return this.volumeValue = options.initVol;
+      this.volumeValue = options.initVol;
+      Mousetrap.bind('m', this.toggleMute);
+      Mousetrap.bind('+', this.volUp);
+      return Mousetrap.bind('-', this.volDown);
     };
 
     VolumeManager.prototype.afterRender = function() {
@@ -1209,6 +1193,7 @@ window.require.register("views/playqueue", function(exports, require, module) {
           - drag and drop
   */
   var PlayQueueView, TrackListView, TrackView, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1220,6 +1205,7 @@ window.require.register("views/playqueue", function(exports, require, module) {
     __extends(PlayQueueView, _super);
 
     function PlayQueueView() {
+      this.afterRender = __bind(this.afterRender, this);
       _ref = PlayQueueView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1245,7 +1231,6 @@ window.require.register("views/playqueue", function(exports, require, module) {
         containment: "parent",
         axis: "y",
         placeholder: "track sortable-placeholder",
-        tolerance: "pointer",
         helper: function(e, tr) {
           var $helper, $originals;
           $originals = tr.children();
@@ -1259,6 +1244,10 @@ window.require.register("views/playqueue", function(exports, require, module) {
           return ui.item.trigger('drop', ui.item.index());
         }
       });
+    };
+
+    PlayQueueView.prototype.onAtPlayChange = function(e) {
+      return alert("ça bouge");
     };
 
     PlayQueueView.prototype.updateSort = function(event, track, position) {
@@ -1449,6 +1438,10 @@ window.require.register("views/tracklist", function(exports, require, module) {
         spacebarenabled: false,
         enablekeyboard: false
       });
+    };
+
+    TrackListView.prototype.removeScrollBar = function() {
+      return this.$('.viewport').getNiceScroll().remove();
     };
 
     TrackListView.prototype.remove = function() {
@@ -1736,7 +1729,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
     TrackListItemView.prototype.events = {
       'click .button.delete': 'onDeleteClick',
       'click .button.puttoplay': function(e) {
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           return this.onPlayDblClick(e);
         } else {
           return this.onPlayClick(e);

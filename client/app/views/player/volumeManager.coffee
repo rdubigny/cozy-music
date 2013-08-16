@@ -10,16 +10,14 @@ module.exports = class VolumeManager extends BaseView
         "mousedown .slider": "onMouseDownSlider"
         "click .volume-switch": "onClickToggleMute"
 
-    subscriptions:
-        'keyboard:keypress' : (e)->
-            switch e.keyCode
-                when 109 then @toggleMute() # M key
-                when 43 then @volUp() # "+" key
-                when 45 then @volDown() # "-" key
-
     initialize: (options)->
         super
         @volumeValue = options.initVol
+
+        # bind keyboard events
+        Mousetrap.bind 'm', @toggleMute
+        Mousetrap.bind '+', @volUp
+        Mousetrap.bind '-', @volDown
 
     afterRender: ->
         @isMuted = false
@@ -45,15 +43,15 @@ module.exports = class VolumeManager extends BaseView
         @slidableZone.off "mousemove"
         @slidableZone.off "mouseup"
 
-    onClickToggleMute: (event) ->
+    onClickToggleMute: (event) =>
         event.preventDefault()
         @toggleMute()
 
-    volUp: ->
+    volUp: =>
         @volumeValue += 10
         @controlVolumeValue()
 
-    volDown: ->
+    volDown: =>
         @volumeValue -= 10
         @controlVolumeValue()
 
@@ -76,7 +74,7 @@ module.exports = class VolumeManager extends BaseView
         newWidth = if @isMuted then 0 else @volumeValue
         @sliderInner.width "#{newWidth}%"
 
-    toggleMute: ->
+    toggleMute: =>
         Backbone.Mediator.publish 'volumeManager:toggleMute', @volumeValue
         if @isMuted
             @volumeSwitch.removeClass "mute"

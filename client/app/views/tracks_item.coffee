@@ -5,7 +5,7 @@ module.exports = class TrackListItemView extends TrackListItemView
     events:
         'click .button.delete': 'onDeleteClick'
         'click .button.puttoplay': (e)->
-            if e.ctrlKey
+            if e.ctrlKey or e.metaKey
                 @onPlayDblClick(e)
             else
                 @onPlayClick(e)

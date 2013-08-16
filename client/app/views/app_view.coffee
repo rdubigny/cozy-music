@@ -10,10 +10,6 @@ module.exports = class AppView extends BaseView
 
     el: 'body.application'
     template: require('./templates/home')
-    events:
-        # handle all keyboard events
-        'keypress': (e)->
-            Backbone.Mediator.publish 'keyboard:keypress', e
 
     afterRender: ->
         # header used as uploader
@@ -31,6 +27,7 @@ module.exports = class AppView extends BaseView
 
     showTrackList: =>
         if @queueList?
+            @queueList.removeScrollBar()
             @queueList.$el.detach()
         unless @tracklist?
             @tracklist = new Tracks
@@ -40,6 +37,7 @@ module.exports = class AppView extends BaseView
 
     showPlayQueue: =>
         if @tracklist?
+            @tracklist.removeScrollBar()
             @tracklist.$el.detach()
         unless @queueList?
             @queueList = new PlayQueue

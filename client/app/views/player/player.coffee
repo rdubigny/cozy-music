@@ -33,12 +33,12 @@ module.exports = class Player extends BaseView
         'volumeManager:toggleMute': 'onToggleMute'
         'volumeManager:volumeChanged': 'onVolumeChange'
 
-        # keyboard events
-        'keyboard:keypress' : (e)->
-            switch e.keyCode
-                when 32 then @onClickPlay() # spacebar
-                when 98 then @onClickRwd() # "B" key
-                when 110 then @onClickFwd() # "N" key
+    initialize: (options)->
+        super
+        # bind keyboard events
+        Mousetrap.bind 'space', @onClickPlay
+        Mousetrap.bind 'b', @onClickRwd
+        Mousetrap.bind 'n', @onClickFwd
 
     afterRender: =>
         # bind play button
@@ -67,7 +67,7 @@ module.exports = class Player extends BaseView
         @isStopped = true
         @isPaused = false
 
-    onClickPlay: ->
+    onClickPlay: =>
         if not @playButton.hasClass 'loading'
             if not @playButton.hasClass 'unplayable'
                 if @currentSound?

@@ -30,6 +30,9 @@ module.exports = class TrackListView extends ViewCollection
             enablekeyboard: false
         )
 
+    removeScrollBar: ->
+        @$('.viewport').getNiceScroll().remove()
+
     remove: ->
         super
         @$('.viewport').getNiceScroll().remove()

@@ -17,17 +17,18 @@ module.exports = class PlayQueueView extends TrackListView
         'playQueueItem:remove': (track)->
             @collection.removeItem(track)
 
-    afterRender: ->
+    afterRender: =>
         super
         # adding table stripes
         $('.tracks-display tr:odd').addClass 'odd'
+
         @$('#track-list').sortable
             opacity: 0.8
             delay: 150 # prevent unwanted drags when clicking on an element
             containment: "parent"
             axis: "y"
             placeholder: "track sortable-placeholder"
-            tolerance: "pointer"
+            #tolerance: "pointer"
             helper: (e, tr)->
                 $originals = tr.children();
                 $helper = tr.clone();
@@ -37,6 +38,9 @@ module.exports = class PlayQueueView extends TrackListView
                 return $helper
             stop: (event, ui) ->
                 ui.item.trigger 'drop', ui.item.index()
+
+    onAtPlayChange: (e)->
+        alert "ça bouge"
 
     updateSort: (event, track, position) ->
         @collection.moveItem track, position

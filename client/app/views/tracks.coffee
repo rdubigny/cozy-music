@@ -49,6 +49,8 @@ module.exports = class TracksView extends TrackListView
 
     initialize: ->
         super
+        @views = {}
+
         @toggleSort 'artist' # default value : sort by artist
 
         # specify the current sorting mode

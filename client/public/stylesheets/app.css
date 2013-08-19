@@ -694,6 +694,12 @@ li[class^="icon-"].icon-large:before, li[class*=" icon-"].icon-large:before {
     width: 30px;
   }
 }
+@media (max-height: 300px) {
+  #playlist-title-list,
+  #playlist-list {
+    visibility: hidden;
+  }
+}
 @media (max-width: 465px) {
   #content .player .progress-info {
     display: none;
@@ -847,6 +853,7 @@ input {
   margin: 0 10px;
 }
 .player .progress-info .id3-info {
+  cursor: default;
   height: 20px;
   margin: 3px 0;
   color: #fff;
@@ -905,6 +912,7 @@ input {
   background-position: -331px 42px;
 }
 .player .progress-side .time {
+  cursor: default;
   display: block;
   overflow: clip;
 }
@@ -977,6 +985,21 @@ input {
   background-color: #c00;
 }
 .button.delete:active {
+  border: 2px solid #c00;
+  background-color: #a00;
+}
+.button.delete-from-here {
+  width: 20px;
+  height: 20px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background-position: -311px 16px;
+}
+.button.delete-from-here:hover {
+  border: 2px solid #b00;
+  background-color: #c00;
+}
+.button.delete-from-here:active {
   border: 2px solid #c00;
   background-color: #a00;
 }
@@ -1107,16 +1130,53 @@ body {
   padding: 5px;
   width: 14px;
   height: 14px;
-  background-image: url("../images/glyphicons-halflings.png");
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 #content #tracks-display table thead th.field .sortArrow:hover {
-  background-image: url("../images/glyphicons-halflings-red.png");
+  -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -o-transform: scale(1.2);
+  -ms-transform: scale(1.2);
+  transform: scale(1.2);
 }
 #content #tracks-display table thead th.field .sortArrow.up {
   background-position: -287px -119px;
 }
 #content #tracks-display table thead th.field .sortArrow.down {
   background-position: -312px -118px;
+}
+#content #tracks-display table thead th.left .thead-button {
+  display: inline-block;
+  margin: auto 4px;
+  width: 15px;
+  height: 15px;
+  background-image: url("../images/glyphicons-halflings-red.png");
+  cursor: pointer;
+}
+#content #tracks-display table thead th.left .thead-button.save-button {
+  background-position: 0px 16px;
+}
+#content #tracks-display table thead th.left .thead-button.show-prev-button {
+  background-position: 134px 64px;
+  -webkit-transform: scaleX(-1);
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -ms-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+#content #tracks-display table thead th.left .thead-button.show-prev-button:hover {
+  -webkit-transform: scale(-1.2, 1.2);
+  -moz-transform: scale(-1.2, 1.2);
+  -o-transform: scale(-1.2, 1.2);
+  -ms-transform: scale(-1.2, 1.2);
+  transform: scale(-1.2, 1.2);
+}
+#content #tracks-display table thead th.left .thead-button:hover {
+  -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -o-transform: scale(1.2);
+  -ms-transform: scale(1.2);
+  transform: scale(1.2);
 }
 #content #tracks-display table tbody tr.track {
   background-color: #fff;
@@ -1130,6 +1190,9 @@ body {
 }
 #content #tracks-display table tbody tr.track.odd {
   background-color: #f3f3f3;
+}
+#content #tracks-display table tbody tr.track.at-play {
+  background-color: #ecd0d0;
 }
 #content #tracks-display table tbody tr.track.selected {
   background-color: #c8c8c8;
@@ -1164,6 +1227,11 @@ body {
   transition: all 0s ease;
   background-color: #777;
 }
+#content #tracks-display table tbody tr.track.already-played {
+  opacity: 0.5;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  filter: alpha(opacity=50);
+}
 #content #tracks-display table tbody tr.track .button {
   display: none;
 }
@@ -1172,6 +1240,7 @@ body {
   text-align: center;
 }
 #content #tracks-display table tbody tr.track .field {
+  cursor: default;
   font-size: 0.8em;
 }
 #content #tracks-display table tbody tr.track .field .info {
@@ -1243,7 +1312,7 @@ body {
   background-image: url("../images/glyphicons-halflings-red.png");
 }
 #content #off-screen-nav .off-screen-nav-content {
-  overflow-y: hidden;
+  overflow: hidden;
   display: block;
   position: absolute;
   z-index: 1000;
@@ -1252,6 +1321,7 @@ body {
   bottom: 49px;
   overflow-y: auto;
   background: #444;
+  padding: 0rem 1rem 1rem;
   border-top: 1px solid #666;
   border-bottom: 1px solid #666;
   visibility: hidden;
@@ -1268,7 +1338,7 @@ body {
   transition: 500ms cubic-bezier(0.09, 0.68, 0, 0.99);
 }
 #content #off-screen-nav .off-screen-nav-content.off-screen-nav-show {
-  overflow-y: hidden;
+  overflow: hidden;
   -webkit-transform: translateX(0);
   -moz-transform: translateX(0);
   -o-transform: translateX(0);
@@ -1277,10 +1347,11 @@ body {
   visibility: visible;
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-title {
+  cursor: default;
   color: #fff;
   border-bottom: 1px solid #eee;
-  padding: 1rem 0.5rem 0.2rem 0;
-  margin: 0 1rem 1rem;
+  padding: 0 0.3rem 0.2rem;
+  margin: 1rem 0 0;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.1rem;
@@ -1288,25 +1359,66 @@ body {
   display: block;
   font-weight: bold;
 }
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-title:hover .add-playlist-button {
+  display: inline-block;
+}
+#content #off-screen-nav .off-screen-nav-content ul#playlist-list {
+  position: absolute;
+  top: 125px;
+  right: 1rem;
+  left: 1rem;
+  bottom: 1rem;
+}
 #content #off-screen-nav .off-screen-nav-content ul {
-  margin: 0 1rem 1rem;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 #content #off-screen-nav .off-screen-nav-content ul li {
+  cursor: pointer;
   margin: 0;
+  padding: 0 1rem;
   display: list-item;
-  display: block;
+  position: relative;
+  font-weight: bold;
+  font-size: 0.75rem;
   padding: 0.3rem 1rem;
   color: #fff;
   border-bottom: 1px solid #555;
+  white-space: nowrap;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
 }
 #content #off-screen-nav .off-screen-nav-content ul li:hover {
   background: #555;
 }
+#content #off-screen-nav .off-screen-nav-content ul li:hover .delete-playlist-button {
+  display: inline-block;
+}
 #content #off-screen-nav .off-screen-nav-content ul a {
   color: #fff;
   text-decoration: none;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button {
+  cursor: pointer;
+  display: none;
+  position: absolute;
+  right: 2px;
+  line-height: 14px;
+  vertical-align: text-top;
+  height: 14px;
+  width: 14px;
+  background-image: url("../images/glyphicons-halflings-white.png");
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.add-playlist-button {
+  background-position: -408px -96px;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.delete-playlist-button {
+  background-position: -312px 0px;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button:hover {
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 @-moz-keyframes dropText {
   0% {
@@ -1476,6 +1588,7 @@ Da damn bear-killer player style
   margin: 0 10px;
 }
 .player .progress-info .id3-info {
+  cursor: default;
   height: 20px;
   margin: 3px 0;
   color: #fff;
@@ -1522,6 +1635,7 @@ Da damn bear-killer player style
   background-position: -331px 42px;
 }
 .player .progress-side .time {
+  cursor: default;
   display: block;
   overflow: clip;
 }
@@ -1589,6 +1703,20 @@ Da damn bear-killer player style
   border: 2px solid #c00;
   background-color: #a00;
 }
+.button.delete-from-here {
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-position: -311px 16px;
+}
+.button.delete-from-here:hover {
+  border: 2px solid #b00;
+  background-color: #c00;
+}
+.button.delete-from-here:active {
+  border: 2px solid #c00;
+  background-color: #a00;
+}
 .button.puttoplay {
   width: 20px;
   height: 20px;
@@ -1633,6 +1761,12 @@ Da damn bear-killer player style
   }
   #content #tracks-display table .num {
     width: 30px;
+  }
+}
+@media (max-height: 300px) {
+  #playlist-title-list,
+  #playlist-list {
+    visibility: hidden;
   }
 }
 @media (max-width: 465px) {

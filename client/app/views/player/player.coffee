@@ -147,6 +147,8 @@ module.exports = class Player extends BaseView
 
 
     onPlayTrack: (track)=>
+        # signal other subviews
+        Backbone.Mediator.publish 'player:start-sound', track.get('id')
         # stop and destruct previous sound if necessary
         if @currentSound?
             # if this is the same sound, no need to destroy it
@@ -195,6 +197,8 @@ module.exports = class Player extends BaseView
 
     # stop means destroy, this function destroy the sound and update the display
     stopTrack: =>
+        # signal other subviews
+        Backbone.Mediator.publish 'player:stop-sound'
         if @currentSound?
             @currentSound.destruct()
             @currentSound = null

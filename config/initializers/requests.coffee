@@ -13,9 +13,10 @@ module.exports = (compound) ->
 
     byPlaylist = (track) ->
         for playlist in track.playlists
-            emit playlist, track # playlist = id
+            emit playlist, track # playlist is an id
 
-    Track.defineRequest "byPlaylist", byPlaylist, (err)-> # envoie la définition à couchDB pour créer l'index
+    # send the definition to couchDB to create the index
+    Track.defineRequest "byPlaylist", byPlaylist, (err)->
         if err
             compound.logger.write "Track.byPlaylist requests, cannot be created"
             compound.logger.write err

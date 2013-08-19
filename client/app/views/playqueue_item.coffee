@@ -6,18 +6,17 @@ module.exports = class PlayQueueItemView extends TrackListItemView
 
     events:
         'click .button.delete': 'onDeleteClick'
+        'click .button.delete-from-here': 'onDeleteFromHereClick'
         'drop' : 'drop'
 
     onDeleteClick: (event)=>
         event.preventDefault()
         event.stopPropagation()
+         # remove the view without destroying the model
+        @$el.trigger 'remove-item', @model
 
-        # signal player if this track is at play
-        id = @model.attributes.id
-        # then signal player
-        Backbone.Mediator.publish 'track:delete', "sound-#{id}"
-        # signal trackList view
-        Backbone.Mediator.publish 'playQueueItem:remove', @model
+    onDeleteFromHereClick: (event)->
+        @$el.trigger 'remove-from-track', @model
 
     drop: (event, index) ->
         @$el.trigger 'update-sort', [@model, index]

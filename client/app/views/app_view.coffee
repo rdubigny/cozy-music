@@ -21,9 +21,17 @@ module.exports = class AppView extends BaseView
         @$('#player').append @player.$el
         @player.render()
 
-        @offScreenNav = new OffScreenNav()
-        @$('#off-screen-nav').append @offScreenNav.$el
-        @offScreenNav.render()
+        PlaylistCollection = require 'collections/playlist_collection'
+        @playlists = new PlaylistCollection()
+        @playlists.fetch
+            success: (collection)=>
+                @offScreenNav = new OffScreenNav
+                    collection: collection
+                @$('#off-screen-nav').append @offScreenNav.$el
+                @offScreenNav.render()
+            error: =>
+                msg = "Files couldn't be retrieved due to a server error."
+                alert msg
 
     showTrackList: =>
         if @queueList?
@@ -31,7 +39,7 @@ module.exports = class AppView extends BaseView
             @queueList.$el.detach()
         unless @tracklist?
             @tracklist = new Tracks
-                    collection: app.tracks
+                collection: app.tracks
         @$('#tracks-display').append @tracklist.$el
         @tracklist.render()
 
@@ -41,6 +49,6 @@ module.exports = class AppView extends BaseView
             @tracklist.$el.detach()
         unless @queueList?
             @queueList = new PlayQueue
-                    collection: app.playQueue
+                collection: app.playQueue
         @$('#tracks-display').append @queueList.$el
         @queueList.render()

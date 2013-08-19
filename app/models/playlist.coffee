@@ -4,7 +4,8 @@ module.exports = (compound, Playlist) ->
         # defined at application initialization.
         Playlist.request "all", params, callback
 
-    Playlist::tracks = (callback) -> # attache le prototype d'une playlist
+    # bind playlist prototype
+    Playlist::tracks = (callback) ->
         Track = compound.models.Track
         params =
             key: @id

@@ -49,7 +49,7 @@ module.exports = class ViewCollection extends BaseView
     # bind listeners to the collection
     initialize: ->
         super
-        # To handle the sub views
+        @views = {}
         @listenTo @collection, "reset",   @onReset
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem

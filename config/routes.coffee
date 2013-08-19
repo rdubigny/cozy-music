@@ -8,4 +8,6 @@ exports.routes = (map) ->
 
     # playlist
     map.get 'playlists', 'playlists#all'
+    map.post 'playlists', 'playlists#create'
     map.get 'playlists/:id', 'playlists#show'
+    map.del 'playlists/:id', 'playlists#destroy'

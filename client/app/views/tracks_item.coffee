@@ -42,8 +42,8 @@ module.exports = class TrackListItemView extends TrackListItemView
                 state: 'canceled'
 
         # stop playing this track if at play
-        id = @model.attributes.id
-        Backbone.Mediator.publish 'track:delete', "sound-#{id}"
+        #id = @model.attributes.id
+        #Backbone.Mediator.publish 'track:delete', "sound-#{id}"
         # destroy the model
         @model.destroy
             error: =>

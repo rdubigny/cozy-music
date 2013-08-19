@@ -46,31 +46,42 @@ module.exports = class PlayQueue extends Backbone.Collection
     queue: (track)->
         @push track,
             sort: false
-            unique: false
 
     # add the track at the index atPlay+1
     pushNext: (track)->
         if @length > 0
             @add track,
                 at : @atPlay+1
-                merge: true
         else
-            @add track,
-                merge: true
+            @add track
 
     moveItem: (track, position)->
-        if @indexOf(track) is @atPlay
+        # first : update atPlay value
+        if @indexOf(track) == @atPlay
             @atPlay = position
-        @remove track
+        else
+            if @indexOf(track) < @atPlay
+                @atPlay -= 1
+            if position <= @atPlay
+                @atPlay += 1
+        @remove track, false
         @add track,
             at: position
-            merge: true
 
-    # delete track
-    removeItem: (track)->
-        @remove track
-        if @atPlay is @length and @length isnt 0
-            @atPlay -= 1
+    # update atPlay value then call remove on track
+    remove: (track, updateAtPlayValue = true)->
+        if updateAtPlayValue
+            if @indexOf(track) < @atPlay
+                @atPlay -= 1
+            else if @indexOf(track) == @atPlay
+                id = track.get 'id'
+                Backbone.Mediator.publish 'track:delete', "sound-#{id}"
+                if @indexOf(track) is @indexOf(@last()) and @length > 1
+                    @atPlay -= 1
+        super track
+
+    deleteFromIndexToEnd: (index)->
+        @remove(@last()) while @indexOf(@last()) >= index
 
     # debug function
     show: ->

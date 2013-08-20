@@ -19,6 +19,8 @@ module.exports =
         PlayQueue = require 'collections/playqueue'
         @playQueue = new PlayQueue()
 
+        @selectedPlaylist = null
+
         @soundManager = soundManager
 
         @soundManager.setup
@@ -43,4 +45,4 @@ module.exports =
         Backbone.history.start()
 
         # Makes this object immuable.
-        Object.freeze this if typeof Object.freeze is 'function'
+        #Object.freeze this if typeof Object.freeze is 'function'

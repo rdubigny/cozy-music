@@ -12,7 +12,23 @@ module.exports = class PlaylistNavView extends BaseView
     template: require './templates/playlist_nav'
 
     events:
+        'click .select-playlist-button': 'onSelectClick'
         'click .delete-playlist-button': 'onDeleteClick'
+
+    initialize: ->
+        super
+        # handle variable changes
+        @listenTo @model, 'change:id', @onIdChange
+
+    onIdChange: ->
+        @$('a').attr 'href', "#playlist/#{@model.id}"
+
+    onSelectClick: (event) =>
+        event.preventDefault()
+        event.stopPropagation()
+        unless @$('li').hasClass('selected')
+            @$('li').addClass('selected')
+            @$el.trigger 'playlist-selected', @model
 
     onDeleteClick: (event)->
         event.preventDefault()

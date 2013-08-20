@@ -92,7 +92,12 @@ body
                 border:1px solid #aaa
                 th
                     &.field
-                        cursor: pointer
+                        cursor: default
+
+                        &.title,
+                        &.artist,
+                        &.album
+                            cursor: pointer
 
                         .sortArrow
                             display: inline-block
@@ -225,12 +230,12 @@ body
                     width: 12px
                     height: 14px
                     background-position: -457px -72px
-                    background-image: url("../images/glyphicons-halflings-white.png")
+                    background-image: url("../images/glyphicons-halflings.png")
                     &.on
                         background-position: -431px -72px
             &:hover
                 .off-screen-nav-toggle-arrow
-                    background-image: url("../images/glyphicons-halflings-red.png")
+                    background-image: url("../images/glyphicons-halflings-white.png")
 
         .off-screen-nav-content
             overflow: hidden
@@ -285,19 +290,29 @@ body
                 li
                     cursor: pointer
                     margin: 0
-                    padding: 0 1rem
+                    padding: 0.3rem 0rem 0.3rem 1rem
                     display: list-item
                     position: relative
                     font-weight: bold
                     font-size: 0.75rem
-                    padding: 0.3rem 1rem
                     color: white
                     border-bottom: 1px solid #555
                     overflow: ellipsis
                     &:hover
+                        padding: 0.3rem 1rem 0.3rem 1rem
                         background: #555
                         .delete-playlist-button
                             display: inline-block
+                        .select-playlist-button
+                            display: inline-block
+
+                    &.selected
+                        .select-playlist-button
+                            background-image: url("../images/glyphicons-halflings-red.png")
+                            display: inline-block
+                            &:hover
+                                background-image: url("../images/glyphicons-halflings-red.png")
+
                 a
                     color: white
                     text-decoration: none
@@ -318,6 +333,13 @@ body
 
                 &.delete-playlist-button
                     background-position: -312px 0px
+
+                &.select-playlist-button
+                    left: 0
+                    background-image: url("../images/glyphicons-halflings.png")
+                    background-position: -456px -72px
+                    &:hover
+                        background-image: url("../images/glyphicons-halflings-white.png")
 
                 &:hover
                     background-image: url("../images/glyphicons-halflings-red.png")

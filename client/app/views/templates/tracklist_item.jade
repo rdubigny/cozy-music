@@ -1,10 +1,10 @@
 td.left#state
-    .button.addto
-    .button.puttoplay
+    .button.addto(title="add to selected playlist")
+    .button.puttoplay(title="queue this song in the play queue")
 td.field.title #{model.title}
     //-span.info #{model.title}
 td.field.artist #{model.artist}
 td.field.album #{model.album}
 td.field.num #{model.track}
 td.right
-    .button.delete
+    .button.delete(title="delete definitively")

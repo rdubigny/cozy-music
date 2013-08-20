@@ -9,6 +9,7 @@ TrackListView = require './tracklist'
 module.exports = class PlayQueueView extends TrackListView
 
     itemview: TrackView
+    template: require('./templates/playqueue')
 
     events:
         'update-sort': 'updateSort'
@@ -48,14 +49,6 @@ module.exports = class PlayQueueView extends TrackListView
                     view.$el.addClass 'hidden'
             else if index is @collection.atPlay
                 view.$el.addClass 'at-play'
-
-        # adding save button & show previous tracks
-        saveButton = $(document.createElement('div'))
-        saveButton.addClass('thead-button save-button')
-        @$('th.left').append saveButton
-        showPrevButton = $(document.createElement('div'))
-        showPrevButton.addClass('thead-button show-prev-button')
-        @$('th.left').append showPrevButton
 
         # enabling drag'n'drop with jquery-ui-1.10.3
         @$('#track-list').sortable

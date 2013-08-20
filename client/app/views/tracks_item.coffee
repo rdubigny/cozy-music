@@ -1,4 +1,5 @@
 TrackListItemView = require './tracklist_item'
+app = require 'application'
 
 module.exports = class TrackListItemView extends TrackListItemView
 
@@ -9,6 +10,13 @@ module.exports = class TrackListItemView extends TrackListItemView
                 @onPlayDblClick(e)
             else
                 @onPlayClick(e)
+        'click .button.addto': (e)->
+            event.preventDefault()
+            event.stopPropagation()
+            if app.selectedPlaylist?
+                @onAddTo()
+            else
+                alert "No playlist selected. Please select a playlist in the navigation bar on the left"
         'dblclick .button.puttoplay': (event)->
             event.preventDefault()
             event.stopPropagation()
@@ -72,6 +80,9 @@ module.exports = class TrackListItemView extends TrackListItemView
         # if the file is not backed up yet, disable the play launch
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:pushNext', @model
+
+    onAddTo: ->
+        alert "Not implemented yet"
 
     onUploadProgressChange: (e)=>
         # make sure we can compute the length

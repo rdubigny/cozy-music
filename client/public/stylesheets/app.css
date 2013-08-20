@@ -780,11 +780,15 @@ input {
   top: 0px;
   left: 0px;
   position: relative;
-  background-image: url("../images/glyphicons-halflings-white.png");
+  background-image: url("../images/glyphicons-halflings.png");
   background-position: -405px 138px;
+}
+.player .volume .volume-switch:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
 .player .volume .volume-switch.mute {
   background-position: -357px 138px;
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .volume .slider {
   width: 75%;
@@ -1122,6 +1126,11 @@ body {
   border: 1px solid #aaa;
 }
 #content #tracks-display table thead th.field {
+  cursor: default;
+}
+#content #tracks-display table thead th.field.title,
+#content #tracks-display table thead th.field.artist,
+#content #tracks-display table thead th.field.album {
   cursor: pointer;
 }
 #content #tracks-display table thead th.field .sortArrow {
@@ -1303,13 +1312,13 @@ body {
   width: 12px;
   height: 14px;
   background-position: -457px -72px;
-  background-image: url("../images/glyphicons-halflings-white.png");
+  background-image: url("../images/glyphicons-halflings.png");
 }
 #content #off-screen-nav .off-screen-nav-toggle .off-screen-nav-toggle-handler .off-screen-nav-toggle-arrow.on {
   background-position: -431px -72px;
 }
 #content #off-screen-nav .off-screen-nav-toggle:hover .off-screen-nav-toggle-arrow {
-  background-image: url("../images/glyphicons-halflings-red.png");
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
 #content #off-screen-nav .off-screen-nav-content {
   overflow: hidden;
@@ -1377,12 +1386,11 @@ body {
 #content #off-screen-nav .off-screen-nav-content ul li {
   cursor: pointer;
   margin: 0;
-  padding: 0 1rem;
+  padding: 0.3rem 0rem 0.3rem 1rem;
   display: list-item;
   position: relative;
   font-weight: bold;
   font-size: 0.75rem;
-  padding: 0.3rem 1rem;
   color: #fff;
   border-bottom: 1px solid #555;
   white-space: nowrap;
@@ -1391,10 +1399,21 @@ body {
   text-overflow: ellipsis;
 }
 #content #off-screen-nav .off-screen-nav-content ul li:hover {
+  padding: 0.3rem 1rem 0.3rem 1rem;
   background: #555;
 }
 #content #off-screen-nav .off-screen-nav-content ul li:hover .delete-playlist-button {
   display: inline-block;
+}
+#content #off-screen-nav .off-screen-nav-content ul li:hover .select-playlist-button {
+  display: inline-block;
+}
+#content #off-screen-nav .off-screen-nav-content ul li.selected .select-playlist-button {
+  background-image: url("../images/glyphicons-halflings-red.png");
+  display: inline-block;
+}
+#content #off-screen-nav .off-screen-nav-content ul li.selected .select-playlist-button:hover {
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 #content #off-screen-nav .off-screen-nav-content ul a {
   color: #fff;
@@ -1416,6 +1435,14 @@ body {
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.delete-playlist-button {
   background-position: -312px 0px;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.select-playlist-button {
+  left: 0;
+  background-image: url("../images/glyphicons-halflings.png");
+  background-position: -456px -72px;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.select-playlist-button:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-button:hover {
   background-image: url("../images/glyphicons-halflings-red.png");
@@ -1538,11 +1565,15 @@ Da damn bear-killer player style
   top: 0px;
   left: 0px;
   position: relative;
-  background-image: url("../images/glyphicons-halflings-white.png");
+  background-image: url("../images/glyphicons-halflings.png");
   background-position: -405px 138px;
+}
+.player .volume .volume-switch:hover {
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
 .player .volume .volume-switch.mute {
   background-position: -357px 138px;
+  background-image: url("../images/glyphicons-halflings-red.png");
 }
 .player .volume .slider {
   width: 75%;

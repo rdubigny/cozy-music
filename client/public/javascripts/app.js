@@ -97,6 +97,7 @@ window.require.register("application", function(exports, require, module) {
       });
       PlayQueue = require('collections/playqueue');
       this.playQueue = new PlayQueue();
+      this.selectedPlaylist = null;
       this.soundManager = soundManager;
       this.soundManager.setup({
         debugMode: false,
@@ -114,10 +115,7 @@ window.require.register("application", function(exports, require, module) {
           return $('.button.play').toggleClass('unplayable loading');
         }
       });
-      Backbone.history.start();
-      if (typeof Object.freeze === 'function') {
-        return Object.freeze(this);
-      }
+      return Backbone.history.start();
     }
   };
   
@@ -737,8 +735,6 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
 
     function OffScreenNav() {
       this.toggleNav = __bind(this.toggleNav, this);
-      this.onToggleOff = __bind(this.onToggleOff, this);
-      this.onToggleOn = __bind(this.onToggleOn, this);
       this.magicToggle = __bind(this.magicToggle, this);
       this.onVKey = __bind(this.onVKey, this);
       this.afterRender = __bind(this.afterRender, this);
@@ -761,20 +757,37 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
     OffScreenNav.prototype.magicCounter = OffScreenNav.magicCounterSensibility;
 
     OffScreenNav.prototype.events = {
-      'click .add-playlist-button': 'onAddPlaylist'
+      'click .add-playlist-button': 'onAddPlaylist',
+      'playlist-selected': 'onPlaylistSelected',
+      'click': function(e) {
+        return this.toggleNav();
+      },
+      'mousemove': function(e) {
+        if (!this.onScreen) {
+          return this.magicToggle(e);
+        }
+      },
+      'mouseleave': function(e) {
+        if (this.onScreen) {
+          return this.toggleNav();
+        }
+      }
     };
 
     OffScreenNav.prototype.initialize = function(options) {
       OffScreenNav.__super__.initialize.apply(this, arguments);
+      this.listenTo(this.collection, 'remove', function(playlist) {
+        if (app.selectedPlaylist === playlist) {
+          return app.selectedPlaylist = null;
+        }
+      });
       return Mousetrap.bind('v', this.onVKey);
     };
 
     OffScreenNav.prototype.afterRender = function() {
       OffScreenNav.__super__.afterRender.apply(this, arguments);
-      this.$el.on('click', this.onToggleOn);
-      this.$el.on('mousemove', this.magicToggle);
       this.notOnHome = $(location).attr('href').match(/playqueue$/) != null;
-      return this.$('#playlist-list').niceScroll({
+      this.$('#playlist-list').niceScroll({
         cursorcolor: "#fff",
         cursorborder: "",
         cursorwidth: "2px",
@@ -783,6 +796,7 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
         spacebarenabled: false,
         enablekeyboard: false
       });
+      return this.onScreen = this.$('.off-screen-nav-content').hasClass('off-screen-nav-show');
     };
 
     OffScreenNav.prototype.onVKey = function() {
@@ -802,27 +816,12 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
       }
       if (this.magicCounter === 0) {
         this.magicCounter = this.magicCounterSensibility;
-        return this.onToggleOn();
+        return this.toggleNav();
       }
     };
 
-    OffScreenNav.prototype.onToggleOn = function() {
-      this.$el.off('click', this.onToggleOn);
-      this.$el.on('click', this.onToggleOff);
-      this.$el.off('mousemove', this.magicToggle);
-      this.$el.on('mouseleave', this.onToggleOff);
-      return this.toggleNav();
-    };
-
-    OffScreenNav.prototype.onToggleOff = function() {
-      this.$el.off('click', this.onToggleOff);
-      this.$el.on('click', this.onToggleOn);
-      this.$el.off('mouseleave', this.onToggleOff);
-      this.$el.on('mousemove', this.magicToggle);
-      return this.toggleNav();
-    };
-
     OffScreenNav.prototype.toggleNav = function() {
+      this.onScreen = !this.onScreen;
       this.$('.off-screen-nav-content').toggleClass('off-screen-nav-show');
       return this.updateDisplay();
     };
@@ -848,20 +847,23 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
         defaultVal = title;
       }
       if (title != null) {
-        playlist = {
+        playlist = new Playlist({
           title: title
-        };
-        return this.collection.create(playlist, {
-          success: function(model) {
-            return playlist = {
-              id: model.attributes.id
-            };
-          },
+        });
+        this.collection.create(playlist, {
           error: function() {
             return alert("Server error occured, playlist wasn't created");
           }
         });
+        return this.views[playlist.cid].$('.select-playlist-button').trigger('click');
       }
+    };
+
+    OffScreenNav.prototype.onPlaylistSelected = function(event, playlist) {
+      if (app.selectedPlaylist != null) {
+        this.views[app.selectedPlaylist.cid].$('li').removeClass('selected');
+      }
+      return app.selectedPlaylist = playlist;
     };
 
     return OffScreenNav;
@@ -1323,6 +1325,7 @@ window.require.register("views/player/volumeManager", function(exports, require,
 });
 window.require.register("views/playlist_nav_view", function(exports, require, module) {
   var BaseView, PlaylistNavView, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1332,6 +1335,7 @@ window.require.register("views/playlist_nav_view", function(exports, require, mo
     __extends(PlaylistNavView, _super);
 
     function PlaylistNavView() {
+      this.onSelectClick = __bind(this.onSelectClick, this);
       _ref = PlaylistNavView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1343,7 +1347,26 @@ window.require.register("views/playlist_nav_view", function(exports, require, mo
     PlaylistNavView.prototype.template = require('./templates/playlist_nav');
 
     PlaylistNavView.prototype.events = {
+      'click .select-playlist-button': 'onSelectClick',
       'click .delete-playlist-button': 'onDeleteClick'
+    };
+
+    PlaylistNavView.prototype.initialize = function() {
+      PlaylistNavView.__super__.initialize.apply(this, arguments);
+      return this.listenTo(this.model, 'change:id', this.onIdChange);
+    };
+
+    PlaylistNavView.prototype.onIdChange = function() {
+      return this.$('a').attr('href', "#playlist/" + this.model.id);
+    };
+
+    PlaylistNavView.prototype.onSelectClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!this.$('li').hasClass('selected')) {
+        this.$('li').addClass('selected');
+        return this.$el.trigger('playlist-selected', this.model);
+      }
     };
 
     PlaylistNavView.prototype.onDeleteClick = function(event) {
@@ -1390,6 +1413,8 @@ window.require.register("views/playqueue", function(exports, require, module) {
 
     PlayQueueView.prototype.itemview = TrackView;
 
+    PlayQueueView.prototype.template = require('./templates/playqueue');
+
     PlayQueueView.prototype.events = {
       'update-sort': 'updateSort',
       'remove-item': function(e, track) {
@@ -1414,7 +1439,7 @@ window.require.register("views/playqueue", function(exports, require, module) {
     };
 
     PlayQueueView.prototype.afterRender = function() {
-      var id, index, saveButton, showPrevButton, view, _ref1;
+      var id, index, view, _ref1;
       PlayQueueView.__super__.afterRender.apply(this, arguments);
       $('.tracks-display tr:odd').addClass('odd');
       _ref1 = this.views;
@@ -1431,12 +1456,6 @@ window.require.register("views/playqueue", function(exports, require, module) {
           view.$el.addClass('at-play');
         }
       }
-      saveButton = $(document.createElement('div'));
-      saveButton.addClass('thead-button save-button');
-      this.$('th.left').append(saveButton);
-      showPrevButton = $(document.createElement('div'));
-      showPrevButton.addClass('thead-button show-prev-button');
-      this.$('th.left').append(showPrevButton);
       return this.$('#track-list').sortable({
         opacity: 0.8,
         delay: 150,
@@ -1541,7 +1560,7 @@ window.require.register("views/templates/off_screen_nav", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="off-screen-nav-toggle"><div class="off-screen-nav-toggle-handler"><div class="off-screen-nav-toggle-arrow"></div></div></div><div class="off-screen-nav-content"><div class="off-screen-nav-title">Content</div><ul><a href="#" class="home"><li>My Songs</li></a><a href="#playqueue" class="playqueue"><li>Play Queue</li></a></ul><div id="playlist-title-list" class="off-screen-nav-title">Playlists<div class="off-screen-nav-button add-playlist-button"></div></div><ul id="playlist-list"></ul></div>');
+  buf.push('<div class="off-screen-nav-toggle"><div class="off-screen-nav-toggle-handler"><div class="off-screen-nav-toggle-arrow"></div></div></div><div class="off-screen-nav-content"><div class="off-screen-nav-title">Content</div><ul><a href="#" class="home"><li title="go to the complete list of your uploaded songs">My Songs</li></a><a href="#playqueue" class="playqueue"><li title="go to the queued songs">Play Queue</li></a></ul><div id="playlist-title-list" class="off-screen-nav-title">Playlists<div title="create playlist" class="off-screen-nav-button add-playlist-button"></div></div><ul id="playlist-list"></ul></div>');
   }
   return buf.join("");
   };
@@ -1552,7 +1571,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="player-element"><div class="button rwd"></div><div class="button play loading"></div><div class="button fwd"></div></div><div class="player-element"><div class="progress-side"><div class="list-control loop"></div><div class="time left"><span id="elapsedTime"></span></div></div><div class="progress-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="progress-side"><div class="list-control random"></div><div class="time right"><span id="remainingTime"></span></div></div></div><div class="player-element"><span id="volume"></span></div>');
+  buf.push('<div class="player-element"><div title="play previous track" class="button rwd"></div><div title="play/pause" class="button play loading"></div><div title="play next track" class="button fwd"></div></div><div class="player-element"><div class="progress-side"><div class="list-control loop"></div><div class="time left"><span id="elapsedTime"></span></div></div><div class="progress-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="progress-side"><div class="list-control random"></div><div class="time right"><span id="remainingTime"></span></div></div></div><div class="player-element"><span id="volume"></span></div>');
   }
   return buf.join("");
   };
@@ -1563,7 +1582,7 @@ window.require.register("views/templates/player/volumeManager", function(exports
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-inner"><div class="slider-handle"></div></div></div></div>');
+  buf.push('<div title="mute/unmute" class="volume-switch"></div><div class="slider"><div class="slider-container"><div class="slider-inner"><div class="slider-handle"></div></div></div></div>');
   }
   return buf.join("");
   };
@@ -1576,7 +1595,18 @@ window.require.register("views/templates/playlist_nav", function(exports, requir
   var interp;
   buf.push('<a');
   buf.push(attrs({ 'href':("#playlist/" + (model.id) + ""), "class": ('home') }, {"href":true}));
-  buf.push('><li>' + escape((interp = model.title) == null ? '' : interp) + '<div class="off-screen-nav-button delete-playlist-button"></div></li></a>');
+  buf.push('><li>' + escape((interp = model.title) == null ? '' : interp) + '<div title="select playlist : track will be added to this playlist when clicking on the + button" class="off-screen-nav-button select-playlist-button"></div><div title="delete playlist definitively" class="off-screen-nav-button delete-playlist-button"></div></li></a>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("views/templates/playqueue", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<div class="viewport"><table><thead><tr><th class="left"><div title="save as playlist" class="thead-button save-button"></div><div title="show/hide previous tracks" class="thead-button show-prev-button"></div></th><th class="field">Title</th><th class="field">Artist</th><th class="field">Album</th><th class="field">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
   }
   return buf.join("");
   };
@@ -1598,7 +1628,7 @@ window.require.register("views/templates/tracklist", function(exports, require, 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
+  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th title="sort by title" class="field title">Title</th><th title="sort by artist" class="field artist">Artist</th><th title="sort by album" class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
   }
   return buf.join("");
   };
@@ -1609,7 +1639,7 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<td id="state" class="left"><div class="button addto"></div><div class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div class="button delete"></div></td>');
+  buf.push('<td id="state" class="left"><div title="add to selected playlist" class="button addto"></div><div title="queue this song in the play queue" class="button puttoplay"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div title="delete definitively" class="button delete"></div></td>');
   }
   return buf.join("");
   };
@@ -1620,7 +1650,7 @@ window.require.register("views/templates/uploader", function(exports, require, m
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<table><td id="h1">CoZic</td><td id="h2">Put music in your Cozy</td></table>');
+  buf.push('<table title="drop files here or click to add tracks"><td id="h1">CoZic</td><td id="h2">Put music in your Cozy</td></table>');
   }
   return buf.join("");
   };
@@ -1944,12 +1974,14 @@ window.require.register("views/tracks", function(exports, require, module) {
   
 });
 window.require.register("views/tracks_item", function(exports, require, module) {
-  var TrackListItemView, _ref,
+  var TrackListItemView, app, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   TrackListItemView = require('./tracklist_item');
+
+  app = require('application');
 
   module.exports = TrackListItemView = (function(_super) {
     __extends(TrackListItemView, _super);
@@ -1969,6 +2001,15 @@ window.require.register("views/tracks_item", function(exports, require, module) 
           return this.onPlayDblClick(e);
         } else {
           return this.onPlayClick(e);
+        }
+      },
+      'click .button.addto': function(e) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (app.selectedPlaylist != null) {
+          return this.onAddTo();
+        } else {
+          return alert("No playlist selected. Please select a playlist in the navigation bar on the left");
         }
       },
       'dblclick .button.puttoplay': function(event) {
@@ -2035,6 +2076,10 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       if (this.model.attributes.state === 'server') {
         return Backbone.Mediator.publish('track:pushNext', this.model);
       }
+    };
+
+    TrackListItemView.prototype.onAddTo = function() {
+      return alert("Not implemented yet");
     };
 
     TrackListItemView.prototype.onUploadProgressChange = function(e) {

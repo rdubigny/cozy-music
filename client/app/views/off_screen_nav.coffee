@@ -21,18 +21,30 @@ module.exports = class OffScreenNav extends ViewCollection
 
     events:
         'click .add-playlist-button': 'onAddPlaylist'
+        'playlist-selected': 'onPlaylistSelected'
+        'click' : (e) ->
+            @toggleNav()
+        'mousemove': (e) ->
+            unless @onScreen
+                @magicToggle e
+        'mouseleave': (e) ->
+            if @onScreen
+                @toggleNav()
+
 
     initialize: (options)->
         super
+        @listenTo @collection, 'remove', (playlist)->
+            # if this playlist is the selected playlist, update the app variable
+            if app.selectedPlaylist is playlist
+                app.selectedPlaylist = null
+
         # bind keyboard events
         Mousetrap.bind 'v', @onVKey
 
     afterRender: =>
         super
-        @$el.on 'click', @onToggleOn
-        @$el.on 'mousemove', @magicToggle
         @notOnHome = $(location).attr('href').match(/playqueue$/)?
-        #@toggleNav()
 
         # adding scrollbar
         @$('#playlist-list').niceScroll
@@ -43,6 +55,8 @@ module.exports = class OffScreenNav extends ViewCollection
             horizrailenabled: false
             spacebarenabled: false
             enablekeyboard: false
+
+        @onScreen = @$('.off-screen-nav-content').hasClass 'off-screen-nav-show'
 
     onVKey: =>
         # toggle between the 2 views
@@ -59,23 +73,10 @@ module.exports = class OffScreenNav extends ViewCollection
             @magicCounter = @magicCounterSensibility
         if @magicCounter is 0
             @magicCounter = @magicCounterSensibility
-            @onToggleOn()
-
-    onToggleOn: =>
-        @$el.off 'click', @onToggleOn
-        @$el.on 'click', @onToggleOff
-        @$el.off 'mousemove', @magicToggle
-        @$el.on 'mouseleave', @onToggleOff
-        @toggleNav()
-
-    onToggleOff: =>
-        @$el.off 'click', @onToggleOff
-        @$el.on 'click', @onToggleOn
-        @$el.off 'mouseleave', @onToggleOff
-        @$el.on 'mousemove', @magicToggle
-        @toggleNav()
+            @toggleNav()
 
     toggleNav: =>
+        @onScreen = !@onScreen
         @$('.off-screen-nav-content').toggleClass 'off-screen-nav-show'
         @updateDisplay()
 
@@ -100,13 +101,18 @@ module.exports = class OffScreenNav extends ViewCollection
         # if creation wasn't canceled by user
         if title?
             # Data to be used to create the new model
-            playlist =
+            playlist = new Playlist
                 title: title
 
             # Save it through collection, this will automatically add it to the
             # current list when request finishes.
             @collection.create playlist,
-                success: (model)->
-                    playlist =
-                        id : model.attributes.id # don't work yet
                 error: -> alert "Server error occured, playlist wasn't created"
+
+            # auto-select the new playlist
+            @views[playlist.cid].$('.select-playlist-button').trigger 'click'
+
+    onPlaylistSelected: (event, playlist)->
+        if app.selectedPlaylist?
+            @views[app.selectedPlaylist.cid].$('li').removeClass('selected')
+        app.selectedPlaylist = playlist

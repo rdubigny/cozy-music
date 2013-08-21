@@ -7,7 +7,7 @@ before ->
             @playlist = playlist
             next()
 # Make this pre-treatment only before destroy action.
-, only: ['destroy']
+, only: ['destroy', 'show']
 
 action 'all', ->
     # Here we use the method all to retrieve all playlists stored.
@@ -19,7 +19,7 @@ action 'all', ->
             send playlists, 200
 
 action 'show', ->
-    @playlist.tracks (err, tracks)->
+    @playlist.tracks (err, tracks)=>
         out = @playlist.toObject()
         out.tracks = tracks
         send out, 200

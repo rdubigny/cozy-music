@@ -1,9 +1,9 @@
 td.left#state
-    .button.delete
+    .button.delete(title="remove this track from the queue")
 td.field.title #{model.title}
     //-span.info #{model.title}
 td.field.artist #{model.artist}
 td.field.album #{model.album}
 td.field.num #{model.track}
 td.right
-    .button.delete-from-here
+    .button.delete-from-here(title="clear the queue from here")

@@ -507,19 +507,21 @@ window.require.register("lib/view_collection", function(exports, require, module
   
 });
 window.require.register("models/playlist", function(exports, require, module) {
-  var Playlist, _ref,
+  var Playlist, TrackCollection,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  TrackCollection = require('../collections/track_collection');
 
   module.exports = Playlist = (function(_super) {
     __extends(Playlist, _super);
 
-    function Playlist() {
-      _ref = Playlist.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
     Playlist.prototype.rootUrl = 'playlists';
+
+    function Playlist() {
+      this.tracks = new TrackCollection();
+      return Playlist.__super__.constructor.apply(this, arguments);
+    }
 
     return Playlist;
 
@@ -604,7 +606,25 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
-      return alert("not implemented yet. Can't open playlist " + id);
+
+      /*
+      playlist = @mainView.playlists.get(id) #or new Album id:id
+      playlist.fetch()
+      .done =>
+          console.log "that's ok"
+          #@displayView new AlbumView
+          #    model: album
+          #    editable: editable
+          #    contacts: []
+      
+      .fail =>
+          alert 'this album does not exist'
+          @navigate '', true
+      
+      console.log playlist
+      */
+      alert("not available yet. Playlist are comming soon!");
+      return this.navigate('', true);
     };
 
     Router.prototype.playqueue = function() {
@@ -1617,7 +1637,7 @@ window.require.register("views/templates/playqueue_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<td id="state" class="left"><div class="button delete"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div class="button delete-from-here"></div></td>');
+  buf.push('<td id="state" class="left"><div title="remove this track from the queue" class="button delete"></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div title="clear the queue from here" class="button delete-from-here"></div></td>');
   }
   return buf.join("");
   };

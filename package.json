@@ -33,7 +33,10 @@
   },
   "cozy-permissions": {
     "Track": {
-      "description": "upload and play your musics"
+      "description": "upload and store your music on your cozy"
+    }
+    "Playlist": {
+      "description": "manage your playlists"
     }
   }
 }

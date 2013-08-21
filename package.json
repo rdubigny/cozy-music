@@ -34,7 +34,7 @@
   "cozy-permissions": {
     "Track": {
       "description": "upload and store your music on your cozy"
-    }
+    },
     "Playlist": {
       "description": "manage your playlists"
     }

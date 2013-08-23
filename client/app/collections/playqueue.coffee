@@ -12,6 +12,10 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     playLoop: false
 
+    setAtPlay: (value)=>
+        @atPlay = value
+        @trigger 'change:atPlay'
+
     # return current track pointed by atPlay if it exist
     getCurrentTrack: ->
         if 0 <= @atPlay < @length
@@ -23,10 +27,10 @@ module.exports = class PlayQueue extends Backbone.Collection
     # return next track, if there is no more track return null
     getNextTrack: ->
         if @atPlay < @length-1
-            @atPlay += 1
+            @setAtPlay @atPlay+1
             return @at(@atPlay)
         else if @playLoop and @length > 0
-            @atPlay = 0
+            @setAtPlay 0
             return @at(@atPlay)
         else
             return null
@@ -34,10 +38,10 @@ module.exports = class PlayQueue extends Backbone.Collection
     # return previous track, if this is the first track return null
     getPrevTrack: ->
         if @atPlay > 0
-            @atPlay -= 1
+            @setAtPlay @atPlay-1
             return @at(@atPlay)
         else if @playLoop and @length > 0
-            @atPlay = @length - 1
+            @setAtPlay @length - 1
             return @at(@atPlay)
         else
             return null
@@ -58,12 +62,12 @@ module.exports = class PlayQueue extends Backbone.Collection
     moveItem: (track, position)->
         # first : update atPlay value
         if @indexOf(track) == @atPlay
-            @atPlay = position
+            @setAtPlay position
         else
             if @indexOf(track) < @atPlay
-                @atPlay -= 1
+                @setAtPlay @atPlay-1
             if position <= @atPlay
-                @atPlay += 1
+                @setAtPlay @atPlay+1
         @remove track, false
         @add track,
             at: position
@@ -72,13 +76,18 @@ module.exports = class PlayQueue extends Backbone.Collection
     remove: (track, updateAtPlayValue = true)->
         if updateAtPlayValue
             if @indexOf(track) < @atPlay
-                @atPlay -= 1
+                @setAtPlay @atPlay-1
             else if @indexOf(track) == @atPlay
                 id = track.get 'id'
                 Backbone.Mediator.publish 'track:delete', "sound-#{id}"
                 if @indexOf(track) is @indexOf(@last()) and @length > 1
-                    @atPlay -= 1
+                    @setAtPlay @atPlay-1
         super track
+
+    playFromTrack: (track)->
+        index = @indexOf(track)
+        @setAtPlay index
+        Backbone.Mediator.publish 'track:play-from', track
 
     deleteFromIndexToEnd: (index)->
         @remove(@last()) while @indexOf(@last()) >= index

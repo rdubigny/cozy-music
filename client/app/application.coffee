@@ -38,11 +38,8 @@ module.exports =
             # optional: enable MPEG-4/AAC support (requires flash 9)
             flashVersion: 9
             onready: ->
-                $('.button.play').toggleClass('stopped loading')
+                $('.player').trigger 'soundManager:ready'
             ontimeout: ->
-                $('.button.play').toggleClass('unplayable loading')
+                $('.player').trigger 'soundManager:timeout'
 
         Backbone.history.start()
-
-        # Makes this object immuable.
-        #Object.freeze this if typeof Object.freeze is 'function'

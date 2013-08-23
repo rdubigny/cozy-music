@@ -15,31 +15,24 @@ module.exports = class PlayQueueView extends TrackListView
         'update-sort': 'updateSort'
         'remove-item': (e, track)->
             @collection.remove track
+        'play-from-track': 'playFromTrack'
         'remove-from-track': 'removeFromTrack'
         'click .save-button': (e)->
             alert 'not available yet'
         'click .show-prev-button': 'onClickShowPrevious'
-
-    #subscriptions:
-        #'player:start-sound': 'renderPlayQueue'
-        #'player:stop-sound': (e) =>
-        #    $('.at-play').removeClass('at-play')
-
-    renderPlayQueue: =>
-        @render()
+        'click .clear': 'removeFromFirst'
 
     showPrevious: false
+    isRendered: false # a sad story...
 
     initialize: ->
         super
         @views = {}
+        @listenTo @collection, 'change:atPlay', =>
+            if @isRendered
+                @render()
 
-    afterRender: =>
-        super
-        # adding table stripes
-        $('.tracks-display tr:odd').addClass 'odd'
-
-        # update track status display
+    updateStatusDisplay: ->
         for id, view of @views
             index = @collection.indexOf view.model
             if index < @collection.atPlay
@@ -49,6 +42,14 @@ module.exports = class PlayQueueView extends TrackListView
                     view.$el.addClass 'hidden'
             else if index is @collection.atPlay
                 view.$el.addClass 'at-play'
+
+    afterRender: =>
+        super
+        # adding table stripes
+        $('.tracks-display tr:odd').addClass 'odd'
+
+        # update track status display
+        @updateStatusDisplay()
 
         # enabling drag'n'drop with jquery-ui-1.10.3
         @$('#track-list').sortable
@@ -70,13 +71,42 @@ module.exports = class PlayQueueView extends TrackListView
             stop: (event, ui) ->
                 ui.item.trigger 'drop', ui.item.index()
 
+        @isRendered = true
+
+    disableSort: ->
+        if @isRendered
+            @$("#track-list").sortable "disable"
+
+    enableSort: ->
+        if @isRendered
+            @$("#track-list").sortable "enable"
+
+    beforeDetach: ->
+        super
+        @$('#track-list').sortable "destroy"
+
+        @isRendered = false
+
+    remove: ->
+        super
+        @$('#track-list').sortable "destroy"
+
+        @isRendered = false
+
     updateSort: (event, track, position) ->
         @collection.moveItem track, position
         @render()
 
+    playFromTrack: (event, track)->
+        @collection.playFromTrack track
+
     removeFromTrack: (event, track)->
-        index = @collection.indexOf(track)
+        index = @collection.indexOf track
         @collection.deleteFromIndexToEnd index
+        @render()
+
+    removeFromFirst: (event)->
+        @collection.deleteFromIndexToEnd 0
         @render()
 
     onClickShowPrevious: (e)=>

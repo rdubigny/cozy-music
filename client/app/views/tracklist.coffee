@@ -30,12 +30,12 @@ module.exports = class TrackListView extends ViewCollection
             enablekeyboard: true
         )
 
-    removeScrollBar: ->
+    beforeDetach: ->
         @$('.viewport').getNiceScroll().remove()
 
     remove: ->
-        super
         @$('.viewport').getNiceScroll().remove()
+        super
 
     onClickTrack: (trackView)=>
         # unselect previous selected track if there is one

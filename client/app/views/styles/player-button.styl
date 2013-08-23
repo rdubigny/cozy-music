@@ -1,0 +1,154 @@
+
+
+[class^="icon-"]
+    text-align: center
+    line-height: 19px
+    color: #222
+    text-shadow: 0 1px 0 #777
+    &:hover
+        color: #fff
+        text-shadow: none
+    &.activated
+        color: red
+        &:hover
+            text-shadow: 0 1px 0 #777
+
+.player-button
+    text-align: center
+    line-height: 19px
+    display:inline-block
+    margin:2.5px
+    vertical-align:middle
+    background: linear-gradient(left top, #eee, #777)
+    cursor:pointer
+    border:1px solid #333
+    &:active
+        background: linear-gradient(left top, #777, #eee)
+    &:hover
+        [class^="icon-"]
+            color: #fff
+            text-shadow: none
+            &.activated
+                color: red
+                text-shadow: none
+    &.signal-button
+        &:hover
+            background: linear-gradient(left top, #f00, #700)
+        &:active
+            background: linear-gradient(left top, #700, #f00)
+
+    &.size-34
+        width: 34px
+        height: 34px
+        border-radius: 17px
+        [class^="icon-"]
+            font-size: 16px
+            position: relative
+            top: 7px
+    &.size-26
+        width: 26px
+        height: 26px
+        border-radius: 13px
+        [class^="icon-"]
+            font-size: 13px
+            position: relative
+            top: 2px
+    &.size-20
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        [class^="icon-"]
+            font-size: 10px
+            position: relative
+            top: -2px
+
+    i
+        &.icon-play
+            left: 1px
+        &.icon-backward
+            left: -1px
+        &.icon-forward
+            left: 2px
+    &.size-20
+        i.icon-remove
+            top: -3px
+    &.size-34
+        i
+            &.icon-warning-sign
+                top: 6px
+            &.icon-play
+                left: 2px
+
+.in-text-inserter-text
+    margin-right: 30px
+    float: left
+    display:inline-block
+    background-color: blue
+
+.in-text-inserter-button
+    float: right
+    display:inline-block
+    background-color: red
+
+.button
+    display:inline-block
+    vertical-align:middle
+    margin:2.5px 2.5px
+    border:2px solid #bbb
+    background-color: #ccc
+    background-image: url("../images/glyphicons-halflings.png")
+    cursor:pointer
+    transition: all 0s ease
+    &:hover
+        background-image: url("../images/glyphicons-halflings-white.png")
+    &:active
+        border:2px solid #ccc
+        background-color: #bbb
+
+    &.delete
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -311px 1px
+        &:hover
+            border:2px solid #b00
+            background-color: #c00
+        &:active
+            border:2px solid #c00
+            background-color: #a00
+
+    &.delete-from-here
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -311px 16px
+        &:hover
+            border:2px solid #b00
+            background-color: #c00
+        &:active
+            border:2px solid #c00
+            background-color: #a00
+
+    &.mini-play
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -262px 88px
+        &:hover
+            border:2px solid #090
+            background-color: #0a0
+        &:active
+            border:2px solid #0a0
+            background-color: #090
+
+    &.add-to
+        width: 20px
+        height: 20px
+        border-radius: 10px
+        background-position: -406px 63.5px
+        &:hover
+            border:2px solid #55e
+            background-color: #55f
+        &:active
+            border:2px solid #009
+            background-color: #00a

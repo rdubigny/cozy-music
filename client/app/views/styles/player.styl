@@ -10,9 +10,15 @@ Da damn bear-killer player style
     left: 0
     right: 0
 
-    background-color: #444
+    background:linear-gradient(#555, #222)
     color: white
+    transition: background-color 0.5s
+
     padding: 5px
+
+    &.dragover
+        background:linear-gradient(#f00, #800)
+
     text-align: center
 
     .player-element
@@ -24,37 +30,30 @@ Da damn bear-killer player style
         vertical-align:middle
         width: 100px
         height:20px
-        cursor:pointer
 
-        .volume-switch
-            width: 24px
-            height: 20px
+        #volume-switch-button
+            vertical-align:top
             display:inline-block
-            top:0px
-            left:0px
-            position:relative
-            background-image: url("../images/glyphicons-halflings.png")
-            background-position: -405px 138px
-            &:hover
-                background-image: url("../images/glyphicons-halflings-white.png")
-            &.mute
-                background-position: -357px 138px
-                background-image: url("../images/glyphicons-halflings-red.png")
+            text-align: left
+            margin: auto 2px
+            width: 20px
+            cursor:pointer
 
         .slider
             width: 75%
             height: 100%
             display:inline-block
+            cursor:pointer
 
             .slider-container
                 width:100%
                 height:50%
-                border:1px solid #222
+                //border:1px solid #222
                 border-radius: 7px
                 top:25%
                 left: 0%
                 position:relative
-                background: linear-gradient(top, #fff, #eee)
+                background: linear-gradient(top, #000, #777)
 
                 .slider-inner
                     height:100%
@@ -62,20 +61,20 @@ Da damn bear-killer player style
                     top:0px
                     left:0px
                     position:absolute
-                    background: linear-gradient(top, #eee, #aaa)
+                    background: linear-gradient(top, #eee, #444)
 
                     .slider-handle
-                        width: 16px
+                        width: 10px
                         height: 15px
                         border:1px solid #444
                         border-radius: 7px
-                        top: -40%
-                        right: -9px
+                        top: -3px
+                        right: -5px
                         position:absolute
-                        background: linear-gradient(top left, #eee, #aaa)
+                        background: linear-gradient(top left, #eee, #444)
 
                         &:active
-                            background: linear-gradient(top left, #aaa, #eee)
+                            background: linear-gradient(top left, #ccc, #999)
 
     .progress-info
         display:inline-block
@@ -106,115 +105,12 @@ Da damn bear-killer player style
         vertical-align: middle
         height: 100%
         width: 45px
-        .list-control
+        .progress-side-control
             display:block
             margin: auto
-            height: 20px
-            width: 24px
-            background-image: url("../images/glyphicons-halflings.png")
             cursor:pointer
-            transition: all 0s ease
-            &:hover
-                background-image: url("../images/glyphicons-halflings-white.png")
-            &.on
-                background-image: url("../images/glyphicons-halflings-red.png")
-            &.random
-                background-position: -212px 42px
-            &.loop
-                background-position: -331px 42px
 
         .time
             cursor: default
             display:block
             overflow: clip
-
-.button
-    display:inline-block
-    vertical-align:middle
-    margin:2.5px 2.5px
-    border:2px solid #bbb
-    background-color: #ccc
-    background-image: url("../images/glyphicons-halflings.png")
-    cursor:pointer
-    transition: all 0s ease
-    &:hover
-        background-image: url("../images/glyphicons-halflings-white.png")
-    &:active
-        border:2px solid #ccc
-        background-color: #bbb
-    &.play
-        width: 32px
-        height: 32px
-        border-radius: 16px
-        background-position: -280px 94px
-        &.paused
-            background-position: -256px 94px
-        &.stopped
-            background-position: -256px 94px
-        &.unplayable
-            border:2px solid #b00
-            background-color: #c00
-            background-position: -137px 45px
-        &.loading
-            background-image: url("../images/glyphicons-halflings-red.png")
-            background-position: -256px 94px
-            //background-position: -208px 70px
-
-    &.rwd
-        width: 24px
-        height: 24px
-        border-radius: 12px
-        background-position: -239px 90px
-    &.fwd
-        width: 24px
-        height: 24px
-        border-radius: 12px
-        background-position: -331px 90px
-
-    &.delete
-        width: 20px
-        height: 20px
-        border-radius: 10px
-        background-position: -311px 1px
-        &:hover
-            border:2px solid #b00
-            background-color: #c00
-        &:active
-            border:2px solid #c00
-            background-color: #a00
-
-    &.delete-from-here
-        width: 20px
-        height: 20px
-        border-radius: 10px
-        background-position: -311px 16px
-        &:hover
-            border:2px solid #b00
-            background-color: #c00
-        &:active
-            border:2px solid #c00
-            background-color: #a00
-
-    &.puttoplay
-        width: 20px
-        height: 20px
-        border-radius: 10px
-        background-position: -262px 88px
-        &:hover
-            border:2px solid #090
-            background-color: #0a0
-        &:active
-            border:2px solid #0a0
-            background-color: #090
-
-    &.addto
-        width: 20px
-        height: 20px
-        border-radius: 10px
-        background-position: -406px 63.5px
-        &:hover
-            border:2px solid #55e
-            background-color: #55f
-        &:active
-            border:2px solid #009
-            background-color: #00a

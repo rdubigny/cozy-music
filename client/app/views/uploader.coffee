@@ -10,12 +10,9 @@ module.exports = class Uploader extends BaseView
 
     # Register listener
     events:
-        'click' : 'onClick'
-        'drop' : 'onFilesDropped'
-        'dragover' : 'onDragOver'
-        dragend: (e) -> @$el.removeClass 'dragover'
-        dragenter: (e) -> @$el.addClass 'dragover'
-        dragleave: (e) -> @$el.removeClass 'dragover'
+        'click #upload-form' : 'onClick'
+        'click #youtube-import' : (e) =>
+            alert "not available yet"
 
     subscriptions:
         'tracklist:isEmpty': 'onEmptyTrackList'
@@ -62,6 +59,7 @@ module.exports = class Uploader extends BaseView
         event.preventDefault()
         event.stopPropagation()
         @$el.removeClass 'dragover'
+        $('.player').removeClass 'dragover'
         # fetch files
         event.dataTransfer = event.originalEvent.dataTransfer
         @handleFiles event.dataTransfer.files
@@ -69,7 +67,16 @@ module.exports = class Uploader extends BaseView
     onDragOver: (event) =>
         event.preventDefault() # allow drop
         event.stopPropagation()
-        @$el.addClass 'dragover'
+        unless @$el.hasClass 'dragover'
+            @$el.addClass 'dragover'
+            $('.player').addClass 'dragover'
+
+    onDragOut: (event) =>
+        event.preventDefault() # allow drop
+        event.stopPropagation()
+        if @$el.hasClass 'dragover'
+            @$el.removeClass 'dragover'
+            $('.player').removeClass 'dragover'
 
     # control file type
     controlFile = (track, cb)=>

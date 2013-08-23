@@ -3,13 +3,9 @@
         .off-screen-nav-toggle-arrow
 
 .off-screen-nav-content
-    .off-screen-nav-title Content
-    ul
-        a(href="#").home
-            li(title="go to the complete list of your uploaded songs") My Songs
-        a(href="#playqueue").playqueue
-            li(title="go to the queued songs") Play Queue
-
     .off-screen-nav-title#playlist-title-list Playlists
         .off-screen-nav-button.add-playlist-button(title="create playlist")
     ul#playlist-list
+        a(href="#playqueue").playqueue
+            li(title="go to the queued songs") Play Queue
+                .off-screen-nav-button.select-playlist-button

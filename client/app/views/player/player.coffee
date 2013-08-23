@@ -12,18 +12,29 @@ module.exports = class Player extends BaseView
     template: require('../templates/player/player')
 
     events:
-        'click .button.play': 'onClickPlay'
-        'click .button.rwd': 'onClickRwd'
-        'click .button.fwd': 'onClickFwd'
+        'click #play-button': 'onClickPlay'
+        'click #rwd-button': 'onClickRwd'
+        'click #fwd-button': 'onClickFwd'
         'mousedown .progress': 'onMouseDownProgress'
-        'click .loop': 'onClickLoop'
-        'click .random': 'onClickRandom'
+        'click #loop-button': 'onClickLoop'
+        'click #random-button': 'onClickRandom'
+
+        'soundManager:ready': (e)->
+            @isLoading = false
+            @canPlay = true
+            @updatePlayButtonDisplay()
+        'soundManager:timeout': (e)->
+            @isLoading = false
+            @canPlay = false
+            @updatePlayButtonDisplay()
 
     subscriptions:
         # these events should be fired by tracklist_item view
         'track:queue': 'onQueueTrack'
         'track:playImmediate': 'onPlayImmediate'
         'track:pushNext': 'onPushNext'
+        'track:play-from': (track)->
+            @onPlayTrack track
 
         'track:delete': (soundId) ->
             if @currentSound?.id is soundId
@@ -34,6 +45,10 @@ module.exports = class Player extends BaseView
         'volumeManager:volumeChanged': 'onVolumeChange'
 
     initialize: (options)->
+        @isStopped = true
+        @isPaused = false
+        @canPlay = false
+        @isLoading = true
         super
         # bind keyboard events
         Mousetrap.bind 'space', @onClickPlay
@@ -42,7 +57,7 @@ module.exports = class Player extends BaseView
 
     afterRender: =>
         # bind play button
-        @playButton = @$(".button.play")
+        @playButton = @$('#play-button')
 
         # initializing variables related to volumeManager
         @volume = 50 # default volume value
@@ -64,28 +79,44 @@ module.exports = class Player extends BaseView
         @progressInner.width "0%"
         @elapsedTime.html "&nbsp;0:00"
         @remainingTime.html "&nbsp;0:00"
-        @isStopped = true
-        @isPaused = false
+
+        @updatePlayButtonDisplay()
+
+    updatePlayButtonDisplay: =>
+        icon = @$('#play-button i')
+        icon.removeClass 'icon-warning-sign icon-play icon-pause icon-cogs'
+        icon.removeClass 'activated'
+        if @isLoading
+            icon.addClass 'icon-cogs'
+        else if not @canPlay
+            icon.addClass 'icon-warning-sign activated'
+        else if @isStopped or @isPaused
+            icon.addClass 'icon-play'
+        else
+            icon.addClass 'icon-pause'
 
     onClickPlay: =>
-        if not @playButton.hasClass 'loading'
-            if not @playButton.hasClass 'unplayable'
+        if not @isLoading
+            if @canPlay
                 if @currentSound?
                     if @isStopped
                         @currentSound.play()
-                        @playButton.removeClass("stopped")
                         @isStopped = false
                     else if @isPaused
                         @currentSound.play()
-                        @playButton.removeClass("paused")
                         @isPaused = false
                     else if not @isPaused and not @isStopped # <=> isPlaying
                         @currentSound.pause()
-                        @playButton.addClass("paused")
                         @isPaused = true
                 else if app.playQueue.getCurrentTrack()?
                     if @isStopped
                         @onPlayTrack(app.playQueue.getCurrentTrack())
+                #if there is no tracks in the queue play the entire library
+                else if app.playQueue.length is 0
+                    app.tracks.each (track)=>
+                        if track.attributes.state is 'server'
+                            @onQueueTrack track
+                @updatePlayButtonDisplay()
             else
                 alert "application error : unable to play track"
 
@@ -179,10 +210,9 @@ module.exports = class Player extends BaseView
         @currentSound.mute() if @isMuted
 
         # update display and variables
-        @playButton.removeClass("stopped")
         @isStopped = false
-        @playButton.removeClass("paused")
         @isPaused = false
+        @updatePlayButtonDisplay()
         nfo = "#{track.get('title')} - <i>#{track.get('artist')}</i>"
         @$('.id3-info').html nfo
 
@@ -202,10 +232,9 @@ module.exports = class Player extends BaseView
         if @currentSound?
             @currentSound.destruct()
             @currentSound = null
-        @playButton.addClass("stopped")
         @isStopped = true
-        @playButton.removeClass("paused")
         @isPaused = false
+        @updatePlayButtonDisplay()
         @progressInner.width "0%"
         @elapsedTime.html "&nbsp;0:00"
         @remainingTime.html "&nbsp;0:00"
@@ -251,9 +280,9 @@ module.exports = class Player extends BaseView
         @remainingTime.html @formatMs(remainingTime)
 
     onClickLoop: ->
-        loopButton = @$('.loop')
-        loopButton.toggleClass('on')
-        if loopButton.hasClass('on')
+        loopIcon = @$('#loop-button i')
+        loopIcon.toggleClass('activated')
+        if loopIcon.hasClass('activated')
             app.playQueue.playLoop = true
         else
             app.playQueue.playLoop = false

@@ -5,9 +5,15 @@ module.exports = class PlayQueueItemView extends TrackListItemView
     template: require './templates/playqueue_item'
 
     events:
-        'click .button.delete': 'onDeleteClick'
-        'click .button.delete-from-here': 'onDeleteFromHereClick'
+        'click #mini-play-button': 'onPlayClick'
+        'click #delete-button': 'onDeleteClick'
+        'click #delete-from-here-button': 'onDeleteFromHereClick'
         'drop' : 'drop'
+
+    onPlayClick: (event)=>
+        event.preventDefault()
+        event.stopPropagation()
+        @$el.trigger 'play-from-track', @model
 
     onDeleteClick: (event)=>
         event.preventDefault()

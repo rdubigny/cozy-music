@@ -4,23 +4,30 @@ app = require 'application'
 module.exports = class TrackListItemView extends TrackListItemView
 
     events:
-        'click .button.delete': 'onDeleteClick'
-        'click .button.puttoplay': (e)->
+        'click #delete-button': 'onDeleteClick'
+        'click #play-track-button': (e)->
             if e.ctrlKey or e.metaKey
-                @onPlayDblClick(e)
+                @onPlayNextTrack(e)
             else
-                @onPlayClick(e)
-        'click .button.addto': (e)->
+                @onQueueTrack(e)
+        'click #add-to-button': (e)->
             event.preventDefault()
             event.stopPropagation()
             if app.selectedPlaylist?
                 @onAddTo()
             else
                 alert "No playlist selected. Please select a playlist in the navigation bar on the left"
-        'dblclick .button.puttoplay': (event)->
+        'dblclick [id$="button"]': (event)->
+            # prevent triggering multiple events when dbl clicking on a button
             event.preventDefault()
             event.stopPropagation()
         'dblclick': 'onDblClick'
+
+        'click #play-album-button': (e)->
+            if e.ctrlKey or e.metaKey
+                @onPlayNextAlbum(e)
+            else
+                @onQueueAlbum(e)
 
     afterRender: ->
         super
@@ -67,19 +74,37 @@ module.exports = class TrackListItemView extends TrackListItemView
             Backbone.Mediator.publish 'track:playImmediate', @model
 
 
-    onPlayClick: (event)->
+    onQueueTrack: (event)->
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:queue', @model
 
-    onPlayDblClick: (event)->
+    onPlayNextTrack: (event)->
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:pushNext', @model
+
+    onQueueAlbum: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        album = @model.attributes.album
+        if album? and album isnt ''
+            @$el.trigger 'album:queue', album
+        else
+            alert "can't play null album"
+
+    onPlayNextAlbum: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        album = @model.attributes.album
+        if album? and album isnt ''
+            @$el.trigger 'album:pushNext', album
+        else
+            alert "can't play null album"
 
     onAddTo: ->
         alert "Not implemented yet"
@@ -113,8 +138,8 @@ module.exports = class TrackListItemView extends TrackListItemView
             @endUpload()
 
     initUpload: ->
-        @saveAddBtn = @$('.button.addto').detach()
-        @savePlayBtn = @$('.button.puttoplay').detach()
+        @saveAddBtn = @$('#add-to-button').detach()
+        @savePlayTrackBtn = @$('#play-track-button').detach()
         uploadProgress = $(document.createElement('div'))
         uploadProgress.addClass('uploadProgress')
         uploadProgress.html 'INIT'
@@ -132,6 +157,6 @@ module.exports = class TrackListItemView extends TrackListItemView
     returnToNormal: =>
         @$('.uploadProgress').remove()
         @$('#state').append @saveAddBtn
-        @$('#state').append @savePlayBtn
+        @$('#state').append @savePlayTrackBtn
         @model.attributes.state = 'server'
 

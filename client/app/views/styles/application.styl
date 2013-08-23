@@ -18,9 +18,15 @@ input
 
 @import 'player'
 
+@import 'player-button'
+
 body
     background-color: gray
     overflow-x: hidden
+
+a
+    color:inherit
+    text-decoration: none
 
 .uploader
     display: block
@@ -30,26 +36,49 @@ body
     right: 0
     height: 49px
 
-    background-color: #444
+    background:linear-gradient(#555, #222)
     color: white
-    padding: 5px
-    transition: all 1.5s ease
+    transition: background-color 0.5s
+
     font-weight: bold
     overflow: ellipsis
     cursor:pointer
 
+    width: 100%
+    text-align: left
+
+    .header-nav-title
+        transition: background-color 0.5s
+        text-shadow: 1px 1px 1px #000
+        color: #ccc
+        font-size: 1em
+        width: 150px
+        text-align: center
+        display: inline-block
+        padding: 15px
+        border-right: 1px solid #333
+        &:hover
+            color: #fff
+        &.activated
+            background:linear-gradient(#222, #555)
+
+        [class^="icon-"]
+            text-align: inherit
+            line-height: inherit
+            color: inherit
+            text-shadow: inherit
+            &:hover
+                color: inherit
+                text-shadow: inherit
+
     &.dragover
-        background-color: #f00
+        .header-nav-title
+            border-right: 1px solid #e00
+            &.activated
+                background:linear-gradient(#800, #f00)
 
-    table
-        width: 100%
-
-    #h1
-        text-align: left
-        font-size: 1.8em
-    #h2
-        text-align: right
-        font-size: 1.2em
+.dragover
+    background:linear-gradient(#f00, #800)
 
 #content
     position: absolute
@@ -57,7 +86,9 @@ body
     left: 0
     right: 0
     bottom: 0
-    background-color: white
+    background: url('../images/background.jpg') no-repeat center center fixed
+    background-size: cover
+    //box-shadow: 0 0 50px 50px #fff inset
     min-height: 200px
 
     #tracks-display
@@ -71,9 +102,8 @@ body
             bottom: 49px
 
         table
-            width: 100%
-            border:1px solid #aaa
             table-layout: fixed
+            width: 100%
             .field
                 text-align: left
                 font-weight: bold
@@ -83,20 +113,18 @@ body
             .left
                 width: 60px
             .right
-                width: 30px
+                width: 60px
             .title
                 min-width: 200px
 
             thead
+                background-color: white
                 color: #f00
                 border:1px solid #aaa
                 th
                     &.field
                         cursor: default
-
-                        &.title,
-                        &.artist,
-                        &.album
+                        &.clickable-cell
                             cursor: pointer
 
                         .sortArrow
@@ -114,7 +142,8 @@ body
                             &.down
                                 background-position: -312px -118px
 
-                    &.left
+                    &.left,
+                    &.right
                         .thead-button
                             display:inline-block
                             margin: auto 4px
@@ -129,18 +158,21 @@ body
                                 transform: scaleX(-1)
                                 &:hover
                                     transform: scale(-1.2, 1.2)
-
+                            &.clear
+                                background-position: -48px -95px
                             &:hover
                                 transform: scale(1.2)
 
             tbody
                 tr.track
+                    //background:linear-gradient(#fafafa, #fff)
                     background-color: white
                     color: #444
                     height: 30px
-                    transition: all 0.3s ease
+                    transition: background-color 0.3s ease, color 0.3s ease
 
                     &.odd
+                        //background:linear-gradient(#f3f3f3, #eee)
                         background-color: #f3f3f3
 
                     &.at-play
@@ -150,19 +182,23 @@ body
                         background-color: #c8c8c8
 
                     &:hover
+                        //background:linear-gradient(#555, #111)
                         background-color: #444
                         color: white
-                        .button
-                            display: inline-block
+                        .player-button
+                            color: #222
+                            opacity: 1
                         .uploadProgress
                             color: white
 
                     &.ui-sortable-helper
+                        line-height: 15px
+                        vertical-align: middle
                         transition: all 0s ease
                         background-color: #444
                         color: white
                         &:hover
-                            .button
+                            .player-button
                                 display: none
 
                     &.sortable-placeholder
@@ -172,8 +208,9 @@ body
                     &.already-played
                         opacity: 0.5
 
-                    .button
-                        display: none
+                    .player-button
+                        transition: opacity 0.3s ease
+                        opacity: 0
 
                     .right,
                     .left
@@ -278,7 +315,7 @@ body
 
             ul#playlist-list
                 position: absolute
-                top: 125px
+                top: 40px
                 right: 1rem
                 left: 1rem
                 bottom: 1rem
@@ -312,10 +349,6 @@ body
                             display: inline-block
                             &:hover
                                 background-image: url("../images/glyphicons-halflings-red.png")
-
-                a
-                    color: white
-                    text-decoration: none
 
             .off-screen-nav-button
                 cursor: pointer

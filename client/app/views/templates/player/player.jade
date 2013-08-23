@@ -1,10 +1,14 @@
 .player-element
-    .button.rwd(title="play previous track")
-    .button.play.loading(title="play/pause")
-    .button.fwd(title="play next track")
+    #rwd-button.player-button.size-26(title="play previous track")
+        i.icon-backward
+    #play-button.player-button.size-34(title="play/pause")
+        i.icon-cogs
+    #fwd-button.player-button.size-26(title="play next track")
+        i.icon-forward
 .player-element
     .progress-side
-        .list-control.loop
+        .progress-side-control#loop-button
+            i.icon-retweet
         .time.left
             span#elapsedTime
     .progress-info
@@ -12,7 +16,8 @@
         .progress
             .inner
     .progress-side
-        .list-control.random
+        .progress-side-control#random-button
+            i.icon-random
         .time.right
             span#remainingTime
 .player-element

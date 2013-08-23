@@ -20,6 +20,9 @@ module.exports = class TracksView extends TrackListView
         'click th.field.album': (event)->
             @onClickTableHead event, 'album'
 
+        'album:queue': 'queueAlbum'
+        'album:pushNext': 'pushNextAlbum'
+
     # minimum track-list length
     minTrackListLength: 40
 
@@ -156,3 +159,18 @@ module.exports = class TracksView extends TrackListView
 
         # sort with this new comparator function
         @collection.sort()
+
+    queueAlbum: (event, album)->
+        albumsTracks = @collection.where
+            album: album
+        for track in albumsTracks
+            if track.attributes.state is 'server'
+                Backbone.Mediator.publish 'track:queue', track
+
+    pushNextAlbum: (event, album)->
+        albumsTracks = @collection.where
+            album: album
+        albumsTracks.reverse()
+        for track in albumsTracks
+            if track.attributes.state is 'server'
+                Backbone.Mediator.publish 'track:pushNext', track

@@ -2,13 +2,13 @@ BaseView = require '../../lib/base_view'
 
 module.exports = class VolumeManager extends BaseView
 
-    className: "volume"
-    tagName: "div"
+    className: 'volume'
+    tagName: 'div'
     template: require('../templates/player/volumeManager')
 
     events:
-        "mousedown .slider": "onMouseDownSlider"
-        "click .volume-switch": "onClickToggleMute"
+        'mousedown .slider': 'onMouseDownSlider'
+        'click #volume-switch-button': 'onClickToggleMute'
 
     initialize: (options)->
         super
@@ -22,10 +22,9 @@ module.exports = class VolumeManager extends BaseView
     afterRender: ->
         @isMuted = false
         @slidableZone = $(document) # the zone where the user can slide
-        @volumeSwitch = @$(".volume-switch")
-        @slider = @$(".slider")
-        @sliderContainer = @$(".slider-container")
-        @sliderInner = @$(".slider-inner")
+        @slider = @$('.slider')
+        @sliderContainer = @$('.slider-container')
+        @sliderInner = @$('.slider-inner')
         @sliderInner.width "#{@volumeValue}%"
 
     onMouseDownSlider: (event) ->
@@ -40,8 +39,8 @@ module.exports = class VolumeManager extends BaseView
 
     onMouseUpSlider: (event) =>
         event.preventDefault()
-        @slidableZone.off "mousemove"
-        @slidableZone.off "mouseup"
+        @slidableZone.off 'mousemove'
+        @slidableZone.off 'mouseup'
 
     onClickToggleMute: (event) =>
         event.preventDefault()
@@ -76,9 +75,7 @@ module.exports = class VolumeManager extends BaseView
 
     toggleMute: =>
         Backbone.Mediator.publish 'volumeManager:toggleMute', @volumeValue
-        if @isMuted
-            @volumeSwitch.removeClass "mute"
-        else
-            @volumeSwitch.addClass "mute"
+        toggledClasses = 'icon-volume-up icon-volume-off activated'
+        @$('#volume-switch-button i').toggleClass toggledClasses
         @isMuted = not @isMuted
         @updateDisplay()

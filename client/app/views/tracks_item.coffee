@@ -92,14 +92,6 @@ module.exports = class TrackListItemView extends TrackListItemView
         if @isEdited isnt ''
             selector = ".#{@isEdited} input"
             unless @$(selector).hasClass 'activated'
-                ### IE don't work properly here
-                console.log window
-                console.log @dataBrowser
-                console.log navigator.userAgent
-                console.log navigator.appName
-                #isIE = /*@cc_on!@* /false || document.documentMode
-                #console.log isIE
-                ###
                 @$(selector).addClass 'activated'
                 @$(selector).removeAttr 'readonly'
                 @$(selector).focus()

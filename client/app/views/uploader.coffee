@@ -80,6 +80,8 @@ module.exports = class Uploader extends BaseView
 
     # control file type
     controlFile = (track, cb)=>
+        # here soundManager.canPlayLink track.file will be good
+        # but it doesn't work with audio/mp4 on chrome
         unless track.file.type.match /audio\/(mp3|mpeg)/ # list of supported filetype
             err = "unsupported #{track.file.type} filetype"
         cb(err)
@@ -96,9 +98,12 @@ module.exports = class Uploader extends BaseView
                     artist: if tags.artist? then tags.artist else ''
                     album: if tags.album? then tags.album else ''
                     track: if tags.track? then tags.track else ''
+                    year: if tags.year? then tags.year else ''
+                    genre: if tags.genre? then tags.genre else ''
+                    duration: if tags.TLEN?.data? then tags.track else ''
                 cb()
             ),
-                tags: ['title','artist','album','track']
+                tags: ["title","artist","album","track","year","genre","TLEN"]
                 dataReader: FileAPIReader track.file
         reader.readAsArrayBuffer track.file
         reader.onabort = (event)=>
@@ -113,6 +118,9 @@ module.exports = class Uploader extends BaseView
         formdata.append 'artist', track.get 'artist'
         formdata.append 'album', track.get 'album'
         formdata.append 'track',track.get 'track'
+        formdata.append 'year',track.get 'year'
+        formdata.append 'genre',track.get 'genre'
+        formdata.append 'duration',track.get 'duration'
         formdata.append 'file', track.file
 
         # if the upload have been canceled don't proceed to upload

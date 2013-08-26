@@ -2622,6 +2622,10 @@ a {
   color: inherit;
   background-color: inherit;
   cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
 }
 #content #tracks-display table tbody tr.track input.activated {
   color: #444;
@@ -2632,7 +2636,7 @@ a {
   line-height: 15px;
 }
 #content #tracks-display table tbody tr.track .album input {
-  width: 85%;
+  width: 80%;
 }
 #content #tracks-display table tbody tr.track .album i.icon-play {
   top: -2px;

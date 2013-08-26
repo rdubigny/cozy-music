@@ -2325,15 +2325,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       if (this.isEdited !== '') {
         selector = "." + this.isEdited + " input";
         if (!this.$(selector).hasClass('activated')) {
-
-          /* IE don't work properly here
-          console.log window
-          console.log @dataBrowser
-          console.log navigator.userAgent
-          console.log navigator.appName
-          #isIE = /*@cc_on!@* /false || document.documentMode
-          #console.log isIE
-          */
           this.$(selector).addClass('activated');
           this.$(selector).removeAttr('readonly');
           this.$(selector).focus();
@@ -2687,17 +2678,20 @@ window.require.register("views/uploader", function(exports, require, module) {
       reader = new FileReader();
       reader.onload = function(event) {
         return ID3.loadTags(url, (function() {
-          var tags;
+          var tags, _ref1;
           tags = ID3.getAllTags(url);
           track.set({
             title: tags.title != null ? tags.title : url,
             artist: tags.artist != null ? tags.artist : '',
             album: tags.album != null ? tags.album : '',
-            track: tags.track != null ? tags.track : ''
+            track: tags.track != null ? tags.track : '',
+            year: tags.year != null ? tags.year : '',
+            genre: tags.genre != null ? tags.genre : '',
+            duration: ((_ref1 = tags.TLEN) != null ? _ref1.data : void 0) != null ? tags.track : ''
           });
           return cb();
         }), {
-          tags: ['title', 'artist', 'album', 'track'],
+          tags: ["title", "artist", "album", "track", "year", "genre", "TLEN"],
           dataReader: FileAPIReader(track.file)
         });
       };
@@ -2715,6 +2709,9 @@ window.require.register("views/uploader", function(exports, require, module) {
       formdata.append('artist', track.get('artist'));
       formdata.append('album', track.get('album'));
       formdata.append('track', track.get('track'));
+      formdata.append('year', track.get('year'));
+      formdata.append('genre', track.get('genre'));
+      formdata.append('duration', track.get('duration'));
       formdata.append('file', track.file);
       if (track.attributes.state === 'canceled') {
         return cb("upload canceled");

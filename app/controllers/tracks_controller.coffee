@@ -47,7 +47,18 @@ action 'destroy', ->
 
 action 'getAttachment', ->
     fileName = params.fileName
+    # update attributes
+    updatedAttribute =
+        lastPlayDate: Date.now()
+        playTime : @track.playTime+1
+    @track.updateAttributes updatedAttribute, (err) ->
+        if err
+            compound.logger.write err
+            send error: 'Cannot update track', 500
+        else
+            send success: 'track successfully updated', 200
 
+    # get file
     stream = @track.getFile fileName, (err, resp, body) ->
         if err or not resp?
             send 500
@@ -65,7 +76,6 @@ action 'getAttachment', ->
 
     # if the client close the, transmit the
     res.on 'close', ->
-        console.log "close"
         stream.abort()
 
 # Update track attributes

@@ -207,6 +207,7 @@ module.exports = class Player extends BaseView
             # whileloading: @printLoadingInfo # debbugging tool
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
+            #onid3: ()-> console.log @id3 # may be useful in the future
         @currentSound.mute() if @isMuted
 
         # update display and variables

@@ -23,6 +23,9 @@ module.exports = class TracksView extends TrackListView
         'album:queue': 'queueAlbum'
         'album:pushNext': 'pushNextAlbum'
 
+        # when a track is selected
+        'click-track': 'onClickTrack'
+
     # minimum track-list length
     minTrackListLength: 40
 
@@ -52,6 +55,8 @@ module.exports = class TracksView extends TrackListView
 
     initialize: ->
         super
+        @selectedTrackView = null
+
         @views = {}
 
         @toggleSort 'artist' # default value : sort by artist
@@ -68,6 +73,17 @@ module.exports = class TracksView extends TrackListView
             console.log "vue tracklist : \"pense à me supprimer un de ces quatres\""
             if @collection.length is 0
                 Backbone.Mediator.publish 'tracklist:isEmpty'
+
+        # override to prevent shortcut to trigger when editing fields
+        Mousetrap.stopCallback = (e, element, combo) ->
+            # if the element has the class "mousetrap" then no need to stop
+            if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1)
+                # don't stop if keys are 'tab' or 'enter' or 'esc'
+                if e.which is 9 or e.which is 13 or e.which is 27
+                    return false
+
+            # stop for input, select, and textarea
+            return element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true')
 
     afterRender: =>
         super
@@ -90,6 +106,13 @@ module.exports = class TracksView extends TrackListView
         blankTrack.addClass "track blank"
         blankTrack.html "<td colspan=\"6\"></td>"
         @$collectionEl.append blankTrack
+
+    onClickTrack: (e, trackView)=>
+        # unselect previous selected track if there is one
+        if @selectedTrackView?
+            @selectedTrackView.unSelect()
+        # register selected track
+        @selectedTrackView = trackView
 
     # manage sortArrow display according to elementSort & isReverseOrder values
     updateSortingDisplay: =>

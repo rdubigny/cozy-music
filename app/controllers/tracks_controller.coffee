@@ -8,7 +8,7 @@ before ->
             @track = track
             next()
 # Make this pre-treatment only before destroy action.
-, only: ['destroy', 'getAttachment']
+, only: ['destroy', 'getAttachment', 'update']
 
 action 'all', ->
     # Here we use the method all to retrieve all tracks stored.
@@ -67,3 +67,12 @@ action 'getAttachment', ->
     res.on 'close', ->
         console.log "close"
         stream.abort()
+
+# Update track attributes
+action 'update', ->
+    @track.updateAttributes req.body, (err) ->
+        if err
+            compound.logger.write err
+            send error: 'Cannot update track', 500
+        else
+            send success: 'track successfully updated', 200

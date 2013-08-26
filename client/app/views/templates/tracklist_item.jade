@@ -3,10 +3,13 @@ td.left#state
         i.icon-plus
     #play-track-button.player-button.size-20(title="queue this song")
         i.icon-play
-td.field.title #{model.title}
+td.field.title
+    input.mousetrap(type="text", value="#{model.title}", readonly)
     //-span.info #{model.title}
-td.field.artist #{model.artist}
-td.field.album #{model.album}
+td.field.artist
+    input.mousetrap(type="text", value="#{model.artist}", readonly)
+td.field.album
+    input.mousetrap(type="text", value="#{model.album}", readonly)
     #play-album-button.player-button.size-20(title="queue this album")
         i.icon-play
 td.field.num #{model.track}

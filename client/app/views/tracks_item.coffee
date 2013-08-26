@@ -11,8 +11,8 @@ module.exports = class TrackListItemView extends TrackListItemView
             else
                 @onQueueTrack(e)
         'click #add-to-button': (e)->
-            event.preventDefault()
-            event.stopPropagation()
+            e.preventDefault()
+            e.stopPropagation()
             if app.selectedPlaylist?
                 @onAddTo()
             else
@@ -21,13 +21,139 @@ module.exports = class TrackListItemView extends TrackListItemView
             # prevent triggering multiple events when dbl clicking on a button
             event.preventDefault()
             event.stopPropagation()
-        'dblclick': 'onDblClick'
+        'dblclick': (e)->
+            e.preventDefault()
+            e.stopPropagation()
+            if @isEdited isnt ''
+                @disableEdition()
+                @isEdited = ''
+            @onDblClick e
 
         'click #play-album-button': (e)->
             if e.ctrlKey or e.metaKey
                 @onPlayNextAlbum(e)
             else
                 @onQueueAlbum(e)
+
+        'click .title': (e) -> @onClick e, 'title'
+        'click .artist': (e) -> @onClick e, 'artist'
+        'click .album': (e) -> @onClick e, 'album'
+        'click': (e) -> @onClick e, ''
+
+    isEdited = ''
+
+    # Called after the constructor
+    initialize: ->
+        super
+        # handle variable changes
+        @listenTo @model, 'change:state', @onStateChange
+        @listenTo @model, 'change:title', (event)=>
+            @$('td.field.title input').val @model.attributes.title
+        @listenTo @model, 'change:artist', (event)=>
+            @$('td.field.artist input').val @model.attributes.artist
+        @listenTo @model, 'change:album', (event)=>
+            @$('td.field.album input').val @model.attributes.album
+        @listenTo @model, 'change:track', (event)=>
+            @$('td.field.num').html @model.attributes.track
+
+    onClick: (event, element)=>
+        event.preventDefault()
+        event.stopPropagation()
+        # if the track is already selected
+        if @$el.hasClass 'selected'
+            # is another element is selected
+            if @isEdited isnt element
+                # disable edition on the previously edited element
+                if @isEdited isnt ''
+                    @disableEdition()
+                # then enable edition on this track
+                @isEdited = element
+                @enableEdition()
+        else
+            # select track
+            @$el.addClass 'selected'
+            # signal to unselect previous selection and register the new one
+            @$el.trigger 'click-track', @
+            # enable F2 key
+            Mousetrap.bind 'f2', ()=>
+                if isEdited is ''
+                    @isEdited = 'title'
+                    @enableEdition()
+
+    unSelect: =>
+        @$el.removeClass 'selected'
+        if @isEdited isnt ''
+            selector = ".#{@isEdited} input"
+            @disableEdition()
+            @isEdited = ''
+        Mousetrap.unbind 'f2'
+
+    enableEdition: ->
+        if @isEdited isnt ''
+            selector = ".#{@isEdited} input"
+            unless @$(selector).hasClass 'activated'
+                ### IE don't work properly here
+                console.log window
+                console.log @dataBrowser
+                console.log navigator.userAgent
+                console.log navigator.appName
+                #isIE = /*@cc_on!@* /false || document.documentMode
+                #console.log isIE
+                ###
+                @$(selector).addClass 'activated'
+                @$(selector).removeAttr 'readonly'
+                @$(selector).focus()
+                @$(selector).select()
+                @tmpValue = @$(selector).val()
+
+                Mousetrap.bind 'enter', ()=>
+                    @disableEdition()
+                    @isEdited = ''
+
+                Mousetrap.bind 'esc', ()=>
+                    @$(selector).val @tmpValue
+                    @disableEdition(false)
+                    @isEdited = ''
+
+                Mousetrap.bind 'tab', (e)=>
+                    e.preventDefault()
+                    @disableEdition()
+                    oldEdit = @isEdited
+                    @isEdited = switch
+                        when oldEdit is 'title' then 'artist'
+                        when oldEdit is 'artist' then 'album'
+                        when oldEdit is 'album' then 'title'
+                    @enableEdition()
+
+    disableEdition: (save=true)=>
+        if @isEdited isnt ''
+            selector = ".#{@isEdited} input"
+            if @$(selector).hasClass 'activated'
+                if save  and @$(selector).val() isnt @tmpValue
+                    @saveNewValue()
+                @$(selector).blur()
+                @$(selector).attr 'readonly', 'readonly'
+                @$(selector).removeClass 'activated'
+                @tmpValue = null
+                Mousetrap.unbind 'enter'
+                Mousetrap.unbind 'esc'
+                Mousetrap.unbind 'tab'
+
+    saveNewValue: ->
+        selector = ".#{@isEdited} input"
+        val = @$(selector).val()
+        @tmpValue = val
+        switch
+            when @isEdited is 'title' then @model.attributes.title = val
+            when @isEdited is 'artist' then @model.attributes.artist = val
+            when @isEdited is 'album' then @model.attributes.album = val
+        @saving = true
+        @model.save
+            success: =>
+                @saving = false
+            error: =>
+                alert "An error occured, modifications were not saved."
+                @saving = false
 
     afterRender: ->
         super

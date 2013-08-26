@@ -43,11 +43,6 @@ module.exports = class AppView extends BaseView
         @$('#player').append @player.$el
         @player.render()
 
-        # prevent to leave the page if playing
-        window.onbeforeunload = =>
-            if not @player.isStopped and not @player.isPaused
-                return "The music will be stop and your queue-list erased."
-
         PlaylistCollection = require 'collections/playlist_collection'
         @playlists = new PlaylistCollection()
         @playlists.fetch
@@ -59,6 +54,25 @@ module.exports = class AppView extends BaseView
             error: =>
                 msg = "Files couldn't be retrieved due to a server error."
                 alert msg
+
+        # prevent to leave the page if playing or uploading
+        window.onbeforeunload = =>
+            msg = ""
+            app.tracks.each (track)=>
+                state = track.attributes.state
+                if msg is "" and state isnt 'server'
+                    msg += "upload will be cancelled "
+
+            if not @player.isStopped and not @player.isPaused
+                msg += "music will be stopped"
+
+            if msg isnt "" and app.playQueue.length > 0
+                msg += " & your queue list will be erased."
+
+            if msg isnt ""
+                return msg
+            else
+                return
 
     showTrackList: =>
         # append the main track list

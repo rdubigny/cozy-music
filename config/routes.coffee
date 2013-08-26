@@ -1,6 +1,7 @@
 exports.routes = (map) ->
     # tracks
     map.get 'tracks', 'tracks#all'
+    map.put 'tracks/:id', 'tracks#update'
     map.post 'tracks', 'tracks#create'
     #:id means that this part of the route should be considered
     # as a variable called ID.

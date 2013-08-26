@@ -8,14 +8,8 @@ module.exports = class TrackListView extends ViewCollection
     template: require('./templates/tracklist')
     collectionEl: '#track-list'
 
-    subscriptions:
-        # when a track is selected or unselected
-        'track:click': 'onClickTrack'
-        'track:unclick': 'onUnclickTrack'
-
     afterRender: =>
         super
-        @selectedTrackView = null
 
         # adding scrollbar
         @$('.viewport').niceScroll(
@@ -36,14 +30,3 @@ module.exports = class TrackListView extends ViewCollection
     remove: ->
         @$('.viewport').getNiceScroll().remove()
         super
-
-    onClickTrack: (trackView)=>
-        # unselect previous selected track if there is one
-        unless @selectedTrackView is null
-            @selectedTrackView.toggleSelect()
-        # register selected track
-        @selectedTrackView = trackView
-
-    onUnclickTrack: =>
-        # unregister selected track
-        @selectedTrackView = null

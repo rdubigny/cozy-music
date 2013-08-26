@@ -10,6 +10,19 @@ module.exports = class PlayQueueItemView extends TrackListItemView
         'click #delete-from-here-button': 'onDeleteFromHereClick'
         'drop' : 'drop'
 
+    initialize: ->
+        super
+        # handle variable changes
+        @listenTo @model, 'change:state', @onStateChange
+        @listenTo @model, 'change:title', (event)=>
+            @$('td.field.title').html @model.attributes.title
+        @listenTo @model, 'change:artist', (event)=>
+            @$('td.field.artist').html @model.attributes.artist
+        @listenTo @model, 'change:album', (event)=>
+            @$('td.field.album').html @model.attributes.album
+        @listenTo @model, 'change:track', (event)=>
+            @$('td.field.num').html @model.attributes.track
+
     onPlayClick: (event)=>
         event.preventDefault()
         event.stopPropagation()

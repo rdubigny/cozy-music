@@ -2180,7 +2180,7 @@ input {
 .player-button.size-20 [class^="icon-"] {
   font-size: 10px;
   position: relative;
-  top: -2px;
+  top: -3px;
 }
 .player-button i.icon-play {
   left: 1px;
@@ -2192,7 +2192,7 @@ input {
   left: 2px;
 }
 .player-button.size-20 i.icon-remove {
-  top: -3px;
+  top: -4px;
 }
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;
@@ -2295,6 +2295,10 @@ input {
 body {
   background-color: #808080;
   overflow-x: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 a {
   color: inherit;
@@ -2610,6 +2614,28 @@ a {
   -o-animation-iteration-count: 1;
   -ms-animation-iteration-count: 1;
   animation-iteration-count: 1;
+}
+#content #tracks-display table tbody tr.track input {
+  width: 100%;
+  border: none;
+  font: inherit;
+  color: inherit;
+  background-color: inherit;
+  cursor: default;
+}
+#content #tracks-display table tbody tr.track input.activated {
+  color: #444;
+  background-color: #fff;
+  cursor: text;
+}
+#content #tracks-display table tbody tr.track .album {
+  line-height: 15px;
+}
+#content #tracks-display table tbody tr.track .album input {
+  width: 85%;
+}
+#content #tracks-display table tbody tr.track .album i.icon-play {
+  top: -2px;
 }
 #content #off-screen-nav .off-screen-nav-toggle {
   display: block;
@@ -2927,7 +2953,7 @@ a {
 .player-button.size-20 [class^="icon-"] {
   font-size: 10px;
   position: relative;
-  top: -2px;
+  top: -3px;
 }
 .player-button i.icon-play {
   left: 1px;
@@ -2939,7 +2965,7 @@ a {
   left: 2px;
 }
 .player-button.size-20 i.icon-remove {
-  top: -3px;
+  top: -4px;
 }
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;

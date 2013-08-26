@@ -733,14 +733,9 @@ window.require.register("views/app_view", function(exports, require, module) {
       this.player = new Player();
       this.$('#player').append(this.player.$el);
       this.player.render();
-      window.onbeforeunload = function() {
-        if (!_this.player.isStopped && !_this.player.isPaused) {
-          return "The music will be stop and your queue-list erased.";
-        }
-      };
       PlaylistCollection = require('collections/playlist_collection');
       this.playlists = new PlaylistCollection();
-      return this.playlists.fetch({
+      this.playlists.fetch({
         success: function(collection) {
           _this.offScreenNav = new OffScreenNav({
             collection: collection
@@ -754,6 +749,28 @@ window.require.register("views/app_view", function(exports, require, module) {
           return alert(msg);
         }
       });
+      return window.onbeforeunload = function() {
+        var msg;
+        msg = "";
+        app.tracks.each(function(track) {
+          var state;
+          state = track.attributes.state;
+          if (msg === "" && state !== 'server') {
+            return msg += "upload will be cancelled ";
+          }
+        });
+        if (!_this.player.isStopped && !_this.player.isPaused) {
+          msg += "music will be stopped";
+        }
+        if (msg !== "" && app.playQueue.length > 0) {
+          msg += " & your queue list will be erased.";
+        }
+        if (msg !== "") {
+          return msg;
+        } else {
+
+        }
+      };
     };
 
     AppView.prototype.showTrackList = function() {
@@ -1693,6 +1710,24 @@ window.require.register("views/playqueue_item", function(exports, require, modul
       'drop': 'drop'
     };
 
+    PlayQueueItemView.prototype.initialize = function() {
+      var _this = this;
+      PlayQueueItemView.__super__.initialize.apply(this, arguments);
+      this.listenTo(this.model, 'change:state', this.onStateChange);
+      this.listenTo(this.model, 'change:title', function(event) {
+        return _this.$('td.field.title').html(_this.model.attributes.title);
+      });
+      this.listenTo(this.model, 'change:artist', function(event) {
+        return _this.$('td.field.artist').html(_this.model.attributes.artist);
+      });
+      this.listenTo(this.model, 'change:album', function(event) {
+        return _this.$('td.field.album').html(_this.model.attributes.album);
+      });
+      return this.listenTo(this.model, 'change:track', function(event) {
+        return _this.$('td.field.num').html(_this.model.attributes.track);
+      });
+    };
+
     PlayQueueItemView.prototype.onPlayClick = function(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1814,7 +1849,13 @@ window.require.register("views/templates/tracklist_item", function(exports, requ
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<td id="state" class="left"><div id="add-to-button" title="add to playlist" class="player-button size-20"><i class="icon-plus"></i></div><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '<div id="play-album-button" title="queue this album" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div id="delete-button" title="delete definitively" class="player-button size-20 signal-button"><i class="icon-remove"></i></div></td>');
+  buf.push('<td id="state" class="left"><div id="add-to-button" title="add to playlist" class="player-button size-20"><i class="icon-plus"></i></div><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field title"><input');
+  buf.push(attrs({ 'type':("text"), 'value':("" + (model.title) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
+  buf.push('/></td><td class="field artist"><input');
+  buf.push(attrs({ 'type':("text"), 'value':("" + (model.artist) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
+  buf.push('/></td><td class="field album"><input');
+  buf.push(attrs({ 'type':("text"), 'value':("" + (model.album) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
+  buf.push('/><div id="play-album-button" title="queue this album" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div id="delete-button" title="delete definitively" class="player-button size-20 signal-button"><i class="icon-remove"></i></div></td>');
   }
   return buf.join("");
   };
@@ -1844,8 +1885,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
     __extends(TrackListView, _super);
 
     function TrackListView() {
-      this.onUnclickTrack = __bind(this.onUnclickTrack, this);
-      this.onClickTrack = __bind(this.onClickTrack, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = TrackListView.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -1859,14 +1898,8 @@ window.require.register("views/tracklist", function(exports, require, module) {
 
     TrackListView.prototype.collectionEl = '#track-list';
 
-    TrackListView.prototype.subscriptions = {
-      'track:click': 'onClickTrack',
-      'track:unclick': 'onUnclickTrack'
-    };
-
     TrackListView.prototype.afterRender = function() {
       TrackListView.__super__.afterRender.apply(this, arguments);
-      this.selectedTrackView = null;
       return this.$('.viewport').niceScroll({
         cursorcolor: "#444",
         cursorborder: "",
@@ -1889,17 +1922,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
       return TrackListView.__super__.remove.apply(this, arguments);
     };
 
-    TrackListView.prototype.onClickTrack = function(trackView) {
-      if (this.selectedTrackView !== null) {
-        this.selectedTrackView.toggleSelect();
-      }
-      return this.selectedTrackView = trackView;
-    };
-
-    TrackListView.prototype.onUnclickTrack = function() {
-      return this.selectedTrackView = null;
-    };
-
     return TrackListView;
 
   })(ViewCollection);
@@ -1907,7 +1929,6 @@ window.require.register("views/tracklist", function(exports, require, module) {
 });
 window.require.register("views/tracklist_item", function(exports, require, module) {
   var BaseView, TrackListItemView, _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1917,7 +1938,6 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     __extends(TrackListItemView, _super);
 
     function TrackListItemView() {
-      this.onClick = __bind(this.onClick, this);
       _ref = TrackListItemView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1927,43 +1947,6 @@ window.require.register("views/tracklist_item", function(exports, require, modul
     TrackListItemView.prototype.tagName = 'tr';
 
     TrackListItemView.prototype.template = require('./templates/tracklist_item');
-
-    TrackListItemView.prototype.events = {
-      'click': 'onClick'
-    };
-
-    TrackListItemView.prototype.initialize = function() {
-      var _this = this;
-      TrackListItemView.__super__.initialize.apply(this, arguments);
-      this.listenTo(this.model, 'change:state', this.onStateChange);
-      this.listenTo(this.model, 'change:title', function(event) {
-        return _this.$('td.field.title').html(_this.model.attributes.title);
-      });
-      this.listenTo(this.model, 'change:artist', function(event) {
-        return _this.$('td.field.artist').html(_this.model.attributes.artist);
-      });
-      this.listenTo(this.model, 'change:album', function(event) {
-        return _this.$('td.field.album').html(_this.model.attributes.album);
-      });
-      return this.listenTo(this.model, 'change:track', function(event) {
-        return _this.$('td.field.num').html(_this.model.attributes.track);
-      });
-    };
-
-    TrackListItemView.prototype.toggleSelect = function() {
-      if (this.$el.hasClass('selected')) {
-        Backbone.Mediator.publish('track:unclick', this);
-      } else {
-        Backbone.Mediator.publish('track:click', this);
-      }
-      return this.$el.toggleClass('selected');
-    };
-
-    TrackListItemView.prototype.onClick = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      return this.toggleSelect();
-    };
 
     return TrackListItemView;
 
@@ -1993,6 +1976,7 @@ window.require.register("views/tracks", function(exports, require, module) {
       this.toggleSort = __bind(this.toggleSort, this);
       this.onClickTableHead = __bind(this.onClickTableHead, this);
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
+      this.onClickTrack = __bind(this.onClickTrack, this);
       this.appendBlanckTrack = __bind(this.appendBlanckTrack, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = TracksView.__super__.constructor.apply(this, arguments);
@@ -2012,7 +1996,8 @@ window.require.register("views/tracks", function(exports, require, module) {
         return this.onClickTableHead(event, 'album');
       },
       'album:queue': 'queueAlbum',
-      'album:pushNext': 'pushNextAlbum'
+      'album:pushNext': 'pushNextAlbum',
+      'click-track': 'onClickTrack'
     };
 
     TracksView.prototype.minTrackListLength = 40;
@@ -2041,17 +2026,26 @@ window.require.register("views/tracks", function(exports, require, module) {
 
     TracksView.prototype.initialize = function() {
       TracksView.__super__.initialize.apply(this, arguments);
+      this.selectedTrackView = null;
       this.views = {};
       this.toggleSort('artist');
       this.elementSort = null;
       this.isReverseOrder = false;
       this.listenTo(this.collection, 'sort', this.render);
-      return this.listenTo(this.collection, 'sync', function(e) {
+      this.listenTo(this.collection, 'sync', function(e) {
         console.log("vue tracklist : \"pense à me supprimer un de ces quatres\"");
         if (this.collection.length === 0) {
           return Backbone.Mediator.publish('tracklist:isEmpty');
         }
       });
+      return Mousetrap.stopCallback = function(e, element, combo) {
+        if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {
+          if (e.which === 9 || e.which === 13 || e.which === 27) {
+            return false;
+          }
+        }
+        return element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || (element.contentEditable && element.contentEditable === 'true');
+      };
     };
 
     TracksView.prototype.afterRender = function() {
@@ -2072,6 +2066,13 @@ window.require.register("views/tracks", function(exports, require, module) {
       blankTrack.addClass("track blank");
       blankTrack.html("<td colspan=\"6\"></td>");
       return this.$collectionEl.append(blankTrack);
+    };
+
+    TracksView.prototype.onClickTrack = function(e, trackView) {
+      if (this.selectedTrackView != null) {
+        this.selectedTrackView.unSelect();
+      }
+      return this.selectedTrackView = trackView;
     };
 
     TracksView.prototype.updateSortingDisplay = function() {
@@ -2196,12 +2197,17 @@ window.require.register("views/tracks_item", function(exports, require, module) 
   app = require('application');
 
   module.exports = TrackListItemView = (function(_super) {
+    var isEdited;
+
     __extends(TrackListItemView, _super);
 
     function TrackListItemView() {
       this.returnToNormal = __bind(this.returnToNormal, this);
       this.onUploadProgressChange = __bind(this.onUploadProgressChange, this);
       this.onDeleteClick = __bind(this.onDeleteClick, this);
+      this.disableEdition = __bind(this.disableEdition, this);
+      this.unSelect = __bind(this.unSelect, this);
+      this.onClick = __bind(this.onClick, this);
       _ref = TrackListItemView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -2216,8 +2222,8 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
-        event.preventDefault();
-        event.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         if (app.selectedPlaylist != null) {
           return this.onAddTo();
         } else {
@@ -2228,14 +2234,189 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         event.preventDefault();
         return event.stopPropagation();
       },
-      'dblclick': 'onDblClick',
+      'dblclick': function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.isEdited !== '') {
+          this.disableEdition();
+          this.isEdited = '';
+        }
+        return this.onDblClick(e);
+      },
       'click #play-album-button': function(e) {
         if (e.ctrlKey || e.metaKey) {
           return this.onPlayNextAlbum(e);
         } else {
           return this.onQueueAlbum(e);
         }
+      },
+      'click .title': function(e) {
+        return this.onClick(e, 'title');
+      },
+      'click .artist': function(e) {
+        return this.onClick(e, 'artist');
+      },
+      'click .album': function(e) {
+        return this.onClick(e, 'album');
+      },
+      'click': function(e) {
+        return this.onClick(e, '');
       }
+    };
+
+    isEdited = '';
+
+    TrackListItemView.prototype.initialize = function() {
+      var _this = this;
+      TrackListItemView.__super__.initialize.apply(this, arguments);
+      this.listenTo(this.model, 'change:state', this.onStateChange);
+      this.listenTo(this.model, 'change:title', function(event) {
+        return _this.$('td.field.title input').val(_this.model.attributes.title);
+      });
+      this.listenTo(this.model, 'change:artist', function(event) {
+        return _this.$('td.field.artist input').val(_this.model.attributes.artist);
+      });
+      this.listenTo(this.model, 'change:album', function(event) {
+        return _this.$('td.field.album input').val(_this.model.attributes.album);
+      });
+      return this.listenTo(this.model, 'change:track', function(event) {
+        return _this.$('td.field.num').html(_this.model.attributes.track);
+      });
+    };
+
+    TrackListItemView.prototype.onClick = function(event, element) {
+      var _this = this;
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.$el.hasClass('selected')) {
+        if (this.isEdited !== element) {
+          if (this.isEdited !== '') {
+            this.disableEdition();
+          }
+          this.isEdited = element;
+          return this.enableEdition();
+        }
+      } else {
+        this.$el.addClass('selected');
+        this.$el.trigger('click-track', this);
+        return Mousetrap.bind('f2', function() {
+          if (isEdited === '') {
+            _this.isEdited = 'title';
+            return _this.enableEdition();
+          }
+        });
+      }
+    };
+
+    TrackListItemView.prototype.unSelect = function() {
+      var selector;
+      this.$el.removeClass('selected');
+      if (this.isEdited !== '') {
+        selector = "." + this.isEdited + " input";
+        this.disableEdition();
+        this.isEdited = '';
+      }
+      return Mousetrap.unbind('f2');
+    };
+
+    TrackListItemView.prototype.enableEdition = function() {
+      var selector,
+        _this = this;
+      if (this.isEdited !== '') {
+        selector = "." + this.isEdited + " input";
+        if (!this.$(selector).hasClass('activated')) {
+
+          /* IE don't work properly here
+          console.log window
+          console.log @dataBrowser
+          console.log navigator.userAgent
+          console.log navigator.appName
+          #isIE = /*@cc_on!@* /false || document.documentMode
+          #console.log isIE
+          */
+          this.$(selector).addClass('activated');
+          this.$(selector).removeAttr('readonly');
+          this.$(selector).focus();
+          this.$(selector).select();
+          this.tmpValue = this.$(selector).val();
+          Mousetrap.bind('enter', function() {
+            _this.disableEdition();
+            return _this.isEdited = '';
+          });
+          Mousetrap.bind('esc', function() {
+            _this.$(selector).val(_this.tmpValue);
+            _this.disableEdition(false);
+            return _this.isEdited = '';
+          });
+          return Mousetrap.bind('tab', function(e) {
+            var oldEdit;
+            e.preventDefault();
+            _this.disableEdition();
+            oldEdit = _this.isEdited;
+            _this.isEdited = (function() {
+              switch (false) {
+                case oldEdit !== 'title':
+                  return 'artist';
+                case oldEdit !== 'artist':
+                  return 'album';
+                case oldEdit !== 'album':
+                  return 'title';
+              }
+            })();
+            return _this.enableEdition();
+          });
+        }
+      }
+    };
+
+    TrackListItemView.prototype.disableEdition = function(save) {
+      var selector;
+      if (save == null) {
+        save = true;
+      }
+      if (this.isEdited !== '') {
+        selector = "." + this.isEdited + " input";
+        if (this.$(selector).hasClass('activated')) {
+          if (save && this.$(selector).val() !== this.tmpValue) {
+            this.saveNewValue();
+          }
+          this.$(selector).blur();
+          this.$(selector).attr('readonly', 'readonly');
+          this.$(selector).removeClass('activated');
+          this.tmpValue = null;
+          Mousetrap.unbind('enter');
+          Mousetrap.unbind('esc');
+          return Mousetrap.unbind('tab');
+        }
+      }
+    };
+
+    TrackListItemView.prototype.saveNewValue = function() {
+      var selector, val,
+        _this = this;
+      selector = "." + this.isEdited + " input";
+      val = this.$(selector).val();
+      this.tmpValue = val;
+      switch (false) {
+        case this.isEdited !== 'title':
+          this.model.attributes.title = val;
+          break;
+        case this.isEdited !== 'artist':
+          this.model.attributes.artist = val;
+          break;
+        case this.isEdited !== 'album':
+          this.model.attributes.album = val;
+      }
+      this.saving = true;
+      return this.model.save({
+        success: function() {
+          return _this.saving = false;
+        },
+        error: function() {
+          alert("An error occured, modifications were not saved.");
+          return _this.saving = false;
+        }
+      });
     };
 
     TrackListItemView.prototype.afterRender = function() {

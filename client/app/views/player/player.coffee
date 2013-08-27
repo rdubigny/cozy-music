@@ -210,7 +210,7 @@ module.exports = class Player extends BaseView
             onfinish: @onPlayFinish
             onstop: @stopTrack
             whileplaying: @updateProgressDisplay
-            # whileloading: @printLoadingInfo # debbugging tool
+            #whileloading: @printLoadingInfo # debbugging tool
             # sound "restart" (instead of "chorus") when played multiple times
             multiShot: false
             #onid3: ()-> console.log @id3 # may be useful in the future
@@ -258,7 +258,6 @@ module.exports = class Player extends BaseView
     onToggleMute: =>
         @isMuted = not @isMuted
         Cookies.set 'isMuteByDefault', "#{@isMuted}"
-        console.log "is muted = "+@isMuted
         if @currentSound?
             @currentSound.toggleMute()
 
@@ -272,14 +271,21 @@ module.exports = class Player extends BaseView
 
     # debugging function : to delete
     printLoadingInfo: =>
-        tot = @currentSound.durationEstimate
-        console.log "is buffering : #{@currentSound.isBuffering}"
-        console.log "buffered :"
-        printBuf = (buf)=>
-            console.log "[#{Math.floor(buf.start/tot*100)}% - #{Math.floor(buf.end/tot*100)}%]"
-        printBuf @currentSound.buffered[i] for buf, i in @currentSound.buffered
-        console.log "bytes loaded : #{Math.floor(@currentSound.bytesLoaded/@currentSound.bytesTotal*100)}"
-        console.log ""
+        bl = Math.floor(@currentSound.bytesLoaded/@currentSound.bytesTotal*100)
+        unless @bytesLoaded?
+            @bytesLoaded = -1
+        if @bytesLoaded isnt bl
+            @bytesLoaded = bl
+            tot = @currentSound.durationEstimate
+            console.log "is buffering : #{@currentSound.isBuffering}"
+            console.log "buffered :"
+            printBuf = (buf)=>
+                console.log "[#{Math.floor(buf.start/tot*100)}% - #{Math.floor(buf.end/tot*100)}%]"
+            printBuf @currentSound.buffered[i] for buf, i in @currentSound.buffered
+            console.log "bytes loaded : #{bl}"
+            console.log ""
+        else
+            console.log "refresh"
 
     # update both left and right timers and the progress bar
     updateProgressDisplay: =>

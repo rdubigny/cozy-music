@@ -54,9 +54,6 @@ action 'getAttachment', ->
     @track.updateAttributes updatedAttribute, (err) ->
         if err
             compound.logger.write err
-            send error: 'Cannot update track', 500
-        else
-            send success: 'track successfully updated', 200
 
     # get file
     stream = @track.getFile fileName, (err, resp, body) ->

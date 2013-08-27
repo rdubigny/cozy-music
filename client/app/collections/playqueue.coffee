@@ -8,7 +8,7 @@ module.exports = class PlayQueue extends Backbone.Collection
     model: Track
 
     # This is where ajax requests the backend.
-    url: 'playqueue'
+    #url: 'playqueue'
 
     # playLoop is : 'no-repeat', 'repeat-all' or 'repeat-one'
     playLoop: 'no-repeat'

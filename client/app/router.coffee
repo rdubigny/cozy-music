@@ -14,11 +14,26 @@ module.exports = class Router extends Backbone.Router
     main: ->
         @mainView.showTrackList()
 
-
+    # display the playlist view for an playlist with given id
+    # fetch before displaying it
     playlist: (id)->
         @navigate '', true
         alert "not available yet. Playlist are comming soon!"
         ###
+        playlist = @mainView.playlists.get id
+        playlist.fetch()
+        .done =>
+            @mainView.showPlayList playlist
+            ##
+            @displayView new AlbumView
+                model: playlist
+                editable: editable
+                contacts: []
+            ##
+        .fail =>
+            alert t 'this playlist does not exist'
+            @navigate '', true
+        ##
         # display the album view for an album with given id
         # fetch before displaying it
         playlist = @mainView.playlists.get(id) #or new Album id:id

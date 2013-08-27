@@ -165,8 +165,6 @@ window.require.register("collections/playqueue", function(exports, require, modu
 
     PlayQueue.prototype.model = Track;
 
-    PlayQueue.prototype.url = 'playqueue';
-
     PlayQueue.prototype.playLoop = 'no-repeat';
 
     PlayQueue.prototype.setAtPlay = function(value) {
@@ -628,6 +626,20 @@ window.require.register("router", function(exports, require, module) {
       return alert("not available yet. Playlist are comming soon!");
 
       /*
+      playlist = @mainView.playlists.get id
+      playlist.fetch()
+      .done =>
+          @mainView.showPlayList playlist
+          ##
+          @displayView new AlbumView
+              model: playlist
+              editable: editable
+              contacts: []
+          ##
+      .fail =>
+          alert t 'this playlist does not exist'
+          @navigate '', true
+      ##
       # display the album view for an album with given id
       # fetch before displaying it
       playlist = @mainView.playlists.get(id) #or new Album id:id
@@ -662,7 +674,7 @@ window.require.register("router", function(exports, require, module) {
   
 });
 window.require.register("views/app_view", function(exports, require, module) {
-  var AppView, BaseView, OffScreenNav, PlayQueue, Player, Tracks, Uploader, app, _ref,
+  var AppView, BaseView, OffScreenNav, PlayList, PlayQueue, Player, Tracks, Uploader, app, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -675,6 +687,8 @@ window.require.register("views/app_view", function(exports, require, module) {
 
   PlayQueue = require('./playqueue');
 
+  PlayList = require('./playlist');
+
   Player = require('./player/player');
 
   OffScreenNav = require('./off_screen_nav');
@@ -685,6 +699,7 @@ window.require.register("views/app_view", function(exports, require, module) {
     __extends(AppView, _super);
 
     function AppView() {
+      this.showPlayList = __bind(this.showPlayList, this);
       this.showPlayQueue = __bind(this.showPlayQueue, this);
       this.showTrackList = __bind(this.showTrackList, this);
       _ref = AppView.__super__.constructor.apply(this, arguments);
@@ -815,6 +830,26 @@ window.require.register("views/app_view", function(exports, require, module) {
       }
       this.$('#tracks-display').append(this.queueList.$el);
       this.queueList.render();
+      if (!$('#header-nav-title-list').hasClass('activated')) {
+        $('#header-nav-title-list').addClass('activated');
+      }
+      return $('#header-nav-title-home').removeClass('activated');
+    };
+
+    AppView.prototype.showPlayList = function(playlist) {
+      if (this.tracklist != null) {
+        this.tracklist.beforeDetach();
+        this.tracklist.$el.detach();
+      }
+      if (this.queueList != null) {
+        this.queueList.beforeDetach();
+        this.queueList.$el.detach();
+      }
+      this.playList = new PlayList({
+        model: playlist
+      });
+      this.$('#tracks-display').append(this.playList.$el);
+      this.playList.render();
       if (!$('#header-nav-title-list').hasClass('activated')) {
         $('#header-nav-title-list').addClass('activated');
       }
@@ -1287,7 +1322,6 @@ window.require.register("views/player/player", function(exports, require, module
     Player.prototype.onToggleMute = function() {
       this.isMuted = !this.isMuted;
       Cookies.set('isMuteByDefault', "" + this.isMuted);
-      console.log("is muted = " + this.isMuted);
       if (this.currentSound != null) {
         return this.currentSound.toggleMute();
       }
@@ -1307,21 +1341,30 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.printLoadingInfo = function() {
-      var buf, i, printBuf, tot, _i, _len, _ref1,
+      var bl, buf, i, printBuf, tot, _i, _len, _ref1,
         _this = this;
-      tot = this.currentSound.durationEstimate;
-      console.log("is buffering : " + this.currentSound.isBuffering);
-      console.log("buffered :");
-      printBuf = function(buf) {
-        return console.log("[" + (Math.floor(buf.start / tot * 100)) + "% - " + (Math.floor(buf.end / tot * 100)) + "%]");
-      };
-      _ref1 = this.currentSound.buffered;
-      for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
-        buf = _ref1[i];
-        printBuf(this.currentSound.buffered[i]);
+      bl = Math.floor(this.currentSound.bytesLoaded / this.currentSound.bytesTotal * 100);
+      if (this.bytesLoaded == null) {
+        this.bytesLoaded = -1;
       }
-      console.log("bytes loaded : " + (Math.floor(this.currentSound.bytesLoaded / this.currentSound.bytesTotal * 100)));
-      return console.log("");
+      if (this.bytesLoaded !== bl) {
+        this.bytesLoaded = bl;
+        tot = this.currentSound.durationEstimate;
+        console.log("is buffering : " + this.currentSound.isBuffering);
+        console.log("buffered :");
+        printBuf = function(buf) {
+          return console.log("[" + (Math.floor(buf.start / tot * 100)) + "% - " + (Math.floor(buf.end / tot * 100)) + "%]");
+        };
+        _ref1 = this.currentSound.buffered;
+        for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+          buf = _ref1[i];
+          printBuf(this.currentSound.buffered[i]);
+        }
+        console.log("bytes loaded : " + bl);
+        return console.log("");
+      } else {
+        return console.log("refresh");
+      }
     };
 
     Player.prototype.updateProgressDisplay = function() {
@@ -1492,6 +1535,36 @@ window.require.register("views/player/volumeManager", function(exports, require,
     };
 
     return VolumeManager;
+
+  })(BaseView);
+  
+});
+window.require.register("views/playlist", function(exports, require, module) {
+  var BaseView, PlayListView, PlayQueueView, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseView = require('lib/base_view');
+
+  PlayQueueView = require('./tracklist');
+
+  module.exports = PlayListView = (function(_super) {
+    __extends(PlayListView, _super);
+
+    function PlayListView() {
+      _ref = PlayListView.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    PlayListView.prototype.afterRender = function() {
+      PlayListView.__super__.afterRender.apply(this, arguments);
+      this.playlist = new PlayQueueView({
+        collection: this.model.tracks
+      });
+      return this.playlist.render();
+    };
+
+    return PlayListView;
 
   })(BaseView);
   

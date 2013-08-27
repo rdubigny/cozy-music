@@ -2,6 +2,7 @@ BaseView = require '../lib/base_view'
 Uploader = require './uploader'
 Tracks = require './tracks'
 PlayQueue = require './playqueue'
+PlayList = require './playlist'
 Player = require './player/player'
 OffScreenNav = require './off_screen_nav'
 app = require 'application'
@@ -105,6 +106,23 @@ module.exports = class AppView extends BaseView
                 collection: app.playQueue
         @$('#tracks-display').append @queueList.$el
         @queueList.render()
+        # update header display
+        unless $('#header-nav-title-list').hasClass('activated')
+            $('#header-nav-title-list').addClass('activated')
+        $('#header-nav-title-home').removeClass('activated')
+
+    showPlayList: (playlist)=>
+        # append the play queue
+        if @tracklist?
+            @tracklist.beforeDetach()
+            @tracklist.$el.detach()
+        if @queueList?
+            @queueList.beforeDetach()
+            @queueList.$el.detach()
+        @playList = new PlayList
+            model: playlist
+        @$('#tracks-display').append @playList.$el
+        @playList.render()
         # update header display
         unless $('#header-nav-title-list').hasClass('activated')
             $('#header-nav-title-list').addClass('activated')

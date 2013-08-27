@@ -7,4 +7,5 @@ module.exports = class Playlist extends Backbone.Model
 
     constructor: ->
         @tracks = new TrackCollection()
+            #url: "playlist/#{@id}"
         return super

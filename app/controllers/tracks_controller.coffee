@@ -49,8 +49,8 @@ action 'getAttachment', ->
     fileName = params.fileName
     # update attributes
     updatedAttribute =
-        lastPlayDate: Date.now()
-        playTime : @track.playTime+1
+        lastPlay: Date.now()
+        plays: @track.plays+1
     @track.updateAttributes updatedAttribute, (err) ->
         if err
             compound.logger.write err

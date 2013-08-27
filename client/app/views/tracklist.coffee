@@ -1,5 +1,6 @@
 Track = require '../models/track'
 ViewCollection = require '../lib/view_collection'
+TrackView = require './tracklist_item'
 
 module.exports = class TrackListView extends ViewCollection
 
@@ -7,6 +8,11 @@ module.exports = class TrackListView extends ViewCollection
     tagName: 'div'
     template: require('./templates/tracklist')
     collectionEl: '#track-list'
+    itemview: TrackView
+
+    initialize: ->
+        super
+        @views = {}
 
     afterRender: =>
         super

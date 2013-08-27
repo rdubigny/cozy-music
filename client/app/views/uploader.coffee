@@ -100,7 +100,7 @@ module.exports = class Uploader extends BaseView
                     track: if tags.track? then tags.track else ''
                     year: if tags.year? then tags.year else ''
                     genre: if tags.genre? then tags.genre else ''
-                    duration: if tags.TLEN?.data? then tags.track else ''
+                    time: if tags.TLEN?.data? then tags.TLEN.data else ''
                 cb()
             ),
                 tags: ["title","artist","album","track","year","genre","TLEN"]
@@ -120,7 +120,7 @@ module.exports = class Uploader extends BaseView
         formdata.append 'track',track.get 'track'
         formdata.append 'year',track.get 'year'
         formdata.append 'genre',track.get 'genre'
-        formdata.append 'duration',track.get 'duration'
+        formdata.append 'time',track.get 'time'
         formdata.append 'file', track.file
 
         # if the upload have been canceled don't proceed to upload

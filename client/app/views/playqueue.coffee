@@ -82,15 +82,14 @@ module.exports = class PlayQueueView extends TrackListView
             @$("#track-list").sortable "enable"
 
     beforeDetach: ->
+        if @isRendered
+            @$('#track-list').sortable "destroy"
         super
-        @$('#track-list').sortable "destroy"
-
         @isRendered = false
 
     remove: ->
-        super
         @$('#track-list').sortable "destroy"
-
+        super
         @isRendered = false
 
     updateSort: (event, track, position) ->

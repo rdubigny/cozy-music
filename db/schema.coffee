@@ -5,13 +5,13 @@ Track = define 'Track', ->
     property 'track', String
     property 'year', String
     property 'genre', String
-    property 'duration', String
+    property 'time', String
     property 'slug', String
     property '_attachments', Object
     property 'playlists', Object
-    property 'additionDate', Date, default: Date.now
-    property 'lastPlayDate', Date
-    property 'playTime', Number, default: 0
+    property 'dateAdded', Date, default: Date.now
+    property 'lastPlay', Date
+    property 'plays', Number, default: 0
 
 Playlist = define 'Playlist', ->
     property 'title', String

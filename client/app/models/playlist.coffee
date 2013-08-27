@@ -1,11 +1,11 @@
-TrackCollection = require '../collections/track_collection'
+PlaylistTrackCollection = require '../collections/playlist'
 
 module.exports = class Playlist extends Backbone.Model
 
     # This field is required to know from where data should be loaded.
-    rootUrl: 'playlists'
+    rootUrl: "playlists"
 
-    constructor: ->
-        @tracks = new TrackCollection()
-            #url: "playlist/#{@id}"
-        return super
+    initialize: ->
+        super
+        @tracks = new PlaylistTrackCollection [],
+            url: "playlists/#{@id}"

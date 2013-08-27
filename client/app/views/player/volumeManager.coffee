@@ -53,11 +53,11 @@ module.exports = class VolumeManager extends BaseView
         @toggleMute()
 
     volUp: =>
-        @volumeValue += 10
+        @volumeValue = parseInt(@volumeValue)+10
         @controlVolumeValue()
 
     volDown: =>
-        @volumeValue -= 10
+        @volumeValue = parseInt(@volumeValue)-10
         @controlVolumeValue()
 
     retrieveVolumeValue: (event)->

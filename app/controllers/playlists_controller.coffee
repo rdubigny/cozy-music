@@ -20,8 +20,9 @@ action 'all', ->
 
 action 'show', ->
     @playlist.tracks (err, tracks)=>
-        out = @playlist.toObject()
-        out.tracks = tracks
+        #out = @playlist.toObject()
+        #out.tracks = tracks
+        out = tracks
         send out, 200
 
 action 'create', ->

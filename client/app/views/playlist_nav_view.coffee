@@ -1,4 +1,5 @@
 BaseView = require '../lib/base_view'
+PlaylistTrackCollection = require '../collections/playlist'
 
 module.exports = class PlaylistNavView extends BaseView
 

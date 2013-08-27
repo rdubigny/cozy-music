@@ -2,10 +2,11 @@ BaseView = require '../lib/base_view'
 Uploader = require './uploader'
 Tracks = require './tracks'
 PlayQueue = require './playqueue'
-PlayList = require './playlist'
+Tracklist = require './tracklist'
 Player = require './player/player'
 OffScreenNav = require './off_screen_nav'
 app = require 'application'
+PlaylistCollection = require 'collections/playlist_collection'
 
 module.exports = class AppView extends BaseView
 
@@ -49,10 +50,8 @@ module.exports = class AppView extends BaseView
         @player = new Player()
         @$('#player').append @player.$el
         @player.render()
-
-        PlaylistCollection = require 'collections/playlist_collection'
-        @playlists = new PlaylistCollection()
-        @playlists.fetch
+        @playlist_collection = new PlaylistCollection()
+        @playlist_collection.fetch
             success: (collection)=>
                 @offScreenNav = new OffScreenNav
                     collection: collection
@@ -86,6 +85,8 @@ module.exports = class AppView extends BaseView
         if @queueList?
             @queueList.beforeDetach()
             @queueList.$el.detach()
+        if @playList?
+            @playList.$el.remove()
         unless @tracklist?
             @tracklist = new Tracks
                 collection: app.tracks
@@ -101,6 +102,8 @@ module.exports = class AppView extends BaseView
         if @tracklist?
             @tracklist.beforeDetach()
             @tracklist.$el.detach()
+        if @playList?
+            @playList.$el.remove()
         unless @queueList?
             @queueList = new PlayQueue
                 collection: app.playQueue
@@ -111,19 +114,36 @@ module.exports = class AppView extends BaseView
             $('#header-nav-title-list').addClass('activated')
         $('#header-nav-title-home').removeClass('activated')
 
-    showPlayList: (playlist)=>
-        # append the play queue
+    showPlayList: (id)=>
+        # append the playlist
         if @tracklist?
             @tracklist.beforeDetach()
             @tracklist.$el.detach()
         if @queueList?
             @queueList.beforeDetach()
             @queueList.$el.detach()
-        @playList = new PlayList
-            model: playlist
-        @$('#tracks-display').append @playList.$el
-        @playList.render()
+        if @playList?
+            @playList.$el.remove()
+        playlist_model = @playlist_collection.get id
+        if playlist_model?
+            @appendPlaylist playlist_model
+        else
+            @listenToOnce @playlist_collection, 'sync', (collection)->
+                playlist_model = collection.get id
+                @appendPlaylist playlist_model
+
         # update header display
         unless $('#header-nav-title-list').hasClass('activated')
             $('#header-nav-title-list').addClass('activated')
         $('#header-nav-title-home').removeClass('activated')
+
+    appendPlaylist: (playlist_model)->
+        playlist_model.tracks.fetch()
+        .done =>
+            @playList = new Tracklist
+                collection: playlist_model.tracks
+            @$('#tracks-display').append @playList.$el
+            @playList.render()
+        .fail =>
+            alert t 'this playlist does not exist'
+            @navigate '', true

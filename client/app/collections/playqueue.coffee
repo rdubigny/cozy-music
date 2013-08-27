@@ -13,9 +13,15 @@ module.exports = class PlayQueue extends Backbone.Collection
     # playLoop is : 'no-repeat', 'repeat-all' or 'repeat-one'
     playLoop: 'no-repeat'
 
-    setAtPlay: (value)=>
+    # used for cases where view have to be signaled after change is done
+    viewHaveToBeSignaled = false
+
+    setAtPlay: (value, signalView=true)=>
         @atPlay = value
-        @trigger 'change:atPlay'
+        if signalView
+            @trigger 'change:atPlay'
+        else
+            @viewHaveToBeSignaled = true
 
     # return current track pointed by atPlay if it exist
     getCurrentTrack: ->
@@ -81,13 +87,17 @@ module.exports = class PlayQueue extends Backbone.Collection
     remove: (track, updateAtPlayValue = true)->
         if updateAtPlayValue
             if @indexOf(track) < @atPlay
-                @setAtPlay @atPlay-1
+                @setAtPlay @atPlay-1, false
             else if @indexOf(track) == @atPlay
                 id = track.get 'id'
                 Backbone.Mediator.publish 'track:delete', "sound-#{id}"
                 if @indexOf(track) is @indexOf(@last()) and @length > 1
-                    @setAtPlay @atPlay-1
+                    @setAtPlay @atPlay-1, false
         super track
+        if @viewHaveToBeSignaled
+            @trigger 'change:atPlay'
+            @viewHaveToBeSignaled = false
+
 
     playFromTrack: (track)->
         index = @indexOf(track)
@@ -99,8 +109,9 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     # debug function
     show: ->
+        console.log "atPlay : "+@atPlay
         console.log "PlayQueue content :"
         if @length >= 1
             for i in [0..@length-1]
                 curM = @models[i]
-                console.log i+") "+curM.attributes.title
+                console.log @indexOf(curM)+") "+curM.attributes.title

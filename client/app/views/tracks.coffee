@@ -59,11 +59,11 @@ module.exports = class TracksView extends TrackListView
 
         @views = {}
 
-        @toggleSort 'artist' # default value : sort by artist
+        # default value : sort by artist
+        @toggleSort Cookies('defaultSortItem') || 'artist'
 
         # specify the current sorting mode
         @elementSort = null
-        @isReverseOrder= false
 
         # always render after sorting (except for the first sort)
         # doesn't work
@@ -145,6 +145,7 @@ module.exports = class TracksView extends TrackListView
             @isReverseOrder = not @isReverseOrder
         else
             @isReverseOrder = false
+        Cookies.set 'defaultSortItem', element
 
         @elementSort = element
 
@@ -169,6 +170,10 @@ module.exports = class TracksView extends TrackListView
                     #if field1.match(/\/[0-9]+$/) is field2.match(/\/[0-9]+$/)
                     field1 = parseInt(field1.match(/^[0-9]+/))
                     field2 = parseInt(field2.match(/^[0-9]+/))
+                else
+                    # disable case sensitive search for non numeric value
+                    field1 = field1.toLowerCase()
+                    field2 = field2.toLowerCase()
                 return -1 if field1 < field2
                 return 1 if field1 > field2
             0

@@ -13,6 +13,7 @@ module.exports = class VolumeManager extends BaseView
     initialize: (options)->
         super
         @volumeValue = options.initVol
+        @isMuted = options.initMute
 
         # bind keyboard events
         Mousetrap.bind 'm', @toggleMute
@@ -20,12 +21,17 @@ module.exports = class VolumeManager extends BaseView
         Mousetrap.bind '-', @volDown
 
     afterRender: ->
-        @isMuted = false
+        super
         @slidableZone = $(document) # the zone where the user can slide
         @slider = @$('.slider')
         @sliderContainer = @$('.slider-container')
         @sliderInner = @$('.slider-inner')
-        @sliderInner.width "#{@volumeValue}%"
+        if @isMuted
+            @sliderInner.width "0%"
+            toggledClasses = 'icon-volume-up icon-volume-off activated'
+            @$('#volume-switch-button i').toggleClass toggledClasses
+        else
+            @sliderInner.width "#{@volumeValue}%"
 
     onMouseDownSlider: (event) ->
         event.preventDefault()

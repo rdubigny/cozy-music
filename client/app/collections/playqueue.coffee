@@ -10,7 +10,8 @@ module.exports = class PlayQueue extends Backbone.Collection
     # This is where ajax requests the backend.
     url: 'playqueue'
 
-    playLoop: false
+    # playLoop is : 'no-repeat', 'repeat-all' or 'repeat-one'
+    playLoop: 'no-repeat'
 
     setAtPlay: (value)=>
         @atPlay = value
@@ -26,10 +27,12 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     # return next track, if there is no more track return null
     getNextTrack: ->
-        if @atPlay < @length-1
+        if @playLoop is 'repeat-one'
+            return @at(@atPlay)
+        else if @atPlay < @length-1
             @setAtPlay @atPlay+1
             return @at(@atPlay)
-        else if @playLoop and @length > 0
+        else if @playLoop is 'repeat-all' and @length > 0
             @setAtPlay 0
             return @at(@atPlay)
         else
@@ -37,10 +40,12 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     # return previous track, if this is the first track return null
     getPrevTrack: ->
-        if @atPlay > 0
+        if @playLoop is 'repeat-one'
+            return @at(@atPlay)
+        else if @atPlay > 0
             @setAtPlay @atPlay-1
             return @at(@atPlay)
-        else if @playLoop and @length > 0
+        else if @playLoop is 'repeat-all' and @length > 0
             @setAtPlay @length - 1
             return @at(@atPlay)
         else

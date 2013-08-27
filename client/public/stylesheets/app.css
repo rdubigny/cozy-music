@@ -2191,9 +2191,6 @@ input {
 .player-button i.icon-forward {
   left: 2px;
 }
-.player-button.size-20 i.icon-remove {
-  top: -4px;
-}
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;
 }
@@ -2967,9 +2964,6 @@ a {
 }
 .player-button i.icon-forward {
   left: 2px;
-}
-.player-button.size-20 i.icon-remove {
-  top: -4px;
 }
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;

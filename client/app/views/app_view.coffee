@@ -33,7 +33,13 @@ module.exports = class AppView extends BaseView
             if @queueList?
                 @queueList.enableSort()
 
+    initialize: ->
+        super
+        Cookies.defaults =
+            expires: 604800 # = 1 week
+
     afterRender: ->
+        super
         # header used as uploader
         @uploader = new Uploader
         @$('#uploader').append @uploader.$el

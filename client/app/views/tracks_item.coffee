@@ -59,26 +59,27 @@ module.exports = class TrackListItemView extends TrackListItemView
     onClick: (event, element)=>
         event.preventDefault()
         event.stopPropagation()
-        # if the track is already selected
-        if @$el.hasClass 'selected'
-            # is another element is selected
-            if @isEdited isnt element
-                # disable edition on the previously edited element
-                if @isEdited isnt ''
-                    @disableEdition()
-                # then enable edition on this track
-                @isEdited = element
-                @enableEdition()
-        else
-            # select track
-            @$el.addClass 'selected'
-            # signal to unselect previous selection and register the new one
-            @$el.trigger 'click-track', @
-            # enable F2 key
-            Mousetrap.bind 'f2', ()=>
-                if isEdited is ''
-                    @isEdited = 'title'
+        if @model.attributes.state is 'server'
+            # if the track is already selected
+            if @$el.hasClass 'selected'
+                # is another element is selected
+                if @isEdited isnt element
+                    # disable edition on the previously edited element
+                    if @isEdited isnt ''
+                        @disableEdition()
+                    # then enable edition on this track
+                    @isEdited = element
                     @enableEdition()
+            else
+                # select track
+                @$el.addClass 'selected'
+                # signal to unselect previous selection and register the new one
+                @$el.trigger 'click-track', @
+                # enable F2 key
+                Mousetrap.bind 'f2', ()=>
+                    if isEdited is ''
+                        @isEdited = 'title'
+                        @enableEdition()
 
     unSelect: =>
         @$el.removeClass 'selected'

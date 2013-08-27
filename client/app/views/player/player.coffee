@@ -56,15 +56,21 @@ module.exports = class Player extends BaseView
         Mousetrap.bind 'n', @onClickFwd
 
     afterRender: =>
+        super
         # bind play button
         @playButton = @$('#play-button')
 
         # initializing variables related to volumeManager
-        @volume = 50 # default volume value
-        @isMuted = false
+        if Cookies('defaultVolume')?
+            @volume = parseInt(Cookies('defaultVolume'))
+        else
+            @volume = 50
+        @isMuted = Cookies('isMuteByDefault')? and Cookies('isMuteByDefault') is "true"
 
         # create, bind and display the volume bar
-        @volumeManager = new VolumeManager({initVol: @volume})
+        @volumeManager = new VolumeManager
+            initVol: @volume
+            initMute: @isMuted
         @volumeManager.render()
         @$('#volume').append @volumeManager.$el
 
@@ -244,12 +250,15 @@ module.exports = class Player extends BaseView
     # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>
         @volume = volume
+        Cookies.set 'defaultVolume', volume
         if @currentSound?
             @currentSound.setVolume volume
 
     # on mute handler, same thing but for the muted value
     onToggleMute: =>
         @isMuted = not @isMuted
+        Cookies.set 'isMuteByDefault', "#{@isMuted}"
+        console.log "is muted = "+@isMuted
         if @currentSound?
             @currentSound.toggleMute()
 
@@ -282,11 +291,20 @@ module.exports = class Player extends BaseView
 
     onClickLoop: ->
         loopIcon = @$('#loop-button i')
-        loopIcon.toggleClass('activated')
-        if loopIcon.hasClass('activated')
-            app.playQueue.playLoop = true
+        if loopIcon.hasClass 'icon-refresh'
+            # currently in repeat-all mode
+            if loopIcon.hasClass 'activated'
+                app.playQueue.playLoop = 'repeat-one'
+                loopIcon.toggleClass 'activated'
+                loopIcon.toggleClass 'icon-refresh icon-repeat activated'
+            # currently in no-repeat mode
+            else
+                app.playQueue.playLoop = 'repeat-all'
+                loopIcon.toggleClass 'activated'
+        # currently in repeat-one mode
         else
-            app.playQueue.playLoop = false
+            app.playQueue.playLoop = 'no-repeat'
+            loopIcon.toggleClass 'icon-refresh icon-repeat activated'
 
     onClickRandom: ->
         alert 'not available yet'

@@ -167,7 +167,7 @@ window.require.register("collections/playqueue", function(exports, require, modu
 
     PlayQueue.prototype.url = 'playqueue';
 
-    PlayQueue.prototype.playLoop = false;
+    PlayQueue.prototype.playLoop = 'no-repeat';
 
     PlayQueue.prototype.setAtPlay = function(value) {
       this.atPlay = value;
@@ -184,10 +184,12 @@ window.require.register("collections/playqueue", function(exports, require, modu
     };
 
     PlayQueue.prototype.getNextTrack = function() {
-      if (this.atPlay < this.length - 1) {
+      if (this.playLoop === 'repeat-one') {
+        return this.at(this.atPlay);
+      } else if (this.atPlay < this.length - 1) {
         this.setAtPlay(this.atPlay + 1);
         return this.at(this.atPlay);
-      } else if (this.playLoop && this.length > 0) {
+      } else if (this.playLoop === 'repeat-all' && this.length > 0) {
         this.setAtPlay(0);
         return this.at(this.atPlay);
       } else {
@@ -196,10 +198,12 @@ window.require.register("collections/playqueue", function(exports, require, modu
     };
 
     PlayQueue.prototype.getPrevTrack = function() {
-      if (this.atPlay > 0) {
+      if (this.playLoop === 'repeat-one') {
+        return this.at(this.atPlay);
+      } else if (this.atPlay > 0) {
         this.setAtPlay(this.atPlay - 1);
         return this.at(this.atPlay);
-      } else if (this.playLoop && this.length > 0) {
+      } else if (this.playLoop === 'repeat-all' && this.length > 0) {
         this.setAtPlay(this.length - 1);
         return this.at(this.atPlay);
       } else {
@@ -724,9 +728,17 @@ window.require.register("views/app_view", function(exports, require, module) {
       }
     };
 
+    AppView.prototype.initialize = function() {
+      AppView.__super__.initialize.apply(this, arguments);
+      return Cookies.defaults = {
+        expires: 604800
+      };
+    };
+
     AppView.prototype.afterRender = function() {
       var PlaylistCollection,
         _this = this;
+      AppView.__super__.afterRender.apply(this, arguments);
       this.uploader = new Uploader;
       this.$('#uploader').append(this.uploader.$el);
       this.uploader.render();
@@ -1068,11 +1080,17 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.afterRender = function() {
+      Player.__super__.afterRender.apply(this, arguments);
       this.playButton = this.$('#play-button');
-      this.volume = 50;
-      this.isMuted = false;
+      if (Cookies('defaultVolume') != null) {
+        this.volume = parseInt(Cookies('defaultVolume'));
+      } else {
+        this.volume = 50;
+      }
+      this.isMuted = (Cookies('isMuteByDefault') != null) && Cookies('isMuteByDefault') === "true";
       this.volumeManager = new VolumeManager({
-        initVol: this.volume
+        initVol: this.volume,
+        initMute: this.isMuted
       });
       this.volumeManager.render();
       this.$('#volume').append(this.volumeManager.$el);
@@ -1260,6 +1278,7 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onVolumeChange = function(volume) {
       this.volume = volume;
+      Cookies.set('defaultVolume', volume);
       if (this.currentSound != null) {
         return this.currentSound.setVolume(volume);
       }
@@ -1267,6 +1286,8 @@ window.require.register("views/player/player", function(exports, require, module
 
     Player.prototype.onToggleMute = function() {
       this.isMuted = !this.isMuted;
+      Cookies.set('isMuteByDefault', "" + this.isMuted);
+      console.log("is muted = " + this.isMuted);
       if (this.currentSound != null) {
         return this.currentSound.toggleMute();
       }
@@ -1315,11 +1336,18 @@ window.require.register("views/player/player", function(exports, require, module
     Player.prototype.onClickLoop = function() {
       var loopIcon;
       loopIcon = this.$('#loop-button i');
-      loopIcon.toggleClass('activated');
-      if (loopIcon.hasClass('activated')) {
-        return app.playQueue.playLoop = true;
+      if (loopIcon.hasClass('icon-refresh')) {
+        if (loopIcon.hasClass('activated')) {
+          app.playQueue.playLoop = 'repeat-one';
+          loopIcon.toggleClass('activated');
+          return loopIcon.toggleClass('icon-refresh icon-repeat activated');
+        } else {
+          app.playQueue.playLoop = 'repeat-all';
+          return loopIcon.toggleClass('activated');
+        }
       } else {
-        return app.playQueue.playLoop = false;
+        app.playQueue.playLoop = 'no-repeat';
+        return loopIcon.toggleClass('icon-refresh icon-repeat activated');
       }
     };
 
@@ -1368,18 +1396,26 @@ window.require.register("views/player/volumeManager", function(exports, require,
     VolumeManager.prototype.initialize = function(options) {
       VolumeManager.__super__.initialize.apply(this, arguments);
       this.volumeValue = options.initVol;
+      this.isMuted = options.initMute;
       Mousetrap.bind('m', this.toggleMute);
       Mousetrap.bind('+', this.volUp);
       return Mousetrap.bind('-', this.volDown);
     };
 
     VolumeManager.prototype.afterRender = function() {
-      this.isMuted = false;
+      var toggledClasses;
+      VolumeManager.__super__.afterRender.apply(this, arguments);
       this.slidableZone = $(document);
       this.slider = this.$('.slider');
       this.sliderContainer = this.$('.slider-container');
       this.sliderInner = this.$('.slider-inner');
-      return this.sliderInner.width("" + this.volumeValue + "%");
+      if (this.isMuted) {
+        this.sliderInner.width("0%");
+        toggledClasses = 'icon-volume-up icon-volume-off activated';
+        return this.$('#volume-switch-button i').toggleClass(toggledClasses);
+      } else {
+        return this.sliderInner.width("" + this.volumeValue + "%");
+      }
     };
 
     VolumeManager.prototype.onMouseDownSlider = function(event) {
@@ -1781,7 +1817,7 @@ window.require.register("views/templates/player/player", function(exports, requi
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="player-element"><div id="rwd-button" title="play previous track" class="player-button size-26"><i class="icon-backward"></i></div><div id="play-button" title="play/pause" class="player-button size-34"><i class="icon-cogs"></i></div><div id="fwd-button" title="play next track" class="player-button size-26"><i class="icon-forward"></i></div></div><div class="player-element"><div class="progress-side"><div id="loop-button" class="progress-side-control"><i class="icon-retweet"></i></div><div class="time left"><span id="elapsedTime"></span></div></div><div class="progress-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="progress-side"><div id="random-button" class="progress-side-control"><i class="icon-random"></i></div><div class="time right"><span id="remainingTime"></span></div></div></div><div class="player-element"><span id="volume"></span></div>');
+  buf.push('<div class="player-element"><div id="rwd-button" title="play previous track" class="player-button size-26"><i class="icon-backward"></i></div><div id="play-button" title="play/pause" class="player-button size-34"><i class="icon-cogs"></i></div><div id="fwd-button" title="play next track" class="player-button size-26"><i class="icon-forward"></i></div></div><div class="player-element"><div class="progress-side"><div id="loop-button" title="no-repeat/repeat-all/repeat-one" class="progress-side-control"><i class="icon-refresh"></i></div><div class="time left"><span id="elapsedTime"></span></div></div><div class="progress-info"><div class="id3-info">-</div><div class="progress"><div class="inner"></div></div></div><div class="progress-side"><div id="random-button" title="randomize" class="progress-side-control"><i class="icon-random"></i></div><div class="time right"><span id="remainingTime"></span></div></div></div><div class="player-element"><span id="volume"></span></div>');
   }
   return buf.join("");
   };
@@ -2028,9 +2064,8 @@ window.require.register("views/tracks", function(exports, require, module) {
       TracksView.__super__.initialize.apply(this, arguments);
       this.selectedTrackView = null;
       this.views = {};
-      this.toggleSort('artist');
+      this.toggleSort(Cookies('defaultSortItem') || 'artist');
       this.elementSort = null;
-      this.isReverseOrder = false;
       this.listenTo(this.collection, 'sort', this.render);
       this.listenTo(this.collection, 'sync', function(e) {
         console.log("vue tracklist : \"pense à me supprimer un de ces quatres\"");
@@ -2103,6 +2138,7 @@ window.require.register("views/tracks", function(exports, require, module) {
       } else {
         this.isReverseOrder = false;
       }
+      Cookies.set('defaultSortItem', element);
       this.elementSort = element;
       if (element === 'title') {
         elementArray = ['title', 'artist', 'album', 'track'];
@@ -2124,6 +2160,9 @@ window.require.register("views/tracks", function(exports, require, module) {
           } else if (((field1.match(/^[0-9]+\/[0-9]+$/)) != null) && ((field2.match(/^[0-9]+\/[0-9]+$/)) != null)) {
             field1 = parseInt(field1.match(/^[0-9]+/));
             field2 = parseInt(field2.match(/^[0-9]+/));
+          } else {
+            field1 = field1.toLowerCase();
+            field2 = field2.toLowerCase();
           }
           if (field1 < field2) {
             return -1;
@@ -2288,23 +2327,25 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       var _this = this;
       event.preventDefault();
       event.stopPropagation();
-      if (this.$el.hasClass('selected')) {
-        if (this.isEdited !== element) {
-          if (this.isEdited !== '') {
-            this.disableEdition();
+      if (this.model.attributes.state === 'server') {
+        if (this.$el.hasClass('selected')) {
+          if (this.isEdited !== element) {
+            if (this.isEdited !== '') {
+              this.disableEdition();
+            }
+            this.isEdited = element;
+            return this.enableEdition();
           }
-          this.isEdited = element;
-          return this.enableEdition();
+        } else {
+          this.$el.addClass('selected');
+          this.$el.trigger('click-track', this);
+          return Mousetrap.bind('f2', function() {
+            if (isEdited === '') {
+              _this.isEdited = 'title';
+              return _this.enableEdition();
+            }
+          });
         }
-      } else {
-        this.$el.addClass('selected');
-        this.$el.trigger('click-track', this);
-        return Mousetrap.bind('f2', function() {
-          if (isEdited === '') {
-            _this.isEdited = 'title';
-            return _this.enableEdition();
-          }
-        });
       }
     };
 

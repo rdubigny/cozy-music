@@ -7,8 +7,8 @@
         i.icon-forward
 .player-element
     .progress-side
-        .progress-side-control#loop-button
-            i.icon-retweet
+        .progress-side-control#loop-button(title="no-repeat/repeat-all/repeat-one")
+            i.icon-refresh
         .time.left
             span#elapsedTime
     .progress-info
@@ -16,7 +16,7 @@
         .progress
             .inner
     .progress-side
-        .progress-side-control#random-button
+        .progress-side-control#random-button(title="randomize")
             i.icon-random
         .time.right
             span#remainingTime

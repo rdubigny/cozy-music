@@ -1,7 +1,7 @@
 module.exports = class Track extends Backbone.Model
 
     # This field is required to know from where data should be loaded.
-    rootUrl: 'tracks'
+    urlRoot: 'tracks'
 
     defaults: ->
         # state can be :

@@ -57,8 +57,6 @@ module.exports = class TracksView extends TrackListView
         super
         @selectedTrackView = null
 
-        @views = {}
-
         # default value : sort by artist
         @toggleSort Cookies('defaultSortItem') || 'artist'
 
@@ -70,7 +68,7 @@ module.exports = class TracksView extends TrackListView
         @listenTo @collection, 'sort', @render
         # suppress that when views_collection is functional (with onReset)
         @listenTo @collection, 'sync', (e) ->
-            console.log "vue tracklist : \"pense à me supprimer un de ces quatres\""
+            console.log "vue tracks : \"pense à me supprimer un de ces quatres\""
             if @collection.length is 0
                 Backbone.Mediator.publish 'tracklist:isEmpty'
 
@@ -79,7 +77,7 @@ module.exports = class TracksView extends TrackListView
             # if the element has the class "mousetrap" then no need to stop
             if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1)
                 # don't stop if keys are 'tab' or 'enter' or 'esc'
-                if e.which is 9 or e.which is 13 or e.which is 27
+                if e.which in [9, 13, 27]
                     return false
 
             # stop for input, select, and textarea
@@ -191,14 +189,13 @@ module.exports = class TracksView extends TrackListView
     queueAlbum: (event, album)->
         albumsTracks = @collection.where
             album: album
-        for track in albumsTracks
-            if track.attributes.state is 'server'
-                Backbone.Mediator.publish 'track:queue', track
+        albumsTracksF = albumsTracks.filter (track) ->
+            track.attributes.state is 'server'
+        Backbone.Mediator.publish 'tracks:queue', albumsTracksF
 
     pushNextAlbum: (event, album)->
         albumsTracks = @collection.where
             album: album
-        albumsTracks.reverse()
-        for track in albumsTracks
-            if track.attributes.state is 'server'
-                Backbone.Mediator.publish 'track:pushNext', track
+        albumsTracksF = albumsTracks.filter (track) ->
+            track.attributes.state is 'server'
+        Backbone.Mediator.publish 'tracks:pushNext', albumsTracksF

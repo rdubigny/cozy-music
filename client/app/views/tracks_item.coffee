@@ -228,7 +228,9 @@ module.exports = class TracksItemView extends TrackListItemView
             alert "can't play null album"
 
     onAddTo: ->
-        alert "Not implemented yet"
+        return alert "not available yet"
+        if @model.attributes.state is 'server'
+            app.selectedPlaylist.tracks.add @model
 
     onUploadProgressChange: (e)=>
         # make sure we can compute the length

@@ -34,6 +34,7 @@ module.exports = class PlaylistNavView extends BaseView
     onDeleteClick: (event)->
         event.preventDefault()
         event.stopPropagation()
-        @model.destroy
-            error: =>
-                alert "Server error occured, track was not deleted."
+        if confirm "Are you sure? the playlist will be deleted definitively."
+            @model.destroy
+                error: =>
+                    alert "Server error occured, track was not deleted."

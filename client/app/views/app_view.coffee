@@ -2,7 +2,7 @@ BaseView = require '../lib/base_view'
 Uploader = require './uploader'
 Tracks = require './tracks'
 PlayQueue = require './playqueue'
-Tracklist = require './tracklist'
+Playlist = require './playlist'
 Player = require './player/player'
 OffScreenNav = require './off_screen_nav'
 app = require 'application'
@@ -50,8 +50,8 @@ module.exports = class AppView extends BaseView
         @player = new Player()
         @$('#player').append @player.$el
         @player.render()
-        @playlist_collection = new PlaylistCollection()
-        @playlist_collection.fetch
+        @playlistCollection = new PlaylistCollection()
+        @playlistCollection.fetch
             success: (collection)=>
                 @offScreenNav = new OffScreenNav
                     collection: collection
@@ -92,10 +92,11 @@ module.exports = class AppView extends BaseView
                 collection: app.tracks
         @$('#tracks-display').append @tracklist.$el
         @tracklist.render()
-        # update header display
-        unless $('#header-nav-title-home').hasClass('activated')
-            $('#header-nav-title-home').addClass('activated')
-        $('#header-nav-title-list').removeClass('activated')
+        # update header and nav display
+        unless $('#header-nav-title-home').hasClass 'activated'
+            $('#header-nav-title-home').addClass 'activated'
+        $('#header-nav-title-list').removeClass 'activated'
+        @offScreenNav?.$('li.activated').removeClass 'activated'
 
     showPlayQueue: =>
         # append the play queue
@@ -109,10 +110,11 @@ module.exports = class AppView extends BaseView
                 collection: app.playQueue
         @$('#tracks-display').append @queueList.$el
         @queueList.render()
-        # update header display
-        unless $('#header-nav-title-list').hasClass('activated')
-            $('#header-nav-title-list').addClass('activated')
-        $('#header-nav-title-home').removeClass('activated')
+        # update header and nav display
+        unless $('#header-nav-title-list').hasClass 'activated'
+            $('#header-nav-title-list').addClass 'activated'
+        $('#header-nav-title-home').removeClass 'activated'
+        @offScreenNav?.$('li.activated').removeClass 'activated'
 
     showPlayList: (id)=>
         # append the playlist
@@ -123,27 +125,36 @@ module.exports = class AppView extends BaseView
             @queueList.beforeDetach()
             @queueList.$el.detach()
         if @playList?
-            @playList.$el.remove()
-        playlist_model = @playlist_collection.get id
-        if playlist_model?
-            @appendPlaylist playlist_model
+            @playList.beforeDetach()
+            @playList.$el.detach()
+        playlistModel = @playlistCollection.get id
+        if playlistModel?
+            @appendPlaylist playlistModel
         else
-            @listenToOnce @playlist_collection, 'sync', (collection)->
-                playlist_model = collection.get id
-                @appendPlaylist playlist_model
+            @listenToOnce @playlistCollection, 'sync', (collection)->
+                playlistModel = collection.get id
+                if playlistModel?
+                    @appendPlaylist playlistModel
+                else
+                    alert 'unable to get this playlist'
+                    if app.router.lastSeen is id
+                        app.router.lastSeen = null
+                    app.router.navigate '', true
 
-        # update header display
-        unless $('#header-nav-title-list').hasClass('activated')
-            $('#header-nav-title-list').addClass('activated')
-        $('#header-nav-title-home').removeClass('activated')
+        # update header and nav display
+        $('#header-nav-title-list').removeClass 'activated'
+        $('#header-nav-title-home').removeClass 'activated'
+        @offScreenNav?.$('li.activated').removeClass 'activated'
 
-    appendPlaylist: (playlist_model)->
-        playlist_model.tracks.fetch()
-        .done =>
-            @playList = new Tracklist
-                collection: playlist_model.tracks
-            @$('#tracks-display').append @playList.$el
-            @playList.render()
-        .fail =>
-            alert t 'this playlist does not exist'
-            @navigate '', true
+    appendPlaylist: (playlistModel)->
+        playlistModel.tracks.fetch
+            success: =>
+                unless @playList?
+                    @playList = new Playlist
+                        collection: playlistModel.tracks
+                @$('#tracks-display').append @playList.$el
+                @playList.render()
+                @offScreenNav.views[playlistModel.cid].$('li').addClass 'activated'
+            error: =>
+                alert 'unable to get playlist tracks'
+                app.router.navigate '', true

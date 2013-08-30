@@ -2504,6 +2504,12 @@ a {
   -ms-transform: scale(1.2);
   transform: scale(1.2);
 }
+#content #tracks-display table thead th.left#playlist-play {
+  cursor: pointer;
+}
+#content #tracks-display table thead th.left#playlist-play:hover i.icon-play {
+  color: #f00;
+}
 #content #tracks-display table tbody tr.track {
   background-color: #fff;
   color: #444;
@@ -2769,6 +2775,9 @@ a {
 }
 #content #off-screen-nav .off-screen-nav-content ul li.selected .select-playlist-button:hover {
   background-image: url("../images/glyphicons-halflings-red.png");
+}
+#content #off-screen-nav .off-screen-nav-content ul li.activated {
+  background: #333;
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-button {
   cursor: pointer;

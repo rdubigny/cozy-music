@@ -7,7 +7,11 @@ module.exports = class PlayQueueItemView extends TrackListItemView
     events:
         'click #mini-play-button': 'onPlayClick'
         'click #delete-button': 'onDeleteClick'
-        'click #delete-from-here-button': 'onDeleteFromHereClick'
+        'click #delete-from-here-button': (e)->
+            if e.ctrlKey or e.metaKey
+                @onDeleteToHereClick(e)
+            else
+                @onDeleteFromHereClick(e)
         'drop' : 'drop'
 
     initialize: ->
@@ -36,6 +40,9 @@ module.exports = class PlayQueueItemView extends TrackListItemView
 
     onDeleteFromHereClick: (event)->
         @$el.trigger 'remove-from-track', @model
+
+    onDeleteToHereClick: (event)->
+        @$el.trigger 'remove-to-track', @model
 
     drop: (event, index) ->
         @$el.trigger 'update-sort', [@model, index]

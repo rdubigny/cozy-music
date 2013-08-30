@@ -164,6 +164,13 @@ a
                             &:hover
                                 transform: scale(1.2)
 
+                    &.left
+                        &#playlist-play
+                            cursor:pointer
+                            &:hover i.icon-play
+                                color: red
+
+
             tbody
                 tr.track
                     //background:linear-gradient(#fafafa, #fff)
@@ -371,6 +378,9 @@ a
                             display: inline-block
                             &:hover
                                 background-image: url("../images/glyphicons-halflings-red.png")
+
+                    &.activated
+                        background: #333
 
             .off-screen-nav-button
                 cursor: pointer

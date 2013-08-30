@@ -39,13 +39,8 @@ module.exports = class OffScreenNav extends ViewCollection
             if app.selectedPlaylist is playlist
                 app.selectedPlaylist = null
 
-        # bind keyboard events
-        Mousetrap.bind 'v', @onVKey
-
     afterRender: =>
         super
-        @notOnHome = $(location).attr('href').match(/playqueue$/)?
-
         # adding scrollbar
         @$('#playlist-list').niceScroll
             cursorcolor: "#fff"
@@ -57,14 +52,6 @@ module.exports = class OffScreenNav extends ViewCollection
             enablekeyboard: false
 
         @onScreen = @$('.off-screen-nav-content').hasClass 'off-screen-nav-show'
-
-    onVKey: =>
-        # toggle between the 2 views
-        if @notOnHome
-            app.router.navigate '#', true
-        else
-            app.router.navigate '#playqueue', true
-        @notOnHome = !@notOnHome
 
     magicToggle: (e)=>
         if e.pageX is 0
@@ -107,10 +94,14 @@ module.exports = class OffScreenNav extends ViewCollection
             # Save it through collection, this will automatically add it to the
             # current list when request finishes.
             @collection.create playlist,
+                success: (model)=>
+                    # auto-select the new playlist
+                    @views[model.cid].$('.select-playlist-button').trigger 'click'
+                    app.router.navigate '', true
                 error: -> alert "Server error occured, playlist wasn't created"
 
             # auto-select the new playlist
-            @views[playlist.cid].$('.select-playlist-button').trigger 'click'
+            #@views[playlist.cid].$('.select-playlist-button').trigger 'click'
 
     onPlaylistSelected: (event, playlist)->
         if app.selectedPlaylist?

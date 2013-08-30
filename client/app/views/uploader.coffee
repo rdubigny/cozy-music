@@ -11,8 +11,8 @@ module.exports = class Uploader extends BaseView
     # Register listener
     events:
         'click #upload-form' : 'onClick'
-        'click #youtube-import' : (e) =>
-            alert "not available yet"
+        'click #youtube-import' : 'onClickYoutube'
+
 
     subscriptions:
         'tracklist:isEmpty': 'onEmptyTrackList'
@@ -117,10 +117,10 @@ module.exports = class Uploader extends BaseView
         formdata.append 'title', track.get 'title'
         formdata.append 'artist', track.get 'artist'
         formdata.append 'album', track.get 'album'
-        formdata.append 'track',track.get 'track'
-        formdata.append 'year',track.get 'year'
-        formdata.append 'genre',track.get 'genre'
-        formdata.append 'time',track.get 'time'
+        formdata.append 'track', track.get 'track'
+        formdata.append 'year', track.get 'year'
+        formdata.append 'genre', track.get 'genre'
+        formdata.append 'time', track.get 'time'
         formdata.append 'file', track.file
 
         # if the upload have been canceled don't proceed to upload
@@ -170,7 +170,10 @@ module.exports = class Uploader extends BaseView
         # handle files
         for file in files
             fileAttributes = {}
-            fileAttributes.title = file.name
+            fileAttributes =
+                title: file.name
+                artist: ""
+                album: ""
             track = new Track fileAttributes
             track.file = file
             app.tracks.unshift track,
@@ -184,3 +187,53 @@ module.exports = class Uploader extends BaseView
                     console.log err
                     # remove the track(it's already done if upload was canceled)
                     app.tracks.remove track
+
+    onClickYoutube: (e) =>
+        youId = ""
+        defaultMsg = "Please enter a youtube id :"
+        defaultVal = "KMU0tzLwhbE"
+        until youId.length is 11
+            youId = prompt defaultMsg, defaultVal
+            defaultMsg = "Invalid youtube id, please try again :"
+            defaultVal = youId
+
+        # if operation wasn't canceled by user
+        if youId?
+            fileAttributes = {}
+            fileAttributes =
+                title: "fetching youtube..."
+                artist: ""
+                album: ""
+            track = new Track fileAttributes
+            app.tracks.unshift track,
+                sort: false
+            track.set
+                state: 'client'
+            Backbone.Mediator.publish 'uploader:addTrack'
+            Backbone.ajax
+                dataType: "json"
+                url: "you/#{youId}"
+                context: this
+                data: ""
+                success :(model)=>
+                    track.set model # to get the generated id
+                    track.set
+                        state: 'uploadEnd'
+                timeout: ()->
+                    app.tracks.remove track
+                    alert "an error as occured"
+                error: (err)=>
+                    app.tracks.remove track
+                    alert "an error as occured"
+
+            ###
+                track.sync 'create', track,
+                processData: false # tell jQuery not to process the data
+                contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
+                data: formdata
+                success: (model)->
+                    track.set model # to get the generated id
+                    cb()
+                error: ->
+                    cb("upload failed")
+            ###

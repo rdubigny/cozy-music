@@ -31,8 +31,10 @@ module.exports = class Player extends BaseView
     subscriptions:
         # these events should be fired by tracklist_item view
         'track:queue': 'onQueueTrack'
-        'track:playImmediate': 'onPlayImmediate'
+        'tracks:queue': 'onQueueTrackMultiple'
         'track:pushNext': 'onPushNext'
+        'tracks:pushNext': 'onPushNextMultiple'
+        'track:playImmediate': 'onPlayImmediate'
         'track:play-from': (track)->
             @onPlayTrack track
 
@@ -163,6 +165,9 @@ module.exports = class Player extends BaseView
         else if app.playQueue.length-2 is app.playQueue.atPlay and @isStopped
             @onPlayTrack app.playQueue.getNextTrack()
 
+    onQueueTrackMultiple: (tracks)=>
+        for track in tracks
+            @onQueueTrack track
 
     onPushNext: (track)=>
         app.playQueue.pushNext track
@@ -171,6 +176,17 @@ module.exports = class Player extends BaseView
             @onPlayTrack app.playQueue.getCurrentTrack()
         else if app.playQueue.length-2 is app.playQueue.atPlay and @isStopped
             @onPlayTrack app.playQueue.getNextTrack()
+
+
+    onPushNextMultiple: (tracks)=>
+        pq = app.playQueue
+        # in case autoplay is triggered for pushed tracks
+        # we need to push the first track then reverse the remaining tracks
+        if pq.length is 0 or (pq.length-1 is pq.atPlay and @isStopped)
+            @onPushNext tracks.shift()
+        tracks.reverse()
+        for track in tracks
+            @onPushNext track
 
     onPlayImmediate: (track)=>
         app.playQueue.pushNext track

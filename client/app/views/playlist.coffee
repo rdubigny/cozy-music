@@ -1,14 +1,25 @@
+Tracklist = require './tracklist'
 BaseView = require 'lib/base_view'
-PlayQueueView = require './tracklist'
+TrackView = require './playlist_item'
 
-module.exports = class PlayListView extends BaseView
+module.exports = class PlayListView extends Tracklist
 
-    initialize: ->
+    template: require('./templates/playlist')
+    itemview: TrackView
+
+    events:
+        'remove-item': (e, track)->
+            @collection.remove track
+        'click #playlist-play': 'onClickPlay'
+
+    afterRender: =>
         super
-        console.log @model
-        @playlist = new PlayQueueView
-            collection: @model.tracks
+        # adding table stripes
+        $('.tracks-display tr:odd').addClass 'odd'
 
-    afterRender: ->
-        super
-        @playlist.render()
+    onClickPlay: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        @collection.each (track)->
+            if track.attributes.state is 'server'
+                Backbone.Mediator.publish 'track:pushNext', track

@@ -17,6 +17,7 @@ module.exports = class PlayQueueView extends TrackListView
             @collection.remove track
         'play-from-track': 'playFromTrack'
         'remove-from-track': 'removeFromTrack'
+        'remove-to-track': 'removeToTrack'
         'click .save-button': (e)->
             alert 'not available yet'
         'click .show-prev-button': 'onClickShowPrevious'
@@ -27,7 +28,6 @@ module.exports = class PlayQueueView extends TrackListView
 
     initialize: ->
         super
-        @views = {}
         @listenTo @collection, 'change:atPlay', =>
             if @isRendered
                 @render()
@@ -61,8 +61,8 @@ module.exports = class PlayQueueView extends TrackListView
             # tolerance: "pointer"
             # to prevent table.th width to collapse, we need to override helper
             helper: (e, tr)->
-                $originals = tr.children();
-                $helper = tr.clone();
+                $originals = tr.children()
+                $helper = tr.clone()
                 $helper.children().each (index)->
                     # Set helper cell sizes to match the original sizes
                     $(this).width($originals.eq(index).width())
@@ -102,6 +102,11 @@ module.exports = class PlayQueueView extends TrackListView
     removeFromTrack: (event, track)->
         index = @collection.indexOf track
         @collection.deleteFromIndexToEnd index
+        @render()
+
+    removeToTrack: (event, track)->
+        index = @collection.indexOf track
+        @collection.deleteFromBeginingToIndex index
         @render()
 
     removeFromFirst: (event)->

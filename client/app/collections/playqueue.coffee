@@ -7,7 +7,8 @@ module.exports = class PlayQueue extends Backbone.Collection
     # Model that will be contained inside the collection.
     model: Track
 
-    # This is where ajax requests the backend.
+    # This is where ajax requests the backend
+    # there is no backend here because it's en temporary list
     #url: 'playqueue'
 
     # playLoop is : 'no-repeat', 'repeat-all' or 'repeat-one'
@@ -106,6 +107,11 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     deleteFromIndexToEnd: (index)->
         @remove(@last()) while @indexOf(@last()) >= index
+
+    deleteFromBeginingToIndex: (index)->
+        count = if index < @length then index else @length
+        for i in [0..count]
+            @remove(@first())
 
     # debug function
     show: ->

@@ -1915,6 +1915,7 @@ window.require.register("views/playqueue", function(exports, require, module) {
     PlayQueueView.prototype.initialize = function() {
       var _this = this;
       PlayQueueView.__super__.initialize.apply(this, arguments);
+      this.showPrevious = (Cookies('isShowPreviousByDefault') != null) && Cookies('isShowPreviousByDefault') === "true";
       return this.listenTo(this.collection, 'change:atPlay', function() {
         if (_this.isRendered) {
           return _this.render();
@@ -2026,6 +2027,7 @@ window.require.register("views/playqueue", function(exports, require, module) {
 
     PlayQueueView.prototype.onClickShowPrevious = function(e) {
       this.showPrevious = !this.showPrevious;
+      Cookies.set('isShowPreviousByDefault', this.showPrevious);
       return this.render();
     };
 

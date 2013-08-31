@@ -2588,6 +2588,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
     __extends(TracksItemView, _super);
 
     function TracksItemView() {
+      this.importBegin = __bind(this.importBegin, this);
       this.returnToNormal = __bind(this.returnToNormal, this);
       this.onUploadProgressChange = __bind(this.onUploadProgressChange, this);
       this.onDeleteClick = __bind(this.onDeleteClick, this);
@@ -2818,7 +2819,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       event.preventDefault();
       event.stopPropagation();
       state = this.model.attributes.state;
-      if (state === 'uploadStart') {
+      if (state === 'uploadStart' || state === 'importBegin') {
         alert("Wait for upload to finish to delete this track");
         return;
       }
@@ -2911,6 +2912,8 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         return this.startUpload();
       } else if (this.model.attributes.state === 'uploadEnd') {
         return this.endUpload();
+      } else if (this.model.attributes.state === 'importBegin') {
+        return this.importBegin();
       }
     };
 
@@ -2940,6 +2943,16 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       this.$('#state').append(this.saveAddBtn);
       this.$('#state').append(this.savePlayTrackBtn);
       return this.model.attributes.state = 'server';
+    };
+
+    TracksItemView.prototype.importBegin = function() {
+      var uploadProgress;
+      this.saveAddBtn = this.$('#add-to-button').detach();
+      this.savePlayTrackBtn = this.$('#play-track-button').detach();
+      uploadProgress = $(document.createElement('div'));
+      uploadProgress.addClass('uploadProgress');
+      uploadProgress.html('WAIT');
+      return this.$('#state').append(uploadProgress);
     };
 
     return TracksItemView;
@@ -3188,64 +3201,67 @@ window.require.register("views/uploader", function(exports, require, module) {
     };
 
     Uploader.prototype.onClickYoutube = function(e) {
-      var defaultMsg, defaultVal, fileAttributes, track, youId,
+      var defaultMsg, defaultVal, fileAttributes, input, isValidInput, startIndex, track, youId,
         _this = this;
-      youId = "";
-      defaultMsg = "Please enter a youtube id :";
-      defaultVal = "KMU0tzLwhbE";
-      while (youId.length !== 11) {
-        youId = prompt(defaultMsg, defaultVal);
-        defaultMsg = "Invalid youtube id, please try again :";
-        defaultVal = youId;
+      defaultMsg = "Please enter a youtube url :";
+      defaultVal = "http://www.youtube.com/watch?v=KMU0tzLwhbE";
+      isValidInput = false;
+      while (!isValidInput) {
+        input = prompt(defaultMsg, defaultVal);
+        if (input == null) {
+          return;
+        }
+        if (input.match(/^http:\/\/www.youtube.com\/watch?/)) {
+          startIndex = input.search(/v=/) + 2;
+          isValidInput = true;
+          youId = input.substr(startIndex, 11);
+        } else if (input.match(/^http:\/\/youtu.be\//)) {
+          isValidInput = true;
+          youId = input.substr(16, 11);
+        } else if (input.length === 11) {
+          isValidInput = true;
+          youId = input;
+        }
+        defaultMsg = "Invalid youtube url, please try again :";
+        defaultVal = input;
       }
-      if (youId != null) {
-        fileAttributes = {};
-        fileAttributes = {
-          title: "fetching youtube...",
-          artist: "",
-          album: ""
-        };
-        track = new Track(fileAttributes);
-        app.tracks.unshift(track, {
-          sort: false
-        });
-        track.set({
-          state: 'client'
-        });
-        Backbone.Mediator.publish('uploader:addTrack');
-        return Backbone.ajax({
-          dataType: "json",
-          url: "you/" + youId,
-          context: this,
-          data: "",
-          success: function(model) {
-            track.set(model);
-            return track.set({
-              state: 'uploadEnd'
-            });
-          },
-          timeout: function() {
-            app.tracks.remove(track);
-            return alert("an error as occured");
-          },
-          error: function(err) {
-            app.tracks.remove(track);
-            return alert("an error as occured");
+      fileAttributes = {};
+      fileAttributes = {
+        title: "fetching youtube-mp3.org ...",
+        artist: "",
+        album: ""
+      };
+      track = new Track(fileAttributes);
+      app.tracks.unshift(track, {
+        sort: false
+      });
+      track.set({
+        state: 'importBegin'
+      });
+      Backbone.Mediator.publish('uploader:addTrack');
+      return Backbone.ajax({
+        dataType: "json",
+        url: "you/" + youId,
+        context: this,
+        data: "",
+        success: function(model) {
+          track.set(model);
+          return track.set({
+            state: 'uploadEnd'
+          });
+        },
+        error: function(xhr, status, error) {
+          var beg, end;
+          app.tracks.remove(track);
+          beg = "Youtube import " + status;
+          end = "Import was cancelled.";
+          if (xhr.responseText !== "") {
+            return alert("" + beg + " : " + xhr.responseText + ". " + end);
+          } else {
+            return alert("" + beg + ". " + end);
           }
-        });
-
-        /*
-            track.sync 'create', track,
-            processData: false # tell jQuery not to process the data
-            contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
-            data: formdata
-            success: (model)->
-                track.set model # to get the generated id
-                cb()
-            error: ->
-                cb("upload failed")
-        */
-      }
+        }
+      });
     };
 
     return Uploader;

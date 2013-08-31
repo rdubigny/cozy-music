@@ -189,51 +189,51 @@ module.exports = class Uploader extends BaseView
                     app.tracks.remove track
 
     onClickYoutube: (e) =>
-        youId = ""
-        defaultMsg = "Please enter a youtube id :"
-        defaultVal = "KMU0tzLwhbE"
-        until youId.length is 11
-            youId = prompt defaultMsg, defaultVal
-            defaultMsg = "Invalid youtube id, please try again :"
-            defaultVal = youId
+        defaultMsg = "Please enter a youtube url :"
+        defaultVal = "http://www.youtube.com/watch?v=KMU0tzLwhbE"
+        isValidInput = false
+        until isValidInput
+            input = prompt defaultMsg, defaultVal
+            # if user canceled the operation
+            return unless input?
+            if input.match /^http:\/\/www.youtube.com\/watch?/
+                startIndex = input.search(/v=/) + 2
+                isValidInput = true
+                youId = input.substr startIndex, 11
+            else if input.match /^http:\/\/youtu.be\//
+                isValidInput = true
+                youId = input.substr 16, 11
+            else if input.length is 11
+                isValidInput = true
+                youId = input
+            defaultMsg = "Invalid youtube url, please try again :"
+            defaultVal = input
 
-        # if operation wasn't canceled by user
-        if youId?
-            fileAttributes = {}
-            fileAttributes =
-                title: "fetching youtube..."
-                artist: ""
-                album: ""
-            track = new Track fileAttributes
-            app.tracks.unshift track,
-                sort: false
-            track.set
-                state: 'client'
-            Backbone.Mediator.publish 'uploader:addTrack'
-            Backbone.ajax
-                dataType: "json"
-                url: "you/#{youId}"
-                context: this
-                data: ""
-                success :(model)=>
-                    track.set model # to get the generated id
-                    track.set
-                        state: 'uploadEnd'
-                timeout: ()->
-                    app.tracks.remove track
-                    alert "an error as occured"
-                error: (err)=>
-                    app.tracks.remove track
-                    alert "an error as occured"
-
-            ###
-                track.sync 'create', track,
-                processData: false # tell jQuery not to process the data
-                contentType: false # tell jQuery not to set contentType (Prevent $.ajax from being smart)
-                data: formdata
-                success: (model)->
-                    track.set model # to get the generated id
-                    cb()
-                error: ->
-                    cb("upload failed")
-            ###
+        fileAttributes = {}
+        fileAttributes =
+            title: "fetching youtube-mp3.org ..."
+            artist: ""
+            album: ""
+        track = new Track fileAttributes
+        app.tracks.unshift track,
+            sort: false
+        track.set
+            state: 'importBegin'
+        Backbone.Mediator.publish 'uploader:addTrack'
+        Backbone.ajax
+            dataType: "json"
+            url: "you/#{youId}"
+            context: this
+            data: ""
+            success :(model)=>
+                track.set model # to get the generated id
+                track.set
+                    state: 'uploadEnd'
+            error: (xhr, status, error)=>
+                app.tracks.remove track
+                beg = "Youtube import #{status}"
+                end = "Import was cancelled."
+                if xhr.responseText isnt ""
+                    alert "#{beg} : #{xhr.responseText}. #{end}"
+                else
+                    alert "#{beg}. #{end}"

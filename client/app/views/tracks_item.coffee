@@ -166,7 +166,7 @@ module.exports = class TracksItemView extends TrackListItemView
 
         state = @model.attributes.state
 
-        if state is 'uploadStart'
+        if state is 'uploadStart' or state is 'importBegin'
             # we don't know the file id on the server before the upload is ended
             # it simplier to just prohibit the cancelling at this moment
             alert "Wait for upload to finish to delete this track"
@@ -259,6 +259,8 @@ module.exports = class TracksItemView extends TrackListItemView
             @startUpload()
         else if @model.attributes.state is 'uploadEnd'
             @endUpload()
+        else if @model.attributes.state is 'importBegin'
+            @importBegin()
 
     initUpload: ->
         @saveAddBtn = @$('#add-to-button').detach()
@@ -283,3 +285,10 @@ module.exports = class TracksItemView extends TrackListItemView
         @$('#state').append @savePlayTrackBtn
         @model.attributes.state = 'server'
 
+    importBegin: =>
+        @saveAddBtn = @$('#add-to-button').detach()
+        @savePlayTrackBtn = @$('#play-track-button').detach()
+        uploadProgress = $(document.createElement('div'))
+        uploadProgress.addClass('uploadProgress')
+        uploadProgress.html 'WAIT'
+        @$('#state').append uploadProgress

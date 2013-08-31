@@ -5,7 +5,7 @@ module.exports = class Track extends Backbone.Model
 
     defaults: ->
         # state can be :
-        #   'client', 'uploadStart', 'uploadEnd', 'server', 'canceled'
+        #   'client', 'uploadStart', 'uploadEnd', 'server', 'canceled', 'importBegin'
         state: 'server'
 
     # patch Model.sync so it could trigger progress event

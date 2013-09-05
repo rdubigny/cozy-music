@@ -33,8 +33,8 @@ module.exports = class Router extends Backbone.Router
     # display the playlist view for an playlist with given id
     # fetch before displaying it
     playlist: (id)->
-        alert "not available yet"
-        return @navigate "", true
+        @navigate "", true
+        return alert("not available yet")
         @atHome = false
         @lastSeen = id
         @mainView.showPlayList id

@@ -28,7 +28,8 @@ module.exports = class PlayQueueView extends TrackListView
 
     initialize: ->
         super
-        @showPrevious = Cookies('isShowPreviousByDefault')? and Cookies('isShowPreviousByDefault') is "true"
+        cookie = Cookies('isShowPreviousByDefault')
+        @showPrevious = cookie? and cookie is "true"
         @listenTo @collection, 'change:atPlay', =>
             if @isRendered
                 @render()

@@ -122,6 +122,7 @@ window.require.register("application", function(exports, require, module) {
 });
 window.require.register("collections/playlist", function(exports, require, module) {
   var PlaylistTrackCollection, Track, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -131,22 +132,35 @@ window.require.register("collections/playlist", function(exports, require, modul
     __extends(PlaylistTrackCollection, _super);
 
     function PlaylistTrackCollection() {
+      this.add = __bind(this.add, this);
       _ref = PlaylistTrackCollection.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
     PlaylistTrackCollection.prototype.model = Track;
 
-    PlaylistTrackCollection.prototype.add = function(model) {
-      console.log("adding a model");
-      console.log(model);
-      PlaylistTrackCollection.__super__.add.apply(this, arguments);
-      return model.set('urlRoot', this.url);
+    PlaylistTrackCollection.prototype.add = function(track) {
+      track.sync('update', track, {
+        url: "" + this.url + "/" + track.id,
+        error: function(xhr) {
+          var msg;
+          msg = JSON.parse(xhr.responseText);
+          return alert("fail to add track : " + msg.error);
+        }
+      });
+      return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.add.apply(this, arguments));
     };
 
-    PlaylistTrackCollection.prototype.remove = function(model) {
-      console.log("removing a model");
-      return PlaylistTrackCollection.__super__.remove.apply(this, arguments);
+    PlaylistTrackCollection.prototype.remove = function(track) {
+      track.sync('delete', track, {
+        url: "" + this.url + "/" + track.id,
+        error: function(xhr) {
+          var msg;
+          msg = JSON.parse(xhr.responseText);
+          return alert("fail to remove track : " + msg.error);
+        }
+      });
+      return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.remove.apply(this, arguments));
     };
 
 
@@ -617,11 +631,13 @@ window.require.register("lib/view_collection", function(exports, require, module
   
 });
 window.require.register("models/playlist", function(exports, require, module) {
-  var Playlist, PlaylistTrackCollection, _ref,
+  var Playlist, PlaylistTrackCollection, app, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   PlaylistTrackCollection = require('../collections/playlist');
+
+  app = require('application');
 
   module.exports = Playlist = (function(_super) {
     __extends(Playlist, _super);
@@ -643,7 +659,31 @@ window.require.register("models/playlist", function(exports, require, module) {
       this.tracks = new PlaylistTrackCollection(false, {
         url: "playlists/" + this.id
       });
-      return this.tracks.playlistId = "" + this.id;
+      this.tracks.playlistId = "" + this.id;
+      if (this.id != null) {
+        return this.tracks.fetch();
+      } else {
+        return this.listenToOnce(this, 'sync', function(e) {
+          return _this.tracks.fetch();
+        });
+      }
+    };
+
+    Playlist.prototype.destroy = function() {
+      var curUrl, regex, str,
+        _this = this;
+      curUrl = "" + document.URL;
+      str = "#playlist/" + this.id;
+      regex = new RegExp(str);
+      if (curUrl.match(regex)) {
+        app.router.navigate('', true);
+      }
+      console.log(this.tracks);
+      this.tracks.each(function(track) {
+        return _this.tracks.remove(track);
+      });
+      Playlist.__super__.destroy.apply(this, arguments);
+      return false;
     };
 
     return Playlist;
@@ -747,8 +787,8 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
-      alert("not available yet");
-      return this.navigate("", true);
+      this.navigate("", true);
+      return alert("not available yet");
       this.atHome = false;
       this.lastSeen = id;
       return this.mainView.showPlayList(id);
@@ -839,9 +879,11 @@ window.require.register("views/app_view", function(exports, require, module) {
 
     AppView.prototype.initialize = function() {
       AppView.__super__.initialize.apply(this, arguments);
-      return Cookies.defaults = {
+      Cookies.defaults = {
         expires: 604800
       };
+      this.playList = {};
+      return this.currentPlaylistId = 0;
     };
 
     AppView.prototype.afterRender = function() {
@@ -864,7 +906,7 @@ window.require.register("views/app_view", function(exports, require, module) {
         },
         error: function() {
           var msg;
-          msg = "Files couldn't be retrieved due to a server error.";
+          msg = "Playlists couldn't be retrieved due to a server error.";
           return alert(msg);
         }
       });
@@ -898,8 +940,9 @@ window.require.register("views/app_view", function(exports, require, module) {
         this.queueList.beforeDetach();
         this.queueList.$el.detach();
       }
-      if (this.playList != null) {
-        this.playList.$el.remove();
+      if (this.playList[this.currentPlaylistId] != null) {
+        this.playList[this.currentPlaylistId].beforeDetach();
+        this.playList[this.currentPlaylistId].$el.detach();
       }
       if (this.tracklist == null) {
         this.tracklist = new Tracks({
@@ -921,8 +964,9 @@ window.require.register("views/app_view", function(exports, require, module) {
         this.tracklist.beforeDetach();
         this.tracklist.$el.detach();
       }
-      if (this.playList != null) {
-        this.playList.$el.remove();
+      if (this.playList[this.currentPlaylistId] != null) {
+        this.playList[this.currentPlaylistId].beforeDetach();
+        this.playList[this.currentPlaylistId].$el.detach();
       }
       if (this.queueList == null) {
         this.queueList = new PlayQueue({
@@ -948,9 +992,13 @@ window.require.register("views/app_view", function(exports, require, module) {
         this.queueList.beforeDetach();
         this.queueList.$el.detach();
       }
-      if (this.playList != null) {
-        this.playList.beforeDetach();
-        this.playList.$el.detach();
+      if (this.playList[this.currentPlaylistId] != null) {
+        this.playList[this.currentPlaylistId].beforeDetach();
+        this.playList[this.currentPlaylistId].$el.detach();
+      }
+      this.currentPlaylistId = id;
+      if ((_ref1 = this.offScreenNav) != null) {
+        _ref1.$('li.activated').removeClass('activated');
       }
       playlistModel = this.playlistCollection.get(id);
       if (playlistModel != null) {
@@ -970,28 +1018,20 @@ window.require.register("views/app_view", function(exports, require, module) {
         });
       }
       $('#header-nav-title-list').removeClass('activated');
-      $('#header-nav-title-home').removeClass('activated');
-      return (_ref1 = this.offScreenNav) != null ? _ref1.$('li.activated').removeClass('activated') : void 0;
+      return $('#header-nav-title-home').removeClass('activated');
     };
 
     AppView.prototype.appendPlaylist = function(playlistModel) {
-      var _this = this;
-      return playlistModel.tracks.fetch({
-        success: function() {
-          if (_this.playList == null) {
-            _this.playList = new Playlist({
-              collection: playlistModel.tracks
-            });
-          }
-          _this.$('#tracks-display').append(_this.playList.$el);
-          _this.playList.render();
-          return _this.offScreenNav.views[playlistModel.cid].$('li').addClass('activated');
-        },
-        error: function() {
-          alert('unable to get playlist tracks');
-          return app.router.navigate('', true);
-        }
-      });
+      var cid;
+      if (this.playList[this.currentPlaylistId] == null) {
+        this.playList[this.currentPlaylistId] = new Playlist({
+          collection: playlistModel.tracks
+        });
+      }
+      this.$('#tracks-display').append(this.playList[this.currentPlaylistId].$el);
+      this.playList[this.currentPlaylistId].render();
+      cid = playlistModel.cid;
+      return this.offScreenNav.views[cid].$('li').addClass('activated');
     };
 
     return AppView;
@@ -1726,8 +1766,7 @@ window.require.register("views/playlist", function(exports, require, module) {
     PlayListView.prototype.events = {
       'remove-item': function(e, track) {
         return this.collection.remove(track);
-      },
-      'click #playlist-play': 'onClickPlay'
+      }
     };
 
     PlayListView.prototype.afterRender = function() {
@@ -1913,9 +1952,11 @@ window.require.register("views/playqueue", function(exports, require, module) {
     PlayQueueView.prototype.isRendered = false;
 
     PlayQueueView.prototype.initialize = function() {
-      var _this = this;
+      var cookie,
+        _this = this;
       PlayQueueView.__super__.initialize.apply(this, arguments);
-      this.showPrevious = (Cookies('isShowPreviousByDefault') != null) && Cookies('isShowPreviousByDefault') === "true";
+      cookie = Cookies('isShowPreviousByDefault');
+      this.showPrevious = (cookie != null) && cookie === "true";
       return this.listenTo(this.collection, 'change:atPlay', function() {
         if (_this.isRendered) {
           return _this.render();
@@ -2435,7 +2476,7 @@ window.require.register("views/tracks", function(exports, require, module) {
       return Mousetrap.stopCallback = function(e, element, combo) {
         var _ref1;
         if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {
-          if ((_ref1 = e.which) === 9 || _ref1 === 13 || _ref1 === 27) {
+          if ((_ref1 = e.which) === 9 || _ref1 === 13 || _ref1 === 27 || _ref1 === 113) {
             return false;
           }
         }
@@ -2583,8 +2624,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
   app = require('application');
 
   module.exports = TracksItemView = (function(_super) {
-    var isEdited;
-
     __extends(TracksItemView, _super);
 
     function TracksItemView() {
@@ -2611,6 +2650,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
+        return alert("not available yet");
         e.preventDefault();
         e.stopPropagation();
         if (app.selectedPlaylist != null) {
@@ -2653,8 +2693,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       }
     };
 
-    isEdited = '';
-
     TracksItemView.prototype.initialize = function() {
       var _this = this;
       TracksItemView.__super__.initialize.apply(this, arguments);
@@ -2668,9 +2706,10 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       this.listenTo(this.model, 'change:album', function(event) {
         return _this.$('td.field.album input').val(_this.model.attributes.album);
       });
-      return this.listenTo(this.model, 'change:track', function(event) {
+      this.listenTo(this.model, 'change:track', function(event) {
         return _this.$('td.field.num').html(_this.model.attributes.track);
       });
+      return this.isEdited = '';
     };
 
     TracksItemView.prototype.onClick = function(event, element) {
@@ -2690,7 +2729,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
           this.$el.addClass('selected');
           this.$el.trigger('click-track', this);
           return Mousetrap.bind('f2', function() {
-            if (isEdited === '') {
+            if (_this.isEdited === '') {
               _this.isEdited = 'title';
               return _this.enableEdition();
             }
@@ -2810,6 +2849,8 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       } else if (state === 'uploadStart') {
         this.initUpload();
         return this.startUpload();
+      } else if (state === 'importBegin') {
+        return this.importBegin();
       }
     };
 
@@ -2885,7 +2926,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
     };
 
     TracksItemView.prototype.onAddTo = function() {
-      return alert("not available yet");
       if (this.model.attributes.state === 'server') {
         return app.selectedPlaylist.tracks.add(this.model);
       }

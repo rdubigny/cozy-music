@@ -39,6 +39,8 @@ module.exports = class AppView extends BaseView
         super
         Cookies.defaults =
             expires: 604800 # = 1 week
+        @playList = {}
+        @currentPlaylistId = 0
 
     afterRender: ->
         super
@@ -58,7 +60,7 @@ module.exports = class AppView extends BaseView
                 @$('#off-screen-nav').append @offScreenNav.$el
                 @offScreenNav.render()
             error: =>
-                msg = "Files couldn't be retrieved due to a server error."
+                msg = "Playlists couldn't be retrieved due to a server error."
                 alert msg
 
         # prevent to leave the page if playing or uploading
@@ -85,8 +87,9 @@ module.exports = class AppView extends BaseView
         if @queueList?
             @queueList.beforeDetach()
             @queueList.$el.detach()
-        if @playList?
-            @playList.$el.remove()
+        if @playList[@currentPlaylistId]?
+            @playList[@currentPlaylistId].beforeDetach()
+            @playList[@currentPlaylistId].$el.detach()
         unless @tracklist?
             @tracklist = new Tracks
                 collection: app.tracks
@@ -103,8 +106,9 @@ module.exports = class AppView extends BaseView
         if @tracklist?
             @tracklist.beforeDetach()
             @tracklist.$el.detach()
-        if @playList?
-            @playList.$el.remove()
+        if @playList[@currentPlaylistId]?
+            @playList[@currentPlaylistId].beforeDetach()
+            @playList[@currentPlaylistId].$el.detach()
         unless @queueList?
             @queueList = new PlayQueue
                 collection: app.playQueue
@@ -124,9 +128,11 @@ module.exports = class AppView extends BaseView
         if @queueList?
             @queueList.beforeDetach()
             @queueList.$el.detach()
-        if @playList?
-            @playList.beforeDetach()
-            @playList.$el.detach()
+        if @playList[@currentPlaylistId]?
+            @playList[@currentPlaylistId].beforeDetach()
+            @playList[@currentPlaylistId].$el.detach()
+        @currentPlaylistId = id
+        @offScreenNav?.$('li.activated').removeClass 'activated'
         playlistModel = @playlistCollection.get id
         if playlistModel?
             @appendPlaylist playlistModel
@@ -144,17 +150,12 @@ module.exports = class AppView extends BaseView
         # update header and nav display
         $('#header-nav-title-list').removeClass 'activated'
         $('#header-nav-title-home').removeClass 'activated'
-        @offScreenNav?.$('li.activated').removeClass 'activated'
 
     appendPlaylist: (playlistModel)->
-        playlistModel.tracks.fetch
-            success: =>
-                unless @playList?
-                    @playList = new Playlist
-                        collection: playlistModel.tracks
-                @$('#tracks-display').append @playList.$el
-                @playList.render()
-                @offScreenNav.views[playlistModel.cid].$('li').addClass 'activated'
-            error: =>
-                alert 'unable to get playlist tracks'
-                app.router.navigate '', true
+        unless @playList[@currentPlaylistId]?
+            @playList[@currentPlaylistId] = new Playlist
+                collection: playlistModel.tracks
+        @$('#tracks-display').append @playList[@currentPlaylistId].$el
+        @playList[@currentPlaylistId].render()
+        cid = playlistModel.cid
+        @offScreenNav.views[cid].$('li').addClass 'activated'

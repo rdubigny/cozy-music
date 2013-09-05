@@ -37,6 +37,6 @@ action 'destroy', ->
     @playlist.destroy (err) ->
         if err
             compound.logger.write err
-            send error: 'Cannot destroy playlist', 500
+            send error: "Cannot destroy playlist", 500
         else
-            send success: 'playlist successfully deleted', 200
+            send success: "playlist successfully deleted", 200

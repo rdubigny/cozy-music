@@ -1,4 +1,5 @@
 PlaylistTrackCollection = require '../collections/playlist'
+app = require 'application'
 
 module.exports = class Playlist extends Backbone.Model
 
@@ -15,6 +16,24 @@ module.exports = class Playlist extends Backbone.Model
             url: "playlists/#{@id}"
         @tracks.playlistId = "#{@id}"
 
-    #destroy: ->
-    #    @tracks.beforeDestroy()
-    #    #super
+        if @id?
+            @tracks.fetch()
+        else
+            @listenToOnce @, 'sync', (e)=>
+                @tracks.fetch()
+
+    destroy: ->
+        # if this list is beeing displayed navigate to home
+        curUrl = "#{document.URL}"
+        str = "#playlist/#{@id}"
+        regex = new RegExp str
+        if curUrl.match regex
+            app.router.navigate '', true
+        # empty playlist
+        console.log @tracks
+        @tracks.each (track)=>
+            @tracks.remove track
+        # then destroy it
+        super
+        # return false, for the super to be call
+        false

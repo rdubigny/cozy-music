@@ -21,8 +21,6 @@ action 'all', ->
             send tracks, 200
 
 action 'create', ->
-
-    # you shouldn't ask about this lines
     file = req.files["file"]
     req.body.slug = file.name
 
@@ -30,8 +28,6 @@ action 'create', ->
         if err
             send error: true, msg: "Server error while creating track.", 500
         else
-
-            # don't ask about this lines too
             newtrack.attachFile file.path, {"name": file.name}, (err) ->
                 if err
                     send error: true, msg: "Server error while add attachment file.", 500
@@ -91,8 +87,8 @@ action 'add', ->
     # update attributes
     pl = @track.playlists
     newPlaylists =  if pl? and pl isnt "" then pl else []
-    unless req.params.playlistId in newPlaylists
-        newPlaylists.push req.params.playlistId
+    unless req.params.playlistid in newPlaylists
+        newPlaylists.push req.params.playlistid
         updatedAttribute =
             playlists: newPlaylists
         @track.updateAttributes updatedAttribute, (err) ->
@@ -109,15 +105,34 @@ action 'remove', ->
     # update attributes
     pl = @track.playlists
     if pl? and pl isnt ""
-        ind = pl.indexOf @playlistId
+        ind = pl.indexOf req.params.playlistid
         if ind isnt -1
             pl.splice ind, 1
             updatedAttribute =
                 playlists: pl
-            @track.updateAttributes updatedAttribute, (err) ->
+
+            ###
+            updateAttributes: (model, id, data, callback) ->
+                @client.put "data/merge/#{id}/", data, (error, response, body) =>
+                    if error
+                        callback error
+                    else if response.statusCode is 404
+                        callback new Error("Document not found")
+                    else if response.statusCode isnt 200
+                        callback new Error("Server error occured.")
+                    else
+                        callback()
+            ###
+
+            @track.updateAttributes updatedAttribute, (err, resp) ->
                 if err
-                    compound.logger.write err
-                    send error: 'Cannot remove track', 500
+                    # if track has just been deleted from database
+                    # no need to remove it from playlist
+                    if resp.statusCode is 404
+                        send 'Track not found', 200
+                    else
+                        compound.logger.write err
+                        send error: 'Cannot remove track', 500
                 else
                     send success: 'Track successfully removed', 200
     else

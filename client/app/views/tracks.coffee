@@ -76,8 +76,8 @@ module.exports = class TracksView extends TrackListView
         Mousetrap.stopCallback = (e, element, combo) ->
             # if the element has the class "mousetrap" then no need to stop
             if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1)
-                # don't stop if keys are 'tab' or 'enter' or 'esc'
-                if e.which in [9, 13, 27]
+                # don't stop if keys are 'tab' or 'enter' or 'esc' or 'f2'
+                if e.which in [9, 13, 27, 113]
                     return false
 
             # stop for input, select, and textarea

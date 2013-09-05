@@ -13,6 +13,7 @@ module.exports = class TracksItemView extends TrackListItemView
             else
                 @onQueueTrack(e)
         'click #add-to-button': (e)->
+            return alert("not available yet")
             e.preventDefault()
             e.stopPropagation()
             if app.selectedPlaylist?
@@ -42,8 +43,6 @@ module.exports = class TracksItemView extends TrackListItemView
         'click .album': (e) -> @onClick e, 'album'
         'click': (e) -> @onClick e, ''
 
-    isEdited = ''
-
     # Called after the constructor
     initialize: ->
         super
@@ -57,6 +56,8 @@ module.exports = class TracksItemView extends TrackListItemView
             @$('td.field.album input').val @model.attributes.album
         @listenTo @model, 'change:track', (event)=>
             @$('td.field.num').html @model.attributes.track
+
+        @isEdited = ''
 
     onClick: (event, element)=>
         event.preventDefault()
@@ -79,7 +80,7 @@ module.exports = class TracksItemView extends TrackListItemView
                 @$el.trigger 'click-track', @
                 # enable F2 key
                 Mousetrap.bind 'f2', ()=>
-                    if isEdited is ''
+                    if @isEdited is ''
                         @isEdited = 'title'
                         @enableEdition()
 
@@ -159,6 +160,8 @@ module.exports = class TracksItemView extends TrackListItemView
         else if state is 'uploadStart'
             @initUpload()
             @startUpload()
+        else if state is 'importBegin'
+            @importBegin()
 
     onDeleteClick: (event)=>
         event.preventDefault()
@@ -228,7 +231,6 @@ module.exports = class TracksItemView extends TrackListItemView
             alert "can't play null album"
 
     onAddTo: ->
-        return alert "not available yet"
         if @model.attributes.state is 'server'
             app.selectedPlaylist.tracks.add @model
 

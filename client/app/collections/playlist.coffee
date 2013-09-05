@@ -5,15 +5,23 @@ module.exports = class PlaylistTrackCollection extends Backbone.Collection
     # Model that will be contained inside the collection.
     model: Track
 
-    add: (model)->
-        console.log "adding a model"
-        console.log model
-        super
-        model.set 'urlRoot', @url
+    add: (track)=>
+        track.sync 'update', track,
+            url: "#{@url}/#{track.id}"
+            error: (xhr)->
+                msg = JSON.parse xhr.responseText
+                alert "fail to add track : #{msg.error}"
+        # avoiding calling super if an error occured
+        @listenToOnce track, 'sync', super
 
-    remove: (model)->
-        console.log "removing a model"
-        super
+    remove: (track)->
+        track.sync 'delete', track,
+            url: "#{@url}/#{track.id}"
+            error: (xhr)->
+                msg = JSON.parse xhr.responseText
+                alert "fail to remove track : #{msg.error}"
+        # avoiding calling super if an error occured
+        @listenToOnce track, 'sync', super
 
     ###
     appendToList: (model)->

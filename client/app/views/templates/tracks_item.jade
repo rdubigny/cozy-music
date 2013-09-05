@@ -2,7 +2,7 @@ td.left#state
     #add-to-button.player-button.size-20(title="add to playlist")
         i.icon-plus
     #play-track-button.player-button.size-20(title="queue this song")
-        i.icon-play
+        i.icon-share-alt
 td.field.title
     input.mousetrap(type="text", value="#{model.title}", readonly)
     //-span.info #{model.title}
@@ -11,7 +11,7 @@ td.field.artist
 td.field.album
     input.mousetrap(type="text", value="#{model.album}", readonly)
     #play-album-button.player-button.size-20(title="queue this album")
-        i.icon-play
+        i.icon-share
 td.field.num #{model.track}
 td.right
     #delete-button.player-button.size-20.signal-button(title="delete definitively")

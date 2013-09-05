@@ -140,6 +140,7 @@ window.require.register("collections/playlist", function(exports, require, modul
     PlaylistTrackCollection.prototype.model = Track;
 
     PlaylistTrackCollection.prototype.add = function(track) {
+      var _this = this;
       track.sync('update', track, {
         url: "" + this.url + "/" + track.id,
         error: function(xhr) {
@@ -162,40 +163,6 @@ window.require.register("collections/playlist", function(exports, require, modul
       });
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.remove.apply(this, arguments));
     };
-
-
-    /*
-    appendToList: (model)->
-        pl = model.attributes.playlists
-        newPlaylists =  if pl? and pl isnt "" then pl else []
-        unless @playlistId in newPlaylists
-            newPlaylists.push @playlistId
-            model.save
-                playlists: newPlaylists
-        else
-            alert "Track is in the playlist already."
-    
-    remove: (model)->
-        # if track is deleted from database
-        # no need to remove it from playlist
-        if model.attributes?
-            @removePlaylistId model
-        super model
-    
-    removePlaylistId: (model)->
-        pl = model.attributes.playlists
-        if pl? and pl isnt ""
-            ind = pl.indexOf @playlistId
-            if ind isnt -1
-                pl.splice ind, 1
-                model.save
-                    playlists: pl
-    
-    beforeDestroy: ->
-        console.log @
-        for model in @models
-            @removePlaylistId(model)
-    */
 
     return PlaylistTrackCollection;
 
@@ -670,18 +637,17 @@ window.require.register("models/playlist", function(exports, require, module) {
     };
 
     Playlist.prototype.destroy = function() {
-      var curUrl, regex, str,
-        _this = this;
+      var curUrl, regex, str, track;
       curUrl = "" + document.URL;
       str = "#playlist/" + this.id;
       regex = new RegExp(str);
       if (curUrl.match(regex)) {
         app.router.navigate('', true);
       }
-      console.log(this.tracks);
-      this.tracks.each(function(track) {
-        return _this.tracks.remove(track);
-      });
+      while (this.tracks.length !== 0) {
+        track = this.tracks.first();
+        this.tracks.remove(track);
+      }
       Playlist.__super__.destroy.apply(this, arguments);
       return false;
     };
@@ -787,8 +753,6 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
-      this.navigate("", true);
-      return alert("not available yet");
       this.atHome = false;
       this.lastSeen = id;
       return this.mainView.showPlayList(id);
@@ -1161,23 +1125,24 @@ window.require.register("views/off_screen_nav", function(exports, require, modul
       defaultVal = "my playlist";
       while (!(title !== "" && title.length < 50)) {
         title = prompt(defaultMsg, defaultVal);
+        if (title == null) {
+          return;
+        }
         defaultMsg = "Invalid title, please try again :";
         defaultVal = title;
       }
-      if (title != null) {
-        playlist = new Playlist({
-          title: title
-        });
-        return this.collection.create(playlist, {
-          success: function(model) {
-            _this.views[model.cid].$('.select-playlist-button').trigger('click');
-            return app.router.navigate('', true);
-          },
-          error: function() {
-            return alert("Server error occured, playlist wasn't created");
-          }
-        });
-      }
+      playlist = new Playlist({
+        title: title
+      });
+      return this.collection.create(playlist, {
+        success: function(model) {
+          _this.views[model.cid].$('.select-playlist-button').trigger('click');
+          return app.router.navigate('', true);
+        },
+        error: function() {
+          return alert("Server error occured, playlist wasn't created");
+        }
+      });
     };
 
     OffScreenNav.prototype.onPlaylistSelected = function(event, playlist) {
@@ -2277,13 +2242,13 @@ window.require.register("views/templates/tracks_item", function(exports, require
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<td id="state" class="left"><div id="add-to-button" title="add to playlist" class="player-button size-20"><i class="icon-plus"></i></div><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field title"><input');
+  buf.push('<td id="state" class="left"><div id="add-to-button" title="add to playlist" class="player-button size-20"><i class="icon-plus"></i></div><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-share-alt"></i></div></td><td class="field title"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.title) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
   buf.push('/></td><td class="field artist"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.artist) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
   buf.push('/></td><td class="field album"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.album) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
-  buf.push('/><div id="play-album-button" title="queue this album" class="player-button size-20"><i class="icon-play"></i></div></td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div id="delete-button" title="delete definitively" class="player-button size-20 signal-button"><i class="icon-remove"></i></div></td>');
+  buf.push('/><div id="play-album-button" title="queue this album" class="player-button size-20"><i class="icon-share"></i></div></td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div id="delete-button" title="delete definitively" class="player-button size-20 signal-button"><i class="icon-remove"></i></div></td>');
   }
   return buf.join("");
   };
@@ -2650,7 +2615,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
-        return alert("not available yet");
         e.preventDefault();
         e.stopPropagation();
         if (app.selectedPlaylist != null) {
@@ -3209,8 +3173,12 @@ window.require.register("views/uploader", function(exports, require, module) {
     Uploader.prototype.uploadQueue = async.queue(uploadWorker, 3);
 
     Uploader.prototype.handleFiles = function(files) {
-      var file, fileAttributes, track, _i, _len, _results,
+      var curUrl, file, fileAttributes, track, _i, _len, _results,
         _this = this;
+      curUrl = "" + document.URL;
+      if (curUrl.match(/playlist/) || curUrl.match(/playqueue/)) {
+        app.router.navigate('', true);
+      }
       Backbone.Mediator.publish('uploader:addTracks');
       _results = [];
       for (_i = 0, _len = files.length; _i < _len; _i++) {

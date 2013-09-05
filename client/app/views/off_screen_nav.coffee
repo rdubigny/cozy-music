@@ -82,26 +82,23 @@ module.exports = class OffScreenNav extends ViewCollection
         defaultVal = "my playlist"
         until title isnt "" and title.length < 50
             title = prompt defaultMsg, defaultVal
+            # return if creation was canceled by user
+            return unless title?
             defaultMsg = "Invalid title, please try again :"
             defaultVal = title
 
-        # if creation wasn't canceled by user
-        if title?
-            # Data to be used to create the new model
-            playlist = new Playlist
-                title: title
+        # Data to be used to create the new model
+        playlist = new Playlist
+            title: title
 
-            # Save it through collection, this will automatically add it to the
-            # current list when request finishes.
-            @collection.create playlist,
-                success: (model)=>
-                    # auto-select the new playlist
-                    @views[model.cid].$('.select-playlist-button').trigger 'click'
-                    app.router.navigate '', true
-                error: -> alert "Server error occured, playlist wasn't created"
-
-            # auto-select the new playlist
-            #@views[playlist.cid].$('.select-playlist-button').trigger 'click'
+        # Save it through collection, this will automatically add it to the
+        # current list when request finishes.
+        @collection.create playlist,
+            success: (model)=>
+                # auto-select the new playlist
+                @views[model.cid].$('.select-playlist-button').trigger 'click'
+                app.router.navigate '', true
+            error: -> alert "Server error occured, playlist wasn't created"
 
     onPlaylistSelected: (event, playlist)->
         if app.selectedPlaylist?

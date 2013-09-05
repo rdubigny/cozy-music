@@ -2191,6 +2191,17 @@ input {
 .player-button i.icon-forward {
   left: 2px;
 }
+.player-button.size-20 i.icon-share {
+  top: -1px;
+  font-size: 1em;
+}
+.player-button.size-20 i.icon-remove {
+  font-size: 0.8em;
+}
+.player-button.size-20 i.icon-plus {
+  top: -2px;
+  font-size: 0.8em;
+}
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;
 }
@@ -2973,6 +2984,17 @@ a {
 }
 .player-button i.icon-forward {
   left: 2px;
+}
+.player-button.size-20 i.icon-share {
+  top: -1px;
+  font-size: 1em;
+}
+.player-button.size-20 i.icon-remove {
+  font-size: 0.8em;
+}
+.player-button.size-20 i.icon-plus {
+  top: -2px;
+  font-size: 0.8em;
 }
 .player-button.size-34 i.icon-warning-sign {
   top: 6px;

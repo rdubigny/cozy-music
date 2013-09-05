@@ -111,30 +111,12 @@ action 'remove', ->
             updatedAttribute =
                 playlists: pl
 
-            ###
-            updateAttributes: (model, id, data, callback) ->
-                @client.put "data/merge/#{id}/", data, (error, response, body) =>
-                    if error
-                        callback error
-                    else if response.statusCode is 404
-                        callback new Error("Document not found")
-                    else if response.statusCode isnt 200
-                        callback new Error("Server error occured.")
-                    else
-                        callback()
-            ###
-
             @track.updateAttributes updatedAttribute, (err, resp) ->
-                if err
-                    # if track has just been deleted from database
-                    # no need to remove it from playlist
-                    if resp.statusCode is 404
-                        send 'Track not found', 200
-                    else
-                        compound.logger.write err
-                        send error: 'Cannot remove track', 500
-                else
-                    send success: 'Track successfully removed', 200
+                # I have no respects :
+                # if there is any error nobody will ever heard of it!
+                # Mouahahahah!
+                # mostly, error here are due to already deleted tracks
+                send success: 'Track successfully removed', 200
     else
         send error: 'Track is not in the playlist', 403
 

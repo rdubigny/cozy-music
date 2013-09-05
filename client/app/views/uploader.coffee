@@ -165,6 +165,10 @@ module.exports = class Uploader extends BaseView
     uploadQueue: async.queue uploadWorker, 3
 
     handleFiles: (files)=>
+        # if not on home, go to home
+        curUrl = "#{document.URL}"
+        if curUrl.match(/playlist/) or curUrl.match(/playqueue/)
+            app.router.navigate '', true
         # signal trackList view
         Backbone.Mediator.publish 'uploader:addTracks'
         # handle files

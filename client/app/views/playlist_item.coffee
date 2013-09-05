@@ -24,9 +24,6 @@ module.exports = class PlayQueueItemView extends TrackListItemView
         event.stopPropagation()
          # remove the view without destroying the model
         @$el.trigger 'remove-item', @model
-        #@model.destroy
-        #    success: ->
-        #        console.log "model have been destroyed"
 
     #drop: (event, index) ->
     #    @$el.trigger 'update-sort', [@model, index]

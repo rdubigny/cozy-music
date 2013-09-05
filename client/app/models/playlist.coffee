@@ -30,8 +30,9 @@ module.exports = class Playlist extends Backbone.Model
         if curUrl.match regex
             app.router.navigate '', true
         # empty playlist
-        console.log @tracks
-        @tracks.each (track)=>
+        # this emptying method avoid us to encounter issues with indexes
+        until @tracks.length is 0
+            track = @tracks.first()
             @tracks.remove track
         # then destroy it
         super

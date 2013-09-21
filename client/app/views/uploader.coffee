@@ -198,6 +198,9 @@ module.exports = class Uploader extends BaseView
         isValidInput = false
         until isValidInput
             input = prompt defaultMsg, defaultVal
+            # if https then turn into http
+            if input.match /^https/
+                input = input.replace /^https:\/\//i, 'http://'
             # if user canceled the operation
             return unless input?
             if input.match /^http:\/\/www.youtube.com\/watch?/

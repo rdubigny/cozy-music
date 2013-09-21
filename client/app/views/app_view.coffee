@@ -14,26 +14,13 @@ module.exports = class AppView extends BaseView
     template: require('./templates/home')
 
     events:
-        'drop': (e) ->
+        'drop #content': (e) ->
+            return unless e.originalEvent?.dataTransfer?
             @uploader.onFilesDropped e
-            if @queueList?
-                @queueList.enableSort()
         'dragover' : (e) ->
-            if @queueList?
-                @queueList.disableSort()
             @uploader.onDragOver e
-        'dragenter': (e) ->
-            if @queueList?
-                @queueList.disableSort()
-            @uploader.onDragOver e
-        'dragend': (e) ->
+        'mouseover': (e) ->
             @uploader.onDragOut e
-            if @queueList?
-                @queueList.enableSort()
-        'dragleave': (e) ->
-            @uploader.onDragOut e
-            if @queueList?
-                @queueList.enableSort()
 
     initialize: ->
         super

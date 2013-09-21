@@ -24,7 +24,6 @@ module.exports = class PlayQueueView extends TrackListView
         'click .clear': 'removeFromFirst'
 
     showPrevious: false
-    isRendered: false # a sad story...
 
     initialize: ->
         super
@@ -33,6 +32,7 @@ module.exports = class PlayQueueView extends TrackListView
         @listenTo @collection, 'change:atPlay', =>
             if @isRendered
                 @render()
+        @isRendered = false # a sad story...
 
     updateStatusDisplay: ->
         for id, view of @views
@@ -71,17 +71,16 @@ module.exports = class PlayQueueView extends TrackListView
                 return $helper
             # when drag'n'drop stop we need to update the collection
             stop: (event, ui) ->
+                return if event.originalEvent?.dataTransfer?
                 ui.item.trigger 'drop', ui.item.index()
 
         @isRendered = true
 
-    disableSort: ->
+    beforeRender: ->
         if @isRendered
-            @$("#track-list").sortable "disable"
-
-    enableSort: ->
-        if @isRendered
-            @$("#track-list").sortable "enable"
+            @$('#track-list').sortable "destroy"
+        super
+        @isRendered = false
 
     beforeDetach: ->
         if @isRendered
@@ -93,6 +92,14 @@ module.exports = class PlayQueueView extends TrackListView
         @$('#track-list').sortable "destroy"
         super
         @isRendered = false
+
+    disableSort: ->
+        if @isRendered
+            @$("#track-list").sortable "disable"
+
+    enableSort: ->
+        if @isRendered
+            @$("#track-list").sortable "enable"
 
     updateSort: (event, track, position) ->
         @collection.moveItem track, position

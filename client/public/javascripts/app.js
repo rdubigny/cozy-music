@@ -351,6 +351,25 @@ window.require.register("collections/playqueue", function(exports, require, modu
       return _results;
     };
 
+    PlayQueue.prototype.randomize = function() {
+      var i, tmp, _i, _j, _ref1, _ref2, _ref3, _results;
+      if (this.atPlay < this.length - 1) {
+        tmp = new Backbone.Collection();
+        for (i = _i = _ref1 = this.atPlay + 1, _ref2 = this.length - 1; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {
+          tmp.push(this.models[i]);
+        }
+        tmp.reset(tmp.shuffle());
+        while (this.indexOf(this.last()) > this.atPlay) {
+          this.remove(this.last());
+        }
+        _results = [];
+        for (i = _j = 0, _ref3 = tmp.length - 1; 0 <= _ref3 ? _j <= _ref3 : _j >= _ref3; i = 0 <= _ref3 ? ++_j : --_j) {
+          _results.push(this.push(tmp.models[i]));
+        }
+        return _results;
+      }
+    };
+
     PlayQueue.prototype.show = function() {
       var curM, i, _i, _ref1, _results;
       console.log("atPlay : " + this.atPlay);
@@ -753,6 +772,8 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
+      this.navigate("", true);
+      return alert("not available yet");
       this.atHome = false;
       this.lastSeen = id;
       return this.mainView.showPlayList(id);
@@ -809,35 +830,18 @@ window.require.register("views/app_view", function(exports, require, module) {
     AppView.prototype.template = require('./templates/home');
 
     AppView.prototype.events = {
-      'drop': function(e) {
-        this.uploader.onFilesDropped(e);
-        if (this.queueList != null) {
-          return this.queueList.enableSort();
+      'drop #content': function(e) {
+        var _ref1;
+        if (((_ref1 = e.originalEvent) != null ? _ref1.dataTransfer : void 0) == null) {
+          return;
         }
+        return this.uploader.onFilesDropped(e);
       },
       'dragover': function(e) {
-        if (this.queueList != null) {
-          this.queueList.disableSort();
-        }
         return this.uploader.onDragOver(e);
       },
-      'dragenter': function(e) {
-        if (this.queueList != null) {
-          this.queueList.disableSort();
-        }
-        return this.uploader.onDragOver(e);
-      },
-      'dragend': function(e) {
-        this.uploader.onDragOut(e);
-        if (this.queueList != null) {
-          return this.queueList.enableSort();
-        }
-      },
-      'dragleave': function(e) {
-        this.uploader.onDragOut(e);
-        if (this.queueList != null) {
-          return this.queueList.enableSort();
-        }
+      'mouseover': function(e) {
+        return this.uploader.onDragOut(e);
       }
     };
 
@@ -1559,7 +1563,7 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onClickRandom = function() {
-      return alert('not available yet');
+      return app.playQueue.randomize();
     };
 
     return Player;
@@ -1755,27 +1759,27 @@ window.require.register("views/playlist", function(exports, require, module) {
   
 });
 window.require.register("views/playlist_item", function(exports, require, module) {
-  var PlayQueueItemView, TrackListItemView, _ref,
+  var PlayListItemView, TrackListItemView, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   TrackListItemView = require('./tracklist_item');
 
-  module.exports = PlayQueueItemView = (function(_super) {
-    __extends(PlayQueueItemView, _super);
+  module.exports = PlayListItemView = (function(_super) {
+    __extends(PlayListItemView, _super);
 
-    function PlayQueueItemView() {
-      _ref = PlayQueueItemView.__super__.constructor.apply(this, arguments);
+    function PlayListItemView() {
+      _ref = PlayListItemView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
-    PlayQueueItemView.prototype.events = {
+    PlayListItemView.prototype.events = {
       'click #delete-button': 'onDeleteClick'
     };
 
-    PlayQueueItemView.prototype.initialize = function() {
+    PlayListItemView.prototype.initialize = function() {
       var _this = this;
-      PlayQueueItemView.__super__.initialize.apply(this, arguments);
+      PlayListItemView.__super__.initialize.apply(this, arguments);
       this.listenTo(this.model, 'change:state', this.onStateChange);
       this.listenTo(this.model, 'change:title', function(event) {
         return _this.$('td.field.title').html(_this.model.attributes.title);
@@ -1791,13 +1795,13 @@ window.require.register("views/playlist_item", function(exports, require, module
       });
     };
 
-    PlayQueueItemView.prototype.onDeleteClick = function(event) {
+    PlayListItemView.prototype.onDeleteClick = function(event) {
       event.preventDefault();
       event.stopPropagation();
       return this.$el.trigger('remove-item', this.model);
     };
 
-    return PlayQueueItemView;
+    return PlayListItemView;
 
   })(TrackListItemView);
   
@@ -1914,19 +1918,18 @@ window.require.register("views/playqueue", function(exports, require, module) {
 
     PlayQueueView.prototype.showPrevious = false;
 
-    PlayQueueView.prototype.isRendered = false;
-
     PlayQueueView.prototype.initialize = function() {
       var cookie,
         _this = this;
       PlayQueueView.__super__.initialize.apply(this, arguments);
       cookie = Cookies('isShowPreviousByDefault');
       this.showPrevious = (cookie != null) && cookie === "true";
-      return this.listenTo(this.collection, 'change:atPlay', function() {
+      this.listenTo(this.collection, 'change:atPlay', function() {
         if (_this.isRendered) {
           return _this.render();
         }
       });
+      return this.isRendered = false;
     };
 
     PlayQueueView.prototype.updateStatusDisplay = function() {
@@ -1971,22 +1974,22 @@ window.require.register("views/playqueue", function(exports, require, module) {
           return $helper;
         },
         stop: function(event, ui) {
+          var _ref1;
+          if (((_ref1 = event.originalEvent) != null ? _ref1.dataTransfer : void 0) != null) {
+            return;
+          }
           return ui.item.trigger('drop', ui.item.index());
         }
       });
       return this.isRendered = true;
     };
 
-    PlayQueueView.prototype.disableSort = function() {
+    PlayQueueView.prototype.beforeRender = function() {
       if (this.isRendered) {
-        return this.$("#track-list").sortable("disable");
+        this.$('#track-list').sortable("destroy");
       }
-    };
-
-    PlayQueueView.prototype.enableSort = function() {
-      if (this.isRendered) {
-        return this.$("#track-list").sortable("enable");
-      }
+      PlayQueueView.__super__.beforeRender.apply(this, arguments);
+      return this.isRendered = false;
     };
 
     PlayQueueView.prototype.beforeDetach = function() {
@@ -2001,6 +2004,18 @@ window.require.register("views/playqueue", function(exports, require, module) {
       this.$('#track-list').sortable("destroy");
       PlayQueueView.__super__.remove.apply(this, arguments);
       return this.isRendered = false;
+    };
+
+    PlayQueueView.prototype.disableSort = function() {
+      if (this.isRendered) {
+        return this.$("#track-list").sortable("disable");
+      }
+    };
+
+    PlayQueueView.prototype.enableSort = function() {
+      if (this.isRendered) {
+        return this.$("#track-list").sortable("enable");
+      }
     };
 
     PlayQueueView.prototype.updateSort = function(event, track, position) {
@@ -2615,6 +2630,7 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
+        return alert("not available yet");
         e.preventDefault();
         e.stopPropagation();
         if (app.selectedPlaylist != null) {
@@ -3216,6 +3232,9 @@ window.require.register("views/uploader", function(exports, require, module) {
       isValidInput = false;
       while (!isValidInput) {
         input = prompt(defaultMsg, defaultVal);
+        if (input.match(/^https/)) {
+          input = input.replace(/^https:\/\//i, 'http://');
+        }
         if (input == null) {
           return;
         }

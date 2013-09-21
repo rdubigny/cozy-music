@@ -1,6 +1,6 @@
 TrackListItemView = require './tracklist_item'
 
-module.exports = class PlayQueueItemView extends TrackListItemView
+module.exports = class PlayListItemView extends TrackListItemView
 
     events:
         'click #delete-button': 'onDeleteClick'

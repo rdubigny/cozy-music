@@ -113,6 +113,19 @@ module.exports = class PlayQueue extends Backbone.Collection
         for i in [0..count]
             @remove(@first())
 
+    # randomize the tracks following the track at play
+    randomize: ->
+        if @atPlay < @length-1
+            # this collection will content the queue end in shuffle order
+            tmp = new Backbone.Collection()
+            for i in [@atPlay+1..@length-1]
+                tmp.push @models[i]
+            tmp.reset tmp.shuffle()
+            # replace the end of the queue by the shuffled one
+            @remove(@last()) while @indexOf(@last()) > @atPlay
+            for i in [0..tmp.length-1]
+                @push tmp.models[i]
+
     # debug function
     show: ->
         console.log "atPlay : "+@atPlay

@@ -13,6 +13,7 @@ module.exports = class TracksItemView extends TrackListItemView
             else
                 @onQueueTrack(e)
         'click #add-to-button': (e)->
+            return alert "not available yet"
             e.preventDefault()
             e.stopPropagation()
             if app.selectedPlaylist?

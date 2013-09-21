@@ -329,4 +329,4 @@ module.exports = class Player extends BaseView
             loopIcon.toggleClass 'icon-refresh icon-repeat activated'
 
     onClickRandom: ->
-        alert 'not available yet'
+        app.playQueue.randomize()

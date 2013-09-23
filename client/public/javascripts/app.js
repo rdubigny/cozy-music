@@ -3232,11 +3232,11 @@ window.require.register("views/uploader", function(exports, require, module) {
       isValidInput = false;
       while (!isValidInput) {
         input = prompt(defaultMsg, defaultVal);
-        if (input.match(/^https/)) {
-          input = input.replace(/^https:\/\//i, 'http://');
-        }
         if (input == null) {
           return;
+        }
+        if (input.match(/^https/)) {
+          input = input.replace(/^https:\/\//i, 'http://');
         }
         if (input.match(/^http:\/\/www.youtube.com\/watch?/)) {
           startIndex = input.search(/v=/) + 2;

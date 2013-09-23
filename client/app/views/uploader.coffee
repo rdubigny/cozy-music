@@ -198,11 +198,11 @@ module.exports = class Uploader extends BaseView
         isValidInput = false
         until isValidInput
             input = prompt defaultMsg, defaultVal
-            # if https then turn into http
-            if input.match /^https/
-                input = input.replace /^https:\/\//i, 'http://'
             # if user canceled the operation
             return unless input?
+            # if https then turn it into http
+            if input.match /^https/
+                input = input.replace /^https:\/\//i, 'http://'
             if input.match /^http:\/\/www.youtube.com\/watch?/
                 startIndex = input.search(/v=/) + 2
                 isValidInput = true
@@ -232,7 +232,7 @@ module.exports = class Uploader extends BaseView
             url: "you/#{youId}"
             context: this
             data: ""
-            success :(model)=>
+            success: (model)=>
                 track.set model # to get the generated id
                 track.set
                     state: 'uploadEnd'

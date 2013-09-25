@@ -9,7 +9,6 @@ before ->
         else
             @track = track
             next()
-# Make this pre-treatment only before destroy action.
 , only: ['destroy', 'getAttachment', 'update', 'remove', 'add']
 
 action 'all', ->
@@ -45,10 +44,11 @@ action 'destroy', ->
 
 action 'getAttachment', ->
     fileName = params.fileName
+
     # update attributes
     updatedAttribute =
         lastPlay: Date.now()
-        plays: @track.plays+1
+        plays: @track.plays + 1
     @track.updateAttributes updatedAttribute, (err) ->
         if err
             compound.logger.write err
@@ -84,7 +84,6 @@ action 'update', ->
 
 # add to playlist
 action 'add', ->
-    # update attributes
     pl = @track.playlists
     newPlaylists =  if pl? and pl isnt "" then pl else []
     unless req.params.playlistid in newPlaylists
@@ -121,60 +120,54 @@ action 'remove', ->
         send error: 'Track is not in the playlist', 403
 
 action 'youtube', ->
-    # get video id from youtube-mp3.org
+
     @url = "http://youtube.com/watch?v=#{params.url}"
-    http = require('http')
-    p = "/a/pushItem/?item=#{encodeURI(@url)}&el=na&bf=false&r=#{Date.now()}"
-    options =
-        host: 'www.youtube-mp3.org'
-        port: 80
-        path: p
-        headers:
-            'Accept-Location': '*'
-    http.get options, (resp)->
-        resp.on 'data', onVideoId
-    .on 'error', (e) ->
-        compound.logger.write e.message
-        send error: "Got error: #{e.message}", 500
+
+    # get video id from youtube-mp3.org
+    client = request.newClient 'http://www.youtube-mp3.org/'
+    path = "/a/pushItem/?item=#{encodeURI(@url)}&el=na&bf=false&r=#{Date.now()}"
+    client.get path, (err, res, videoId)->
+        onVideoId videoId
+    , false
 
     # then fetch information from youtube-mp3.org
-    onVideoId = (video_id)->
-        return send error: true, "invalid video id" unless video_id?
-        p = "/a/itemInfo/?video_id=#{video_id}&ac=www&t=grp&r=#{Date.now()}"
-        options =
-            host: 'www.youtube-mp3.org'
-            port: 80
-            path: p
-            headers:
-                'Accept-Location': '*'
-        http.get options, (resp)->
-            resp.on 'data', (info)->
-                onInfo(info, video_id)
-        .on 'error', (e) ->
-            compound.logger.write e.message
-            send error: true, "Got error: #{e.message}", 500
+    onVideoId = (videoId)->
+        return send error: true, msg: "invalid video id" unless videoId?
+
+        path = "/a/itemInfo/?video_id=#{videoId}&ac=www&t=grp&r=#{Date.now()}"
+        client.get path, (err, res, info)->
+            if err
+                compound.logger.write err
+                send error: true, msg: "Got error: #{e.message}", 500
+            onInfo info, videoId
+        , false
+
 
     # then generate download link and download the mp3 file
-    onInfo = (info_json, video_id)->
-        if info_json.toString() is "pushItemYTError();"
+    onInfo = (infoJson, videoId)->
+
+        if infoJson.toString() is "pushItemYTError();"
             msg = "There was an error caused by YouTube, this video can't be delivered! Check copyright issues or video URL. Video longer than 20 minutes aren't supported"
-            return send error: true, msg
+            return send error: true, msg: msg
+
         # check for errors
         msg = "There was an error caused by youtube-mp3.org"
-        return send error: true, msg unless info_json?
-        info_parsed = info_json.toString().match(/{.*}/)
-        return send error: true, msg unless info_parsed?[0]?
+        return send error: true, msg: msg unless infoJson?
+
+        info_parsed = infoJson.toString().match(/{.*}/)
+        return send error: true, msg: msg unless info_parsed?[0]?
+
         info = JSON.parse info_parsed[0]
         msg = "Youtube-mp3.org didn't delivered any mp3 downloadable link"
-        return send error: true, msg, 500 if info.status isnt "serving"
+        return send error: true, msg: msg, 500 if info.status isnt "serving"
+
         # here it becomes dirty
         # I didn't want to use a dependency just for this
-        client = request.newClient 'http://www.youtube-mp3.org/'
         title = "#{info.title}.mp3"
-        path = "get?video_id=#{video_id}&h=#{info.h}&r=#{Date.now()}"
+        path = "get?video_id=#{videoId}&h=#{info.h}&r=#{Date.now()}"
         destFile = "/tmp/#{title}"
-        client.saveFile path, destFile, (err, res, body) ->
-            return send error: true, err if err
+        stream = client.saveFileAsStream path, (err, res, body) ->
+            return send error: true, msg: "can't save file", err if err
             req.body.slug = title
             req.body.title = title
             req.body.artist = ""
@@ -185,10 +178,17 @@ action 'youtube', ->
             req.body.time = ""
             Track.create req.body, (err, newTrack) =>
                 if err
-                    send error: true, "can't create track.", 500
+                    console.log err
+                    console.log err.message
+                    console.log err.error
+
+                    send error: true, msg: "can't create track.", 500
                 else
-                    newTrack.attachFile destFile, {"name": title}, (err) ->
+                    newTrack.attachFile stream, {"name": title}, (err) ->
                         if err
-                            send error: true, "can't attach file.", 500
+                            util = require 'util'
+                            console.log err.error
+                            console.log util.inspect err
+                            send error: true, msg: "can't attach file.", 500
                         else
                             send newTrack, 200

@@ -127,24 +127,21 @@ action 'youtube', ->
     client = request.newClient 'http://www.youtube-mp3.org/'
     path = "/a/pushItem/?item=#{encodeURI(@url)}&el=na&bf=false&r=#{Date.now()}"
     client.get path, (err, res, videoId)->
-        onVideoId videoId
-    , false
-
-    # then fetch information from youtube-mp3.org
-    onVideoId = (videoId)->
         return send error: true, msg: "invalid video id" unless videoId?
 
+        # then fetch information from youtube-mp3.org
         path = "/a/itemInfo/?video_id=#{videoId}&ac=www&t=grp&r=#{Date.now()}"
-        client.get path, (err, res, info)->
+        client.get path, (err, res, infos)->
             if err
                 compound.logger.write err
                 send error: true, msg: "Got error: #{e.message}", 500
-            onInfo info, videoId
+            onInfos infos, videoId
         , false
 
+    , false
 
     # then generate download link and download the mp3 file
-    onInfo = (infoJson, videoId)->
+    onInfos = (infoJson, videoId)->
 
         if infoJson.toString() is "pushItemYTError();"
             msg = "There was an error caused by YouTube, this video can't be delivered! Check copyright issues or video URL. Video longer than 20 minutes aren't supported"
@@ -167,28 +164,31 @@ action 'youtube', ->
         path = "get?video_id=#{videoId}&h=#{info.h}&r=#{Date.now()}"
         destFile = "/tmp/#{title}"
         stream = client.saveFileAsStream path, (err, res, body) ->
-            return send error: true, msg: "can't save file", err if err
-            req.body.slug = title
-            req.body.title = title
-            req.body.artist = ""
-            req.body.album = ""
-            req.body.track = ""
-            req.body.year = ""
-            req.body.genre = ""
-            req.body.time = ""
-            Track.create req.body, (err, newTrack) =>
-                if err
-                    console.log err
-                    console.log err.message
-                    console.log err.error
+            if err
+                console.log "Error occured while saving file"
+                console.log err
 
-                    send error: true, msg: "can't create track.", 500
-                else
-                    newTrack.attachFile stream, {"name": title}, (err) ->
-                        if err
-                            util = require 'util'
-                            console.log err.error
-                            console.log util.inspect err
-                            send error: true, msg: "can't attach file.", 500
-                        else
-                            send newTrack, 200
+        # TODO parse title to extract artist name and track name.
+        req.body.slug = title
+        req.body.title = title
+        req.body.artist = ""
+        req.body.album = ""
+        req.body.track = ""
+        req.body.year = ""
+        req.body.genre = ""
+        req.body.time = ""
+        Track.create req.body, (err, newTrack) =>
+            if err
+                console.log err
+                console.log err.message
+                console.log err.error
+                send error: true, msg: "can't create track.", 500
+            else
+                newTrack.attachFile stream, {"name": title}, (err) ->
+                    if err
+                        util = require 'util'
+                        console.log err.error
+                        console.log util.inspect err
+                        send error: true, msg: "can't attach file.", 500
+                    else
+                        send newTrack, 200

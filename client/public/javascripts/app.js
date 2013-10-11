@@ -772,8 +772,6 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
-      this.navigate("", true);
-      return alert("not available yet");
       this.atHome = false;
       this.lastSeen = id;
       return this.mainView.showPlayList(id);
@@ -1733,6 +1731,7 @@ window.require.register("views/playlist", function(exports, require, module) {
     PlayListView.prototype.itemview = TrackView;
 
     PlayListView.prototype.events = {
+      'click #playlist-play': 'onClickPlay',
       'remove-item': function(e, track) {
         return this.collection.remove(track);
       }
@@ -2630,7 +2629,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
-        return alert("not available yet");
         e.preventDefault();
         e.stopPropagation();
         if (app.selectedPlaylist != null) {

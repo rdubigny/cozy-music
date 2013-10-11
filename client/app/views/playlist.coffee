@@ -8,6 +8,7 @@ module.exports = class PlayListView extends Tracklist
     itemview: TrackView
 
     events:
+        'click #playlist-play': 'onClickPlay'
         'remove-item': (e, track)->
             @collection.remove track
 

@@ -9,7 +9,7 @@ before ->
         else
             @track = track
             next()
-, only: ['destroy', 'getAttachment', 'update', 'remove', 'add']
+, only: ['destroy', 'getAttachment', 'update', 'remove', 'add', 'move']
 
 action 'all', ->
     # Here we use the method all to retrieve all tracks stored.
@@ -111,13 +111,18 @@ action 'remove', ->
                 playlists: pl
 
             @track.updateAttributes updatedAttribute, (err, resp) ->
-                # I have no respects :
+                # I'm pure evil :
                 # if there is any error nobody will ever heard of it!
                 # Mouahahahah!
                 # mostly, error here are due to already deleted tracks
                 send success: 'Track successfully removed', 200
     else
         send error: 'Track is not in the playlist', 403
+
+# move track in playlist
+action 'move', ->
+    # update attributes
+    console.log "trying to move a track within playlist, but nothing happened"
 
 action 'youtube', ->
 
@@ -151,10 +156,10 @@ action 'youtube', ->
         msg = "There was an error caused by youtube-mp3.org"
         return send error: true, msg: msg unless infoJson?
 
-        info_parsed = infoJson.toString().match(/{.*}/)
-        return send error: true, msg: msg unless info_parsed?[0]?
+        infoParsed = infoJson.toString().match(/{.*}/)
+        return send error: true, msg: msg unless infoParsed?[0]?
 
-        info = JSON.parse info_parsed[0]
+        info = JSON.parse infoParsed[0]
         msg = "Youtube-mp3.org didn't delivered any mp3 downloadable link"
         return send error: true, msg: msg, 500 if info.status isnt "serving"
 

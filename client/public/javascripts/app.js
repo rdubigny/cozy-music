@@ -1706,12 +1706,13 @@ window.require.register("views/player/volumeManager", function(exports, require,
   
 });
 window.require.register("views/playlist", function(exports, require, module) {
-  var BaseView, PlayListView, TrackView, Tracklist, _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var BaseView, PlayListView, PlayQueueView, TrackView, Tracklist, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Tracklist = require('./tracklist');
+
+  PlayQueueView = require('./playqueue');
 
   BaseView = require('lib/base_view');
 
@@ -1721,7 +1722,6 @@ window.require.register("views/playlist", function(exports, require, module) {
     __extends(PlayListView, _super);
 
     function PlayListView() {
-      this.afterRender = __bind(this.afterRender, this);
       _ref = PlayListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1731,15 +1731,11 @@ window.require.register("views/playlist", function(exports, require, module) {
     PlayListView.prototype.itemview = TrackView;
 
     PlayListView.prototype.events = {
+      'update-sort': 'updateSort',
       'click #playlist-play': 'onClickPlay',
       'remove-item': function(e, track) {
         return this.collection.remove(track);
       }
-    };
-
-    PlayListView.prototype.afterRender = function() {
-      PlayListView.__super__.afterRender.apply(this, arguments);
-      return $('.tracks-display tr:odd').addClass('odd');
     };
 
     PlayListView.prototype.onClickPlay = function(event) {
@@ -1752,9 +1748,11 @@ window.require.register("views/playlist", function(exports, require, module) {
       });
     };
 
+    PlayListView.prototype.updateSort = function(event, track, position) {};
+
     return PlayListView;
 
-  })(Tracklist);
+  })(PlayQueueView);
   
 });
 window.require.register("views/playlist_item", function(exports, require, module) {
@@ -1773,7 +1771,8 @@ window.require.register("views/playlist_item", function(exports, require, module
     }
 
     PlayListItemView.prototype.events = {
-      'click #delete-button': 'onDeleteClick'
+      'click #delete-button': 'onDeleteClick',
+      'drop': 'drop'
     };
 
     PlayListItemView.prototype.initialize = function() {
@@ -1798,6 +1797,10 @@ window.require.register("views/playlist_item", function(exports, require, module
       event.preventDefault();
       event.stopPropagation();
       return this.$el.trigger('remove-item', this.model);
+    };
+
+    PlayListItemView.prototype.drop = function(event, index) {
+      return this.$el.trigger('update-sort', [this.model, index]);
     };
 
     return PlayListItemView;

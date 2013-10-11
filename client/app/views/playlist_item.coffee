@@ -4,7 +4,7 @@ module.exports = class PlayListItemView extends TrackListItemView
 
     events:
         'click #delete-button': 'onDeleteClick'
-        #'drop' : 'drop'
+        'drop' : 'drop'
 
     initialize: ->
         super
@@ -25,5 +25,5 @@ module.exports = class PlayListItemView extends TrackListItemView
          # remove the view without destroying the model
         @$el.trigger 'remove-item', @model
 
-    #drop: (event, index) ->
-    #    @$el.trigger 'update-sort', [@model, index]
+    drop: (event, index) ->
+        @$el.trigger 'update-sort', [@model, index]

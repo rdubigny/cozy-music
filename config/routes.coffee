@@ -15,3 +15,4 @@ exports.routes = (map) ->
     map.get 'playlists/:id', 'playlists#show'
     map.put 'playlists/:playlistid/:id', 'tracks#add'
     map.del 'playlists/:playlistid/:id', 'tracks#remove'
+    map.put 'playlists/:playlistid/:id/prev/:id/next/:id', 'tracks#move'

@@ -1759,51 +1759,7 @@ window.require.register("views/playlist", function(exports, require, module) {
   
 });
 window.require.register("views/playlist_item", function(exports, require, module) {
-  var PlayListItemView, TrackListItemView, _ref,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  TrackListItemView = require('./tracklist_item');
-
-  module.exports = PlayListItemView = (function(_super) {
-    __extends(PlayListItemView, _super);
-
-    function PlayListItemView() {
-      _ref = PlayListItemView.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    PlayListItemView.prototype.events = {
-      'click #delete-button': 'onDeleteClick'
-    };
-
-    PlayListItemView.prototype.initialize = function() {
-      var _this = this;
-      PlayListItemView.__super__.initialize.apply(this, arguments);
-      this.listenTo(this.model, 'change:state', this.onStateChange);
-      this.listenTo(this.model, 'change:title', function(event) {
-        return _this.$('td.field.title').html(_this.model.attributes.title);
-      });
-      this.listenTo(this.model, 'change:artist', function(event) {
-        return _this.$('td.field.artist').html(_this.model.attributes.artist);
-      });
-      this.listenTo(this.model, 'change:album', function(event) {
-        return _this.$('td.field.album').html(_this.model.attributes.album);
-      });
-      return this.listenTo(this.model, 'change:track', function(event) {
-        return _this.$('td.field.num').html(_this.model.attributes.track);
-      });
-    };
-
-    PlayListItemView.prototype.onDeleteClick = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      return this.$el.trigger('remove-item', this.model);
-    };
-
-    return PlayListItemView;
-
-  })(TrackListItemView);
+  
   
 });
 window.require.register("views/playlist_nav_view", function(exports, require, module) {

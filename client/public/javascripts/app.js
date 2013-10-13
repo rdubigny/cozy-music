@@ -198,33 +198,25 @@ window.require.register("collections/playlist", function(exports, require, modul
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.remove.apply(this, arguments));
     };
 
-    PlaylistTrackCollection.prototype.move = function(newPosition, track) {
-      var i, newP, next, nextWeight, oldP, prev, prevWeight,
+    PlaylistTrackCollection.prototype.move = function(newP, track) {
+      var next, nextWeight, oldP, prev, prevWeight,
         _this = this;
-      console.log("move from " + (this.indexOf(track)) + " to " + newPosition);
-      newP = newPosition;
       oldP = this.indexOf(track);
       if (newP === oldP) {
         return;
       }
-      if (newPosition === 0) {
+      if (newP === 0) {
         prevWeight = 0;
       } else {
-        prev = oldP < newP ? this.at(newPosition) : this.at(newPosition - 1);
+        prev = oldP < newP ? this.at(newP) : this.at(newP - 1);
         prevWeight = this.getWeight(prev.attributes.playlists);
       }
-      if (newPosition >= this.indexOf(this.last())) {
+      if (newP >= this.indexOf(this.last())) {
         nextWeight = Math.pow(2, 53);
       } else {
-        next = oldP < newP ? this.at(newPosition + 1) : this.at(newPosition);
+        next = oldP < newP ? this.at(newP + 1) : this.at(newP);
         nextWeight = this.getWeight(next.attributes.playlists);
       }
-      i = 0;
-      this.forEach(function(tmp) {
-        console.log("" + i + ") " + (_this.getWeight(tmp.attributes.playlists)));
-        return i++;
-      });
-      console.log("I got a prevWeight (" + prevWeight + ") and a nextWeight (" + nextWeight + ")");
       track.sync('update', track, {
         url: "" + this.url + "/prev/" + prevWeight + "/next/" + nextWeight + "/" + track.id,
         error: function(xhr) {
@@ -233,17 +225,12 @@ window.require.register("collections/playlist", function(exports, require, modul
           return alert("fail to move track : " + msg.error);
         },
         success: function(playlists) {
-          track.attributes.playlists = playlists;
-          i = 0;
-          return _this.forEach(function(tmp) {
-            console.log("" + i + ") " + (_this.getWeight(tmp.attributes.playlists)));
-            return i++;
-          });
+          return track.attributes.playlists = playlists;
         }
       });
       this.remove(track, true);
       return this.add(track, true, {
-        at: newPosition
+        at: newP
       });
     };
 

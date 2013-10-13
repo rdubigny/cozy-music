@@ -39,26 +39,19 @@ module.exports = class PlaylistTrackCollection extends Backbone.Collection
         # avoiding calling super if an error occured
         @listenToOnce track, 'sync', super
 
-    move: (newPosition, track)->
-        console.log "move from #{@indexOf(track)} to #{newPosition}"
-        newP = newPosition
+    move: (newP, track)->
         oldP = @indexOf(track)
         return if newP is oldP
-        if newPosition is 0
+        if newP is 0
             prevWeight = 0
         else
-            prev = if oldP < newP then @at(newPosition) else @at(newPosition-1)
+            prev = if oldP < newP then @at(newP) else @at(newP-1)
             prevWeight = @getWeight prev.attributes.playlists
-        if newPosition >= @indexOf(@last())
+        if newP >= @indexOf(@last())
             nextWeight = Math.pow 2,53
         else
-            next = if oldP < newP then @at(newPosition+1) else @at(newPosition)
+            next = if oldP < newP then @at(newP+1) else @at(newP)
             nextWeight = @getWeight next.attributes.playlists
-        i = 0
-        @forEach (tmp)=>
-            console.log "#{i}) #{@getWeight(tmp.attributes.playlists)}"
-            i++
-        console.log "I got a prevWeight (#{prevWeight}) and a nextWeight (#{nextWeight})"
         track.sync 'update', track,
             url: "#{@url}/prev/#{prevWeight}/next/#{nextWeight}/#{track.id}"
             error: (xhr)->
@@ -66,10 +59,6 @@ module.exports = class PlaylistTrackCollection extends Backbone.Collection
                 alert "fail to move track : #{msg.error}"
             success: (playlists)=>
                 track.attributes.playlists = playlists
-                i = 0
-                @forEach (tmp)=>
-                    console.log "#{i}) #{@getWeight(tmp.attributes.playlists)}"
-                    i++
         @remove track, true
         @add track, true,
-            at: newPosition
+            at: newP

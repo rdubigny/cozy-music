@@ -9,7 +9,7 @@ before ->
         else
             @track = track
             next()
-, only: ['destroy', 'getAttachment', 'update', 'remove', 'add']
+, only: ['destroy', 'getAttachment', 'update', 'remove', 'add', 'move']
 
 action 'all', ->
     # Here we use the method all to retrieve all tracks stored.
@@ -83,11 +83,25 @@ action 'update', ->
             send success: 'track successfully updated', 200
 
 # add to playlist
+estimatedMaxSize = 300 #improve weight allotment
 action 'add', ->
     pl = @track.playlists
     newPlaylists =  if pl? and pl isnt "" then pl else []
-    unless req.params.playlistid in newPlaylists
-        newPlaylists.push req.params.playlistid
+    alreadyIn = false
+    for elem in newPlaylists
+        if elem? and req.params.playlistid is elem.id
+            console.log "yoyoyo"
+            console.log elem.id
+            alreadyIn = true
+    unless alreadyIn
+        oldW = parseInt(req.params.lastWeight)
+        newW = oldW + Math.floor(Math.pow(2,53) / estimatedMaxSize)
+        if newW < oldW
+            # overflow!
+            newW = Math.floor((Math.pow(2,53) - oldW)/2) + oldW
+        newPlaylists.push
+            id: req.params.playlistid
+            weight: newW
         updatedAttribute =
             playlists: newPlaylists
         @track.updateAttributes updatedAttribute, (err) ->
@@ -95,7 +109,7 @@ action 'add', ->
                 compound.logger.write err
                 send error: 'Cannot add track', 500
             else
-                send success: 'Track successfully added', 200
+                send newPlaylists, 200
     else
         send error: 'Track is already in the playlist', 403
 
@@ -104,20 +118,46 @@ action 'remove', ->
     # update attributes
     pl = @track.playlists
     if pl? and pl isnt ""
-        ind = pl.indexOf req.params.playlistid
-        if ind isnt -1
-            pl.splice ind, 1
-            updatedAttribute =
-                playlists: pl
+        for elem in pl
+            if elem.id is req.params.playlistid
+                ind = pl.indexOf elem
 
-            @track.updateAttributes updatedAttribute, (err, resp) ->
-                # I have no respects :
-                # if there is any error nobody will ever heard of it!
-                # Mouahahahah!
-                # mostly, error here are due to already deleted tracks
-                send success: 'Track successfully removed', 200
+        send(error: 'Track is not in the playlist', 403) unless ind?
+        pl.splice ind, 1
+        updatedAttribute =
+            playlists: pl
+
+        @track.updateAttributes updatedAttribute, (err, resp) ->
+            # I'm pure evil :
+            # if there is any error nobody will ever heard of it!
+            # Mouahahahah!
+            # mostly, error here are due to already deleted tracks
+            send success: 'Track successfully removed', 200
     else
         send error: 'Track is not in the playlist', 403
+
+# move track in playlist
+action 'move', ->
+    pl = @track.playlists
+    unless pl? and pl isnt ""
+        send error: 'Track is not in the playlist', 403
+    for elem in pl
+        if elem.id is req.params.playlistid
+            ind = pl.indexOf elem
+    unless ind?
+        send error: 'Track is not in the playlist', 403
+    nxt = parseInt req.params.nextWeight
+    prv = parseInt req.params.prevWeight
+    pl[ind].weight = Math.floor((nxt - prv)/2) + prv
+
+    updatedAttribute =
+        playlists: pl
+    @track.updateAttributes updatedAttribute, (err) ->
+        if err
+            compound.logger.write err
+            send error: 'Cannot move track', 500
+        else
+            send pl, 200
 
 action 'youtube', ->
 
@@ -151,10 +191,10 @@ action 'youtube', ->
         msg = "There was an error caused by youtube-mp3.org"
         return send error: true, msg: msg unless infoJson?
 
-        info_parsed = infoJson.toString().match(/{.*}/)
-        return send error: true, msg: msg unless info_parsed?[0]?
+        infoParsed = infoJson.toString().match(/{.*}/)
+        return send error: true, msg: msg unless infoParsed?[0]?
 
-        info = JSON.parse info_parsed[0]
+        info = JSON.parse infoParsed[0]
         msg = "Youtube-mp3.org didn't delivered any mp3 downloadable link"
         return send error: true, msg: msg, 500 if info.status isnt "serving"
 

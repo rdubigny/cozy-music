@@ -20,6 +20,18 @@ action 'all', ->
 
 action 'show', ->
     @playlist.tracks (err, tracks)=>
+        tracks.sort (track1, track2)->
+            for elem in track1.playlists
+                if elem.id is req.params.id
+                    weight1 = elem.weight
+            for elem in track2.playlists
+                if elem.id is req.params.id
+                    weight2 = elem.weight
+            return 0 unless weight1? and weight2? and weight1 isnt weight2
+            if weight1 > weight2
+                return 1 # sort 1 to a higher index than 2 (2 comes first)
+            else
+                return -1 # sort 1 to a lower index than 2
         out = tracks
         send out, 200
 

@@ -133,26 +133,60 @@ window.require.register("collections/playlist", function(exports, require, modul
 
     function PlaylistTrackCollection() {
       this.add = __bind(this.add, this);
+      this.getWeight = __bind(this.getWeight, this);
       _ref = PlaylistTrackCollection.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
     PlaylistTrackCollection.prototype.model = Track;
 
-    PlaylistTrackCollection.prototype.add = function(track) {
-      var _this = this;
+    PlaylistTrackCollection.prototype.getWeight = function(playlists) {
+      var elem, _i, _len;
+      for (_i = 0, _len = playlists.length; _i < _len; _i++) {
+        elem = playlists[_i];
+        if (elem.id === this.playlistId) {
+          return elem.weight;
+        }
+      }
+      return false;
+    };
+
+    PlaylistTrackCollection.prototype.add = function(track, superOnly, options) {
+      var last, lastWeight,
+        _this = this;
+      if (superOnly == null) {
+        superOnly = false;
+      }
+      if (superOnly) {
+        return PlaylistTrackCollection.__super__.add.call(this, track, options);
+      }
+      if (this.size() > 0) {
+        last = this.last();
+        lastWeight = this.getWeight(last.attributes.playlists);
+      } else {
+        lastWeight = 0;
+      }
       track.sync('update', track, {
-        url: "" + this.url + "/" + track.id,
+        url: "" + this.url + "/" + track.id + "/" + lastWeight,
         error: function(xhr) {
           var msg;
           msg = JSON.parse(xhr.responseText);
           return alert("fail to add track : " + msg.error);
+        },
+        success: function(playlists) {
+          return track.attributes.playlists = playlists;
         }
       });
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.add.apply(this, arguments));
     };
 
-    PlaylistTrackCollection.prototype.remove = function(track) {
+    PlaylistTrackCollection.prototype.remove = function(track, superOnly) {
+      if (superOnly == null) {
+        superOnly = false;
+      }
+      if (superOnly) {
+        return PlaylistTrackCollection.__super__.remove.call(this, track);
+      }
       track.sync('delete', track, {
         url: "" + this.url + "/" + track.id,
         error: function(xhr) {
@@ -162,6 +196,42 @@ window.require.register("collections/playlist", function(exports, require, modul
         }
       });
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.remove.apply(this, arguments));
+    };
+
+    PlaylistTrackCollection.prototype.move = function(newP, track) {
+      var next, nextWeight, oldP, prev, prevWeight,
+        _this = this;
+      oldP = this.indexOf(track);
+      if (newP === oldP) {
+        return;
+      }
+      if (newP === 0) {
+        prevWeight = 0;
+      } else {
+        prev = oldP < newP ? this.at(newP) : this.at(newP - 1);
+        prevWeight = this.getWeight(prev.attributes.playlists);
+      }
+      if (newP >= this.indexOf(this.last())) {
+        nextWeight = Math.pow(2, 53);
+      } else {
+        next = oldP < newP ? this.at(newP + 1) : this.at(newP);
+        nextWeight = this.getWeight(next.attributes.playlists);
+      }
+      track.sync('update', track, {
+        url: "" + this.url + "/prev/" + prevWeight + "/next/" + nextWeight + "/" + track.id,
+        error: function(xhr) {
+          var msg;
+          msg = JSON.parse(xhr.responseText);
+          return alert("fail to move track : " + msg.error);
+        },
+        success: function(playlists) {
+          return track.attributes.playlists = playlists;
+        }
+      });
+      this.remove(track, true);
+      return this.add(track, true, {
+        at: newP
+      });
     };
 
     return PlaylistTrackCollection;
@@ -772,8 +842,6 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.playlist = function(id) {
-      this.navigate("", true);
-      return alert("not available yet");
       this.atHome = false;
       this.lastSeen = id;
       return this.mainView.showPlayList(id);
@@ -1708,12 +1776,13 @@ window.require.register("views/player/volumeManager", function(exports, require,
   
 });
 window.require.register("views/playlist", function(exports, require, module) {
-  var BaseView, PlayListView, TrackView, Tracklist, _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var BaseView, PlayListView, PlayQueueView, TrackView, Tracklist, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Tracklist = require('./tracklist');
+
+  PlayQueueView = require('./playqueue');
 
   BaseView = require('lib/base_view');
 
@@ -1723,7 +1792,6 @@ window.require.register("views/playlist", function(exports, require, module) {
     __extends(PlayListView, _super);
 
     function PlayListView() {
-      this.afterRender = __bind(this.afterRender, this);
       _ref = PlayListView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
@@ -1733,33 +1801,84 @@ window.require.register("views/playlist", function(exports, require, module) {
     PlayListView.prototype.itemview = TrackView;
 
     PlayListView.prototype.events = {
+      'update-sort': 'updateSort',
+      'click #playlist-play': 'onClickPlay',
       'remove-item': function(e, track) {
         return this.collection.remove(track);
       }
     };
 
-    PlayListView.prototype.afterRender = function() {
-      PlayListView.__super__.afterRender.apply(this, arguments);
-      return $('.tracks-display tr:odd').addClass('odd');
-    };
-
     PlayListView.prototype.onClickPlay = function(event) {
+      var _this = this;
       event.preventDefault();
       event.stopPropagation();
-      return this.collection.each(function(track) {
+      return this.collection.forEach(function(track) {
         if (track.attributes.state === 'server') {
-          return Backbone.Mediator.publish('track:pushNext', track);
+          return Backbone.Mediator.publish('track:queue', track);
         }
       });
     };
 
+    PlayListView.prototype.updateSort = function(event, track, newPosition) {
+      return this.collection.move(newPosition, track);
+    };
+
     return PlayListView;
 
-  })(Tracklist);
+  })(PlayQueueView);
   
 });
 window.require.register("views/playlist_item", function(exports, require, module) {
-  
+  var PlayListItemView, TrackListItemView, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  TrackListItemView = require('./tracklist_item');
+
+  module.exports = PlayListItemView = (function(_super) {
+    __extends(PlayListItemView, _super);
+
+    function PlayListItemView() {
+      _ref = PlayListItemView.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    PlayListItemView.prototype.events = {
+      'click #delete-button': 'onDeleteClick',
+      'drop': 'drop'
+    };
+
+    PlayListItemView.prototype.initialize = function() {
+      var _this = this;
+      PlayListItemView.__super__.initialize.apply(this, arguments);
+      this.listenTo(this.model, 'change:state', this.onStateChange);
+      this.listenTo(this.model, 'change:title', function(event) {
+        return _this.$('td.field.title').html(_this.model.attributes.title);
+      });
+      this.listenTo(this.model, 'change:artist', function(event) {
+        return _this.$('td.field.artist').html(_this.model.attributes.artist);
+      });
+      this.listenTo(this.model, 'change:album', function(event) {
+        return _this.$('td.field.album').html(_this.model.attributes.album);
+      });
+      return this.listenTo(this.model, 'change:track', function(event) {
+        return _this.$('td.field.num').html(_this.model.attributes.track);
+      });
+    };
+
+    PlayListItemView.prototype.onDeleteClick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.$el.trigger('remove-item', this.model);
+    };
+
+    PlayListItemView.prototype.drop = function(event, index) {
+      return this.$el.trigger('update-sort', [this.model, index]);
+    };
+
+    return PlayListItemView;
+
+  })(TrackListItemView);
   
 });
 window.require.register("views/playlist_nav_view", function(exports, require, module) {
@@ -2586,7 +2705,6 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         }
       },
       'click #add-to-button': function(e) {
-        return alert("not available yet");
         e.preventDefault();
         e.stopPropagation();
         if (app.selectedPlaylist != null) {

@@ -13,7 +13,7 @@ module.exports = (compound) ->
 
     byPlaylist = (track) ->
         for playlist in track.playlists
-            emit playlist, track # playlist is an id
+            emit playlist.id, track # playlist is an id
 
     # send the definition to couchDB to create the index
     Track.defineRequest "byPlaylist", byPlaylist, (err)->

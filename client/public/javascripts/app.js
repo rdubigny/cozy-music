@@ -133,26 +133,60 @@ window.require.register("collections/playlist", function(exports, require, modul
 
     function PlaylistTrackCollection() {
       this.add = __bind(this.add, this);
+      this.getWeight = __bind(this.getWeight, this);
       _ref = PlaylistTrackCollection.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
     PlaylistTrackCollection.prototype.model = Track;
 
-    PlaylistTrackCollection.prototype.add = function(track) {
-      var _this = this;
+    PlaylistTrackCollection.prototype.getWeight = function(playlists) {
+      var elem, _i, _len;
+      for (_i = 0, _len = playlists.length; _i < _len; _i++) {
+        elem = playlists[_i];
+        if (elem.id === this.playlistId) {
+          return elem.weight;
+        }
+      }
+      return false;
+    };
+
+    PlaylistTrackCollection.prototype.add = function(track, superOnly, options) {
+      var last, lastWeight,
+        _this = this;
+      if (superOnly == null) {
+        superOnly = false;
+      }
+      if (superOnly) {
+        return PlaylistTrackCollection.__super__.add.call(this, track, options);
+      }
+      if (this.size() > 0) {
+        last = this.last();
+        lastWeight = this.getWeight(last.attributes.playlists);
+      } else {
+        lastWeight = 0;
+      }
       track.sync('update', track, {
-        url: "" + this.url + "/" + track.id,
+        url: "" + this.url + "/" + track.id + "/" + lastWeight,
         error: function(xhr) {
           var msg;
           msg = JSON.parse(xhr.responseText);
           return alert("fail to add track : " + msg.error);
+        },
+        success: function(playlists) {
+          return track.attributes.playlists = playlists;
         }
       });
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.add.apply(this, arguments));
     };
 
-    PlaylistTrackCollection.prototype.remove = function(track) {
+    PlaylistTrackCollection.prototype.remove = function(track, superOnly) {
+      if (superOnly == null) {
+        superOnly = false;
+      }
+      if (superOnly) {
+        return PlaylistTrackCollection.__super__.remove.call(this, track);
+      }
       track.sync('delete', track, {
         url: "" + this.url + "/" + track.id,
         error: function(xhr) {
@@ -162,6 +196,55 @@ window.require.register("collections/playlist", function(exports, require, modul
         }
       });
       return this.listenToOnce(track, 'sync', PlaylistTrackCollection.__super__.remove.apply(this, arguments));
+    };
+
+    PlaylistTrackCollection.prototype.move = function(newPosition, track) {
+      var i, newP, next, nextWeight, oldP, prev, prevWeight,
+        _this = this;
+      console.log("move from " + (this.indexOf(track)) + " to " + newPosition);
+      newP = newPosition;
+      oldP = this.indexOf(track);
+      if (newP === oldP) {
+        return;
+      }
+      if (newPosition === 0) {
+        prevWeight = 0;
+      } else {
+        prev = oldP < newP ? this.at(newPosition) : this.at(newPosition - 1);
+        prevWeight = this.getWeight(prev.attributes.playlists);
+      }
+      if (newPosition >= this.indexOf(this.last())) {
+        nextWeight = Math.pow(2, 53);
+      } else {
+        next = oldP < newP ? this.at(newPosition + 1) : this.at(newPosition);
+        nextWeight = this.getWeight(next.attributes.playlists);
+      }
+      i = 0;
+      this.forEach(function(tmp) {
+        console.log("" + i + ") " + (_this.getWeight(tmp.attributes.playlists)));
+        return i++;
+      });
+      console.log("I got a prevWeight (" + prevWeight + ") and a nextWeight (" + nextWeight + ")");
+      track.sync('update', track, {
+        url: "" + this.url + "/prev/" + prevWeight + "/next/" + nextWeight + "/" + track.id,
+        error: function(xhr) {
+          var msg;
+          msg = JSON.parse(xhr.responseText);
+          return alert("fail to move track : " + msg.error);
+        },
+        success: function(playlists) {
+          track.attributes.playlists = playlists;
+          i = 0;
+          return _this.forEach(function(tmp) {
+            console.log("" + i + ") " + (_this.getWeight(tmp.attributes.playlists)));
+            return i++;
+          });
+        }
+      });
+      this.remove(track, true);
+      return this.add(track, true, {
+        at: newPosition
+      });
     };
 
     return PlaylistTrackCollection;
@@ -1739,16 +1822,19 @@ window.require.register("views/playlist", function(exports, require, module) {
     };
 
     PlayListView.prototype.onClickPlay = function(event) {
+      var _this = this;
       event.preventDefault();
       event.stopPropagation();
-      return this.collection.each(function(track) {
+      return this.collection.forEach(function(track) {
         if (track.attributes.state === 'server') {
-          return Backbone.Mediator.publish('track:pushNext', track);
+          return Backbone.Mediator.publish('track:queue', track);
         }
       });
     };
 
-    PlayListView.prototype.updateSort = function(event, track, position) {};
+    PlayListView.prototype.updateSort = function(event, track, newPosition) {
+      return this.collection.move(newPosition, track);
+    };
 
     return PlayListView;
 

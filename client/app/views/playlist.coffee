@@ -14,17 +14,12 @@ module.exports = class PlayListView extends PlayQueueView
         'remove-item': (e, track)->
             @collection.remove track
 
-    #afterRender: =>
-    #    super
-    #    # adding table stripes
-    #    $('.tracks-display tr:odd').addClass 'odd'
-
     onClickPlay: (event)->
         event.preventDefault()
         event.stopPropagation()
-        @collection.each (track)->
+        @collection.forEach (track)=>
             if track.attributes.state is 'server'
-                Backbone.Mediator.publish 'track:pushNext', track
+                Backbone.Mediator.publish 'track:queue', track
 
-    updateSort: (event, track, position) ->
-        # call the tracks#move route here
+    updateSort: (event, track, newPosition) ->
+        @collection.move newPosition, track

@@ -13,6 +13,6 @@ exports.routes = (map) ->
     map.del 'playlists/:id', 'playlists#destroy'
 
     map.get 'playlists/:id', 'playlists#show'
-    map.put 'playlists/:playlistid/:id', 'tracks#add'
+    map.put 'playlists/:playlistid/:id/:lastWeight', 'tracks#add'
     map.del 'playlists/:playlistid/:id', 'tracks#remove'
-    map.put 'playlists/:playlistid/:id/prev/:id/next/:id', 'tracks#move'
+    map.put 'playlists/:playlistid/prev/:prevWeight/next/:nextWeight/:id', 'tracks#move'

@@ -1,0 +1,69 @@
+doctype 5
+html(lang="en")
+    head
+        include knacss.css
+        include style.css 
+        include prettyPhoto.css 
+        link(rel="shortcut icon", href="favicon.png")
+        title="Cozic, an Open Source Music Cloud"
+        meta(name="description", content="")
+        meta(name="viewport", content="width=device-width,initial-scale=1")
+        meta(http-equiv="content-type", content="text/html; charset=utf-8")
+        script(src='jquery-2.0.0.min.js')
+        script(src='jquery.prettyPhoto.js')
+        script(type='text/javascript').
+          $(document).ready(function() {
+            $("a[rel^='prettyPhoto']").prettyPhoto({
+              social_tools: ""
+            });
+            $('.left-bar').hide();
+            $('.left-bar').slideDown(900);
+          });
+    body
+        .left-bar.w66.clearfix
+            .col.left.w50.clearfix
+                .container.mt2.mb2
+                    p
+                        img.title-icon(src="./icon.png", alt="Cozic Logo")
+                        br
+                    h1.mt2 Cozic
+                    h2.mt0 an open source music cloud
+
+                .other
+                    h3
+                        span.mr1.icon-bull
+                        | Upload and organize your files by artist, title or
+                        | album
+                    h3
+                        span.mr1.icon-bull
+                        | Manage your playlists
+                    h3 
+                        span.mr1.icon-bull
+                        | Download Creative Commons content from Youtube
+                    h3 
+                        span.mr1.icon-bull
+                        | Coming soon: share your playlists with other users
+
+
+                    h3.bold.mt2 Preview
+                    p.pb3
+                        a(href="https://demo.cozycloud.cc/#apps/cozic/")
+                            button Have a look at the demo
+                        br
+                        a(href="https://github.com/rdubigny/cozy-music")
+                            button Star the Github repo
+                    p.pb3.smaller
+                        | powered by&nbsp;
+                        a(href="http://cozy.io") cozy
+
+            .col.left.w50.pl2.pt2.clearfix
+                a(href="images/screen_01.jpg", rel="prettyPhoto[pp_gal]",
+                    title="Tracklist")
+                  img.pa2(src="images/screen_01_small.jpg")
+                a(href="images/screen_02.jpg", rel="prettyPhoto[pp_gal]",
+                    title="Playlist Tab")
+                  img.pa2(src="images/screen_02_small.jpg")
+                a(href="images/screen_03.jpg", rel="prettyPhoto[pp_gal]",
+                    title="Playlist playing")
+                  img.pa2(src="images/screen_03_small.jpg")
+

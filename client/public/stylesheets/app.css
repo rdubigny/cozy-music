@@ -1883,9 +1883,12 @@ a .icon-flip-vertical:before {
     display: none;
   }
 }
-@media (max-width: 650px) {
+@media (max-width: 680px) {
   #content .player .progress-side {
     display: none;
+  }
+  #off-screen-nav .off-screen-nav-content {
+    width: 12rem !important;
   }
 }
 @media (max-width: 480px) {
@@ -1935,12 +1938,7 @@ input {
   height: 49px;
   left: 0;
   right: 0;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #555), color-stop(1, #222));
-  background: -webkit-linear-gradient(top, #555 0%, #222 100%);
-  background: -moz-linear-gradient(top, #555 0%, #222 100%);
-  background: -o-linear-gradient(top, #555 0%, #222 100%);
-  background: -ms-linear-gradient(top, #555 0%, #222 100%);
-  background: linear-gradient(top, #555 0%, #222 100%);
+  background: #222;
   color: #fff;
   -webkit-transition: background-color 0.5s;
   -moz-transition: background-color 0.5s;
@@ -1990,12 +1988,12 @@ input {
   top: 25%;
   left: 0%;
   position: relative;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #000), color-stop(1, #777));
-  background: -webkit-linear-gradient(top, #000 0%, #777 100%);
-  background: -moz-linear-gradient(top, #000 0%, #777 100%);
-  background: -o-linear-gradient(top, #000 0%, #777 100%);
-  background: -ms-linear-gradient(top, #000 0%, #777 100%);
-  background: linear-gradient(top, #000 0%, #777 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #111), color-stop(1, #555));
+  background: -webkit-linear-gradient(top, #111 0%, #555 100%);
+  background: -moz-linear-gradient(top, #111 0%, #555 100%);
+  background: -o-linear-gradient(top, #111 0%, #555 100%);
+  background: -ms-linear-gradient(top, #111 0%, #555 100%);
+  background: linear-gradient(top, #111 0%, #555 100%);
 }
 .player .volume .slider .slider-container .slider-inner {
   height: 100%;
@@ -2063,12 +2061,12 @@ input {
 }
 .player .progress-info .progress .inner {
   height: 100%;
-  background: -webkit-gradient(linear, left top, right top, color-stop(0, #ddd), color-stop(1, #999));
-  background: -webkit-linear-gradient(left, #ddd 0%, #999 100%);
-  background: -moz-linear-gradient(left, #ddd 0%, #999 100%);
-  background: -o-linear-gradient(left, #ddd 0%, #999 100%);
-  background: -ms-linear-gradient(left, #ddd 0%, #999 100%);
-  background: linear-gradient(left, #ddd 0%, #999 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0, #f00), color-stop(1, #800));
+  background: -webkit-linear-gradient(left, #f00 0%, #800 100%);
+  background: -moz-linear-gradient(left, #f00 0%, #800 100%);
+  background: -o-linear-gradient(left, #f00 0%, #800 100%);
+  background: -ms-linear-gradient(left, #f00 0%, #800 100%);
+  background: linear-gradient(left, #f00 0%, #800 100%);
 }
 .player .progress-side {
   display: inline-block;
@@ -2319,18 +2317,8 @@ a {
   left: 0;
   right: 0;
   height: 49px;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #555), color-stop(1, #222));
-  background: -webkit-linear-gradient(top, #555 0%, #222 100%);
-  background: -moz-linear-gradient(top, #555 0%, #222 100%);
-  background: -o-linear-gradient(top, #555 0%, #222 100%);
-  background: -ms-linear-gradient(top, #555 0%, #222 100%);
-  background: linear-gradient(top, #555 0%, #222 100%);
+  background: #333;
   color: #fff;
-  -webkit-transition: background-color 0.5s;
-  -moz-transition: background-color 0.5s;
-  -o-transition: background-color 0.5s;
-  -ms-transition: background-color 0.5s;
-  transition: background-color 0.5s;
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
@@ -2340,13 +2328,8 @@ a {
   text-align: left;
 }
 .uploader .header-nav-title {
-  -webkit-transition: background-color 0.5s;
-  -moz-transition: background-color 0.5s;
-  -o-transition: background-color 0.5s;
-  -ms-transition: background-color 0.5s;
-  transition: background-color 0.5s;
   text-shadow: 1px 1px 1px #000;
-  color: #ccc;
+  color: #fff;
   font-size: 1em;
   width: 150px;
   text-align: center;
@@ -2356,15 +2339,20 @@ a {
   cursor: pointer;
 }
 .uploader .header-nav-title:hover {
-  color: #fff;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #444), color-stop(1, #333));
+  background: -webkit-linear-gradient(top, #444 0%, #333 100%);
+  background: -moz-linear-gradient(top, #444 0%, #333 100%);
+  background: -o-linear-gradient(top, #444 0%, #333 100%);
+  background: -ms-linear-gradient(top, #444 0%, #333 100%);
+  background: linear-gradient(top, #444 0%, #333 100%);
 }
 .uploader .header-nav-title.activated {
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #222), color-stop(1, #555));
-  background: -webkit-linear-gradient(top, #222 0%, #555 100%);
-  background: -moz-linear-gradient(top, #222 0%, #555 100%);
-  background: -o-linear-gradient(top, #222 0%, #555 100%);
-  background: -ms-linear-gradient(top, #222 0%, #555 100%);
-  background: linear-gradient(top, #222 0%, #555 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #222), color-stop(1, #333));
+  background: -webkit-linear-gradient(top, #222 0%, #333 100%);
+  background: -moz-linear-gradient(top, #222 0%, #333 100%);
+  background: -o-linear-gradient(top, #222 0%, #333 100%);
+  background: -ms-linear-gradient(top, #222 0%, #333 100%);
+  background: linear-gradient(top, #222 0%, #333 100%);
 }
 .uploader .header-nav-title [class^="icon-"] {
   text-align: inherit;
@@ -2401,10 +2389,7 @@ a {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url("../images/background.jpg") no-repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  background-size: cover;
+  background: #111;
   min-height: 200px;
 }
 #content #tracks-display .viewport {
@@ -2505,7 +2490,7 @@ a {
 }
 #content #tracks-display table thead th.left .thead-button.clear,
 #content #tracks-display table thead th.right .thead-button.clear {
-  background-position: -48px -95px;
+  background-position: -455px 1px;
 }
 #content #tracks-display table thead th.left .thead-button:hover,
 #content #tracks-display table thead th.right .thead-button:hover {
@@ -2525,23 +2510,19 @@ a {
   background-color: #fff;
   color: #444;
   height: 30px;
-  -webkit-transition: background-color 0.3s ease, color 0.3s ease;
-  -moz-transition: background-color 0.3s ease, color 0.3s ease;
-  -o-transition: background-color 0.3s ease, color 0.3s ease;
-  -ms-transition: background-color 0.3s ease, color 0.3s ease;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 #content #tracks-display table tbody tr.track.odd {
   background-color: #f3f3f3;
 }
 #content #tracks-display table tbody tr.track.at-play {
-  background-color: #ecd0d0;
+  background-color: #b00;
+  color: #fff;
 }
 #content #tracks-display table tbody tr.track.selected {
   background-color: #c8c8c8;
 }
 #content #tracks-display table tbody tr.track:hover {
-  background-color: #444;
+  background-color: #333;
   color: #fff;
 }
 #content #tracks-display table tbody tr.track:hover .player-button {
@@ -2581,11 +2562,6 @@ a {
   filter: alpha(opacity=50);
 }
 #content #tracks-display table tbody tr.track .player-button {
-  -webkit-transition: opacity 0.3s ease;
-  -moz-transition: opacity 0.3s ease;
-  -o-transition: opacity 0.3s ease;
-  -ms-transition: opacity 0.3s ease;
-  transition: opacity 0.3s ease;
   opacity: 0;
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
   filter: alpha(opacity=0);
@@ -2706,7 +2682,7 @@ a {
   border-top: 1px solid #666;
   border-bottom: 1px solid #666;
   visibility: hidden;
-  width: 12rem;
+  width: 18rem;
   -webkit-transform: translateX(-100%);
   -moz-transform: translateX(-100%);
   -o-transform: translateX(-100%);
@@ -3096,7 +3072,7 @@ Da damn bear-killer player style
   height: 49px;
   left: 0;
   right: 0;
-  background: linear-gradient(#555, #222);
+  background: #222;
   color: #fff;
   transition: background-color 0.5s;
   padding: 5px;
@@ -3136,7 +3112,7 @@ Da damn bear-killer player style
   top: 25%;
   left: 0%;
   position: relative;
-  background: linear-gradient(top, #000, #777);
+  background: linear-gradient(top, #111, #555);
 }
 .player .volume .slider .slider-container .slider-inner {
   height: 100%;
@@ -3184,7 +3160,7 @@ Da damn bear-killer player style
 }
 .player .progress-info .progress .inner {
   height: 100%;
-  background: linear-gradient(left, #ddd, #999);
+  background: linear-gradient(left, #f00, #800);
 }
 .player .progress-side {
   display: inline-block;
@@ -3233,9 +3209,12 @@ Da damn bear-killer player style
     display: none;
   }
 }
-@media (max-width: 650px) {
+@media (max-width: 680px) {
   #content .player .progress-side {
     display: none;
+  }
+  #off-screen-nav .off-screen-nav-content {
+    width: 12rem !important;
   }
 }
 @media (max-width: 480px) {

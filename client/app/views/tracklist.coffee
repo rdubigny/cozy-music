@@ -27,7 +27,7 @@ module.exports = class TrackListView extends ViewCollection
             cursoropacitymin: "0.3"
             hidecursordelay: "700"
             spacebarenabled: false
-            enablekeyboard: true
+            enablekeyboard: false
         )
 
     beforeDetach: ->

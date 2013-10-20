@@ -68,7 +68,7 @@ module.exports = class TracksView extends TrackListView
         @listenTo @collection, 'sort', @render
         # suppress that when views_collection is functional (with onReset)
         @listenTo @collection, 'sync', (e) ->
-            console.log "vue tracks : \"pense à me supprimer un de ces quatres\""
+            #console.log "vue tracks : \"pense à me supprimer un de ces quatres\""
             if @collection.length is 0
                 Backbone.Mediator.publish 'tracklist:isEmpty'
 
@@ -82,6 +82,20 @@ module.exports = class TracksView extends TrackListView
 
             # stop for input, select, and textarea
             return element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true')
+
+        #TODO : enable arrow up and down to navigate through tracks
+        ###
+        Mousetrap.bind 'up', ()=>
+            console.log "up"
+            if @selectedTrackView?
+                index = @collection.indexOf @selectedTrackView.model
+                if index > 0
+                    prevIndex = index - 1
+                    prevCid = @collection.at(prevIndex).cid
+                    prevView = @views.prevCid # don't work here
+                    @selectedTrackView = prevView
+                    #@selectedTrackView.unSelect()
+        ###
 
     afterRender: =>
         super

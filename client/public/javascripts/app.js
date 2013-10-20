@@ -2401,7 +2401,7 @@ window.require.register("views/tracklist", function(exports, require, module) {
         cursoropacitymin: "0.3",
         hidecursordelay: "700",
         spacebarenabled: false,
-        enablekeyboard: true
+        enablekeyboard: false
       });
     };
 
@@ -2523,7 +2523,6 @@ window.require.register("views/tracks", function(exports, require, module) {
       this.elementSort = null;
       this.listenTo(this.collection, 'sort', this.render);
       this.listenTo(this.collection, 'sync', function(e) {
-        console.log("vue tracks : \"pense à me supprimer un de ces quatres\"");
         if (this.collection.length === 0) {
           return Backbone.Mediator.publish('tracklist:isEmpty');
         }
@@ -2537,6 +2536,19 @@ window.require.register("views/tracks", function(exports, require, module) {
         }
         return element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || (element.contentEditable && element.contentEditable === 'true');
       };
+
+      /*
+      Mousetrap.bind 'up', ()=>
+          console.log "up"
+          if @selectedTrackView?
+              index = @collection.indexOf @selectedTrackView.model
+              if index > 0
+                  prevIndex = index - 1
+                  prevCid = @collection.at(prevIndex).cid
+                  prevView = @views.prevCid # don't work here
+                  @selectedTrackView = prevView
+                  #@selectedTrackView.unSelect()
+      */
     };
 
     TracksView.prototype.afterRender = function() {
@@ -3299,7 +3311,7 @@ window.require.register("views/uploader", function(exports, require, module) {
     };
 
     Uploader.prototype.onClickYoutube = function(e) {
-      var defaultMsg, defaultVal, fileAttributes, input, isValidInput, startIndex, track, youId,
+      var curUrl, defaultMsg, defaultVal, fileAttributes, input, isValidInput, startIndex, track, youId,
         _this = this;
       defaultMsg = "Please enter a youtube url :";
       defaultVal = "http://www.youtube.com/watch?v=KMU0tzLwhbE";
@@ -3325,6 +3337,10 @@ window.require.register("views/uploader", function(exports, require, module) {
         }
         defaultMsg = "Invalid youtube url, please try again :";
         defaultVal = input;
+      }
+      curUrl = "" + document.URL;
+      if (curUrl.match(/playlist/) || curUrl.match(/playqueue/)) {
+        app.router.navigate('', true);
       }
       fileAttributes = {};
       fileAttributes = {

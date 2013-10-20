@@ -37,9 +37,8 @@ a
     right: 0
     height: 49px
 
-    background:linear-gradient(#555, #222)
+    background: #333
     color: white
-    transition: background-color 0.5s
 
     font-weight: bold
     overflow: ellipsis
@@ -48,9 +47,8 @@ a
     text-align: left
 
     .header-nav-title
-        transition: background-color 0.5s
         text-shadow: 1px 1px 1px #000
-        color: #ccc
+        color: #fff
         font-size: 1em
         width: 150px
         text-align: center
@@ -59,9 +57,9 @@ a
         border-right: 1px solid #333
         cursor:pointer
         &:hover
-            color: #fff
+            background:linear-gradient(#444, #333)
         &.activated
-            background:linear-gradient(#222, #555)
+            background:linear-gradient(#222, #333)
 
         [class^="icon-"]
             text-align: inherit
@@ -87,9 +85,9 @@ a
     left: 0
     right: 0
     bottom: 0
-    background: url('../images/background.jpg') no-repeat center center fixed
-    background-size: cover
-    //box-shadow: 0 0 50px 50px #fff inset
+    background: #111
+    //background: url('../images/background.jpg') no-repeat center center fixed
+    //background-size: cover
     min-height: 200px
 
     #tracks-display
@@ -137,7 +135,6 @@ a
                             background-image: url("../images/glyphicons-halflings-red.png")
                             &:hover
                                 transform: scale(1.2)
-                                //background-image: url("../images/glyphicons-halflings-red.png")
                             &.up
                                 background-position: -287px -119px
                             &.down
@@ -160,7 +157,7 @@ a
                                 &:hover
                                     transform: scale(-1.2, 1.2)
                             &.clear
-                                background-position: -48px -95px
+                                background-position: -455px 1px
                             &:hover
                                 transform: scale(1.2)
 
@@ -173,25 +170,22 @@ a
 
             tbody
                 tr.track
-                    //background:linear-gradient(#fafafa, #fff)
                     background-color: white
                     color: #444
                     height: 30px
-                    transition: background-color 0.3s ease, color 0.3s ease
 
                     &.odd
-                        //background:linear-gradient(#f3f3f3, #eee)
                         background-color: #f3f3f3
 
                     &.at-play
-                        background-color: #ecd0d0
+                        background-color: #b00
+                        color: white
 
                     &.selected
                         background-color: #c8c8c8
 
                     &:hover
-                        //background:linear-gradient(#555, #111)
-                        background-color: #444
+                        background-color: #333
                         color: white
                         .player-button
                             color: #222
@@ -217,7 +211,6 @@ a
                         opacity: 0.5
 
                     .player-button
-                        transition: opacity 0.3s ease
                         opacity: 0
 
                     .right,
@@ -317,7 +310,7 @@ a
             border-top: 1px solid #666
             border-bottom: 1px solid #666
             visibility: hidden
-            width: 12rem
+            width: 18rem
             transform: translateX(-100%)
             transition: 500ms cubic-bezier(0.09, 0.68, 0, 0.99)
             &.off-screen-nav-show

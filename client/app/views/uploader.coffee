@@ -216,6 +216,11 @@ module.exports = class Uploader extends BaseView
             defaultMsg = "Invalid youtube url, please try again :"
             defaultVal = input
 
+        # if not on home, go to home
+        curUrl = "#{document.URL}"
+        if curUrl.match(/playlist/) or curUrl.match(/playqueue/)
+            app.router.navigate '', true
+
         fileAttributes = {}
         fileAttributes =
             title: "fetching youtube-mp3.org ..."

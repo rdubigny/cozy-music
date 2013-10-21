@@ -2536,7 +2536,7 @@ window.require.register("views/tracks", function(exports, require, module) {
             return false;
           }
         }
-        return element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || (element.contentEditable && element.contentEditable === 'true');
+        return element.readOnly === false && (element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || (element.contentEditable && element.contentEditable === 'true'));
       };
     };
 

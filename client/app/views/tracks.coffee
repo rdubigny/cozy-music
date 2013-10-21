@@ -80,8 +80,8 @@ module.exports = class TracksView extends TrackListView
                 if e.which in [9, 13, 27, 113]
                     return false
 
-            # stop for input, select, and textarea
-            return element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true')
+            # stop for input, select, and textarea that aren't in readOnly mode
+            return element.readOnly is false && (element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true'))
 
     afterRender: =>
         super

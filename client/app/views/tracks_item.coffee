@@ -82,6 +82,9 @@ module.exports = class TracksItemView extends TrackListItemView
                     if @isEdited is ''
                         @isEdited = 'title'
                         @enableEdition()
+                # enable play on enter
+                Mousetrap.bind 'enter', @onEnter
+                Mousetrap.bind 'ctrl+enter', @onCtrlEnter
 
     unSelect: =>
         @$el.removeClass 'selected'
@@ -90,6 +93,8 @@ module.exports = class TracksItemView extends TrackListItemView
             @disableEdition()
             @isEdited = ''
         Mousetrap.unbind 'f2'
+        Mousetrap.unbind 'enter', @onEnter
+        Mousetrap.unbind 'ctrl+enter', @onCtrlEnter
 
     enableEdition: ->
         if @isEdited isnt ''
@@ -101,6 +106,8 @@ module.exports = class TracksItemView extends TrackListItemView
                 @$(selector).select()
                 @tmpValue = @$(selector).val()
 
+                Mousetrap.unbind 'enter', @onEnter
+                Mousetrap.unbind 'ctrl+enter', @onCtrlEnter
                 Mousetrap.bind 'enter', ()=>
                     @disableEdition()
                     @isEdited = ''
@@ -133,6 +140,8 @@ module.exports = class TracksItemView extends TrackListItemView
                 Mousetrap.unbind 'enter'
                 Mousetrap.unbind 'esc'
                 Mousetrap.unbind 'tab'
+                Mousetrap.bind 'enter', @onEnter
+                Mousetrap.bind 'ctrl+enter', @onCtrlEnter
 
     saveNewValue: ->
         selector = ".#{@isEdited} input"
@@ -179,7 +188,7 @@ module.exports = class TracksItemView extends TrackListItemView
             @model.set
                 state: 'canceled'
 
-        # stop playing this track if at play
+        # stop playing this track if at play # not needed anymore
         #id = @model.attributes.id
         #Backbone.Mediator.publish 'track:delete', "sound-#{id}"
         # destroy the model
@@ -208,6 +217,14 @@ module.exports = class TracksItemView extends TrackListItemView
         event.preventDefault()
         event.stopPropagation()
         # if the file is not backed up yet, disable the play launch
+        if @model.attributes.state is 'server'
+            Backbone.Mediator.publish 'track:pushNext', @model
+
+    onEnter: (event)=>
+        if @model.attributes.state is 'server'
+            Backbone.Mediator.publish 'track:queue', @model
+
+    onCtrlEnter: (event)=>
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:pushNext', @model
 

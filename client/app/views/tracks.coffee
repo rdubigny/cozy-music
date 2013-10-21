@@ -83,20 +83,6 @@ module.exports = class TracksView extends TrackListView
             # stop for input, select, and textarea
             return element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true')
 
-        #TODO : enable arrow up and down to navigate through tracks
-        ###
-        Mousetrap.bind 'up', ()=>
-            console.log "up"
-            if @selectedTrackView?
-                index = @collection.indexOf @selectedTrackView.model
-                if index > 0
-                    prevIndex = index - 1
-                    prevCid = @collection.at(prevIndex).cid
-                    prevView = @views.prevCid # don't work here
-                    @selectedTrackView = prevView
-                    #@selectedTrackView.unSelect()
-        ###
-
     afterRender: =>
         super
         # uncomment that when views_collection is functional
@@ -112,6 +98,85 @@ module.exports = class TracksView extends TrackListView
 
         # adding table stripes
         $('.tracks-display tr:odd').addClass 'odd'
+
+        # enable arrow up and down to navigate through tracks
+        Mousetrap.bind 'up', ()=>
+            if @selectedTrackView?
+                index = @collection.indexOf @selectedTrackView.model
+                # if this is not the first track we can go up
+                if index > 0
+                    # get the previous view
+                    prevIndex = index - 1
+                    prevCid = @collection.at(prevIndex).cid
+                    prevView = @views[prevCid]
+
+                    # manually scroll if needed
+                    @scrollCheck(prevView)
+
+                    # update
+                    prevView.el.click()
+            else
+                cid = @collection.last().cid
+                view = @views[cid]
+                # manually scroll if needed
+                @scrollCheck(view)
+                # update
+                view.el.click()
+
+        Mousetrap.bind 'down', ()=>
+            if @selectedTrackView?
+                index = @collection.indexOf @selectedTrackView.model
+                # if this is not the last track we can go down
+                if index < @collection.length-1
+                    # get the next view
+                    nextIndex = index + 1
+                    nextCid = @collection.at(nextIndex).cid
+                    nextView = @views[nextCid]
+
+                    # manually scroll if needed
+                    @scrollCheck(nextView)
+
+                    # update
+                    nextView.el.click()
+            else
+                cid = @collection.first().cid
+                view = @views[cid]
+                # manually scroll if needed
+                @scrollCheck(view)
+                # update
+                view.el.click()
+
+    # manually scroll if the view is out of the viewport
+    scrollCheck: (view)=>
+        itemEl = view.$el
+        vp = @$('.viewport')
+
+        currScroll = vp.scrollTop()
+        h = itemEl.height()
+        vph = vp.height()
+        top = itemEl.position().top
+        bot = top + h
+
+        #scroll up
+        if bot > vph
+            diff = bot - vph
+            vp.scrollTop currScroll + diff
+
+        # scroll down
+        if top < 0
+            vp.scrollTop currScroll + top
+
+    beforeDetach: =>
+        # remove selection
+        # -> disable navigation through tracks with up and down
+        if @selectedTrackView?
+            @selectedTrackView.unSelect()
+            @selectedTrackView = null
+        Mousetrap.unbind 'up'
+        Mousetrap.unbind 'down'
+        Mousetrap.unbind 'enter'
+        super
+        false
 
     appendBlanckTrack: =>
         blankTrack = $(document.createElement('tr'))

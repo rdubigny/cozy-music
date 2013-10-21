@@ -2470,6 +2470,8 @@ window.require.register("views/tracks", function(exports, require, module) {
       this.updateSortingDisplay = __bind(this.updateSortingDisplay, this);
       this.onClickTrack = __bind(this.onClickTrack, this);
       this.appendBlanckTrack = __bind(this.appendBlanckTrack, this);
+      this.beforeDetach = __bind(this.beforeDetach, this);
+      this.scrollCheck = __bind(this.scrollCheck, this);
       this.afterRender = __bind(this.afterRender, this);
       _ref = TracksView.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -2536,23 +2538,11 @@ window.require.register("views/tracks", function(exports, require, module) {
         }
         return element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA' || (element.contentEditable && element.contentEditable === 'true');
       };
-
-      /*
-      Mousetrap.bind 'up', ()=>
-          console.log "up"
-          if @selectedTrackView?
-              index = @collection.indexOf @selectedTrackView.model
-              if index > 0
-                  prevIndex = index - 1
-                  prevCid = @collection.at(prevIndex).cid
-                  prevView = @views.prevCid # don't work here
-                  @selectedTrackView = prevView
-                  #@selectedTrackView.unSelect()
-      */
     };
 
     TracksView.prototype.afterRender = function() {
-      var i, _i, _ref1, _ref2;
+      var i, _i, _ref1, _ref2,
+        _this = this;
       TracksView.__super__.afterRender.apply(this, arguments);
       this.updateSortingDisplay();
       if (this.collection.length <= this.minTrackListLength) {
@@ -2560,7 +2550,73 @@ window.require.register("views/tracks", function(exports, require, module) {
           this.appendBlanckTrack();
         }
       }
-      return $('.tracks-display tr:odd').addClass('odd');
+      $('.tracks-display tr:odd').addClass('odd');
+      Mousetrap.bind('up', function() {
+        var cid, index, prevCid, prevIndex, prevView, view;
+        if (_this.selectedTrackView != null) {
+          index = _this.collection.indexOf(_this.selectedTrackView.model);
+          if (index > 0) {
+            prevIndex = index - 1;
+            prevCid = _this.collection.at(prevIndex).cid;
+            prevView = _this.views[prevCid];
+            _this.scrollCheck(prevView);
+            return prevView.el.click();
+          }
+        } else {
+          cid = _this.collection.last().cid;
+          view = _this.views[cid];
+          _this.scrollCheck(view);
+          return view.el.click();
+        }
+      });
+      return Mousetrap.bind('down', function() {
+        var cid, index, nextCid, nextIndex, nextView, view;
+        if (_this.selectedTrackView != null) {
+          index = _this.collection.indexOf(_this.selectedTrackView.model);
+          if (index < _this.collection.length - 1) {
+            nextIndex = index + 1;
+            nextCid = _this.collection.at(nextIndex).cid;
+            nextView = _this.views[nextCid];
+            _this.scrollCheck(nextView);
+            return nextView.el.click();
+          }
+        } else {
+          cid = _this.collection.first().cid;
+          view = _this.views[cid];
+          _this.scrollCheck(view);
+          return view.el.click();
+        }
+      });
+    };
+
+    TracksView.prototype.scrollCheck = function(view) {
+      var bot, currScroll, diff, h, itemEl, top, vp, vph;
+      itemEl = view.$el;
+      vp = this.$('.viewport');
+      currScroll = vp.scrollTop();
+      h = itemEl.height();
+      vph = vp.height();
+      top = itemEl.position().top;
+      bot = top + h;
+      if (bot > vph) {
+        diff = bot - vph;
+        vp.scrollTop(currScroll + diff);
+      }
+      if (top < 0) {
+        return vp.scrollTop(currScroll + top);
+      }
+    };
+
+    TracksView.prototype.beforeDetach = function() {
+      if (this.selectedTrackView != null) {
+        this.selectedTrackView.unSelect();
+        this.selectedTrackView = null;
+      }
+      Mousetrap.unbind('up');
+      Mousetrap.unbind('down');
+      Mousetrap.unbind('enter');
+      TracksView.__super__.beforeDetach.apply(this, arguments);
+      return false;
     };
 
     TracksView.prototype.appendBlanckTrack = function() {
@@ -2697,6 +2753,8 @@ window.require.register("views/tracks_item", function(exports, require, module) 
       this.importBegin = __bind(this.importBegin, this);
       this.returnToNormal = __bind(this.returnToNormal, this);
       this.onUploadProgressChange = __bind(this.onUploadProgressChange, this);
+      this.onCtrlEnter = __bind(this.onCtrlEnter, this);
+      this.onEnter = __bind(this.onEnter, this);
       this.onDeleteClick = __bind(this.onDeleteClick, this);
       this.disableEdition = __bind(this.disableEdition, this);
       this.unSelect = __bind(this.unSelect, this);
@@ -2794,12 +2852,14 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         } else {
           this.$el.addClass('selected');
           this.$el.trigger('click-track', this);
-          return Mousetrap.bind('f2', function() {
+          Mousetrap.bind('f2', function() {
             if (_this.isEdited === '') {
               _this.isEdited = 'title';
               return _this.enableEdition();
             }
           });
+          Mousetrap.bind('enter', this.onEnter);
+          return Mousetrap.bind('ctrl+enter', this.onCtrlEnter);
         }
       }
     };
@@ -2812,7 +2872,9 @@ window.require.register("views/tracks_item", function(exports, require, module) 
         this.disableEdition();
         this.isEdited = '';
       }
-      return Mousetrap.unbind('f2');
+      Mousetrap.unbind('f2');
+      Mousetrap.unbind('enter', this.onEnter);
+      return Mousetrap.unbind('ctrl+enter', this.onCtrlEnter);
     };
 
     TracksItemView.prototype.enableEdition = function() {
@@ -2826,6 +2888,8 @@ window.require.register("views/tracks_item", function(exports, require, module) 
           this.$(selector).focus();
           this.$(selector).select();
           this.tmpValue = this.$(selector).val();
+          Mousetrap.unbind('enter', this.onEnter);
+          Mousetrap.unbind('ctrl+enter', this.onCtrlEnter);
           Mousetrap.bind('enter', function() {
             _this.disableEdition();
             return _this.isEdited = '';
@@ -2873,7 +2937,9 @@ window.require.register("views/tracks_item", function(exports, require, module) 
           this.tmpValue = null;
           Mousetrap.unbind('enter');
           Mousetrap.unbind('esc');
-          return Mousetrap.unbind('tab');
+          Mousetrap.unbind('tab');
+          Mousetrap.bind('enter', this.onEnter);
+          return Mousetrap.bind('ctrl+enter', this.onCtrlEnter);
         }
       }
     };
@@ -2962,6 +3028,18 @@ window.require.register("views/tracks_item", function(exports, require, module) 
     TracksItemView.prototype.onPlayNextTrack = function(event) {
       event.preventDefault();
       event.stopPropagation();
+      if (this.model.attributes.state === 'server') {
+        return Backbone.Mediator.publish('track:pushNext', this.model);
+      }
+    };
+
+    TracksItemView.prototype.onEnter = function(event) {
+      if (this.model.attributes.state === 'server') {
+        return Backbone.Mediator.publish('track:queue', this.model);
+      }
+    };
+
+    TracksItemView.prototype.onCtrlEnter = function(event) {
       if (this.model.attributes.state === 'server') {
         return Backbone.Mediator.publish('track:pushNext', this.model);
       }

@@ -276,7 +276,6 @@ module.exports = class Player extends BaseView
         newVol = volume*0.01
         newVol = newVol*newVol # turn linear into quadratic
         newVol = newVol*100 + 1 # so the volume can't be 0
-        console.log newVol
         return newVol
 
     # on mute handler, same thing but for the muted value

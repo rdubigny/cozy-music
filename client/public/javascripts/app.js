@@ -1561,7 +1561,6 @@ window.require.register("views/player/player", function(exports, require, module
       newVol = volume * 0.01;
       newVol = newVol * newVol;
       newVol = newVol * 100 + 1;
-      console.log(newVol);
       return newVol;
     };
 

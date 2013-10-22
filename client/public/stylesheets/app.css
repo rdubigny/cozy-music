@@ -2518,8 +2518,12 @@ a {
   background-color: #b00;
   color: #fff;
 }
+#content #tracks-display table tbody tr.track.in-playlist {
+  background-color: #99d6eb;
+}
 #content #tracks-display table tbody tr.track.selected {
   background-color: #c8c8c8;
+  color: #111;
 }
 #content #tracks-display table tbody tr.track:hover {
   background-color: #333;

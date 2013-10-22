@@ -90,8 +90,6 @@ action 'add', ->
     alreadyIn = false
     for elem in newPlaylists
         if elem? and req.params.playlistid is elem.id
-            console.log "yoyoyo"
-            console.log elem.id
             alreadyIn = true
     unless alreadyIn
         oldW = parseInt(req.params.lastWeight)

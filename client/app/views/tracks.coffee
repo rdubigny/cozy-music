@@ -4,11 +4,13 @@
         - auto fill with blank tracks
 ###
 
+app = require '../application'
 TrackView = require './tracks_item'
 TrackListView = require './tracklist'
 
 module.exports = class TracksView extends TrackListView
 
+    template: require('./templates/tracks')
     itemview: TrackView
 
     # Register listener
@@ -52,6 +54,8 @@ module.exports = class TracksView extends TrackListView
                 @appendBlanckTrack()
                 $('tr.blank:odd').addClass 'odd'
                 $('tr.blank:even').removeClass 'odd'
+
+        'offScreenNav:newPlaylistSelected': 'highlightTracks'
 
     initialize: ->
         super
@@ -98,6 +102,10 @@ module.exports = class TracksView extends TrackListView
 
         # adding table stripes
         $('.tracks-display tr:odd').addClass 'odd'
+
+        # highlight tracks if playlist edition mode is enabled
+        if app.selectedPlaylist?
+            @highlightTracks app.selectedPlaylist
 
         # enable arrow up and down to navigate through tracks
         Mousetrap.bind 'up', ()=>
@@ -183,6 +191,15 @@ module.exports = class TracksView extends TrackListView
         blankTrack.addClass "track blank"
         blankTrack.html "<td colspan=\"6\"></td>"
         @$collectionEl.append blankTrack
+
+    highlightTracks: (playlist) ->
+            # add highlighting during playlist edition
+            @$('tr.in-playlist').removeClass 'in-playlist'
+            if playlist?
+                for track in playlist.tracks.models
+                    track2 = @collection.get track.id
+                    if track2?.cid? # track2 my be deleted here
+                        @views[track2.cid].$el.addClass 'in-playlist'
 
     onClickTrack: (e, trackView)=>
         # unselect previous selected track if there is one

@@ -30,10 +30,14 @@ module.exports = class PlaylistNavView extends BaseView
         unless @$('li').hasClass('selected')
             @$('li').addClass('selected')
             @$el.trigger 'playlist-selected', @model
+        else
+            @$('li').removeClass('selected')
+            @$el.trigger 'playlist-unselected'
 
     onDeleteClick: (event)->
         event.preventDefault()
         event.stopPropagation()
+
         if confirm "Are you sure? the playlist will be deleted definitively."
             @model.destroy
                 error: =>

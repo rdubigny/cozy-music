@@ -249,6 +249,9 @@ module.exports = class TracksItemView extends TrackListItemView
     onAddTo: ->
         if @model.attributes.state is 'server'
             app.selectedPlaylist.tracks.add @model
+            # warning, the track will be highlighted even if the operation fail
+            unless @$el.hasClass 'in-playlist'
+                @$el.addClass 'in-playlist'
 
     onUploadProgressChange: (e)=>
         # make sure we can compute the length

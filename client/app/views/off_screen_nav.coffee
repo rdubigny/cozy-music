@@ -22,6 +22,7 @@ module.exports = class OffScreenNav extends ViewCollection
     events:
         'click .add-playlist-button': 'onAddPlaylist'
         'playlist-selected': 'onPlaylistSelected'
+        'playlist-unselected': 'unSelect'
         'click' : (e) ->
             @toggleNav()
         'mousemove': (e) ->
@@ -37,7 +38,7 @@ module.exports = class OffScreenNav extends ViewCollection
         @listenTo @collection, 'remove', (playlist)->
             # if this playlist is the selected playlist, update the app variable
             if app.selectedPlaylist is playlist
-                app.selectedPlaylist = null
+                @unSelect()
 
     afterRender: =>
         super
@@ -104,3 +105,8 @@ module.exports = class OffScreenNav extends ViewCollection
         if app.selectedPlaylist?
             @views[app.selectedPlaylist.cid].$('li').removeClass('selected')
         app.selectedPlaylist = playlist
+        Backbone.Mediator.publish 'offScreenNav:newPlaylistSelected', playlist
+
+    unSelect: ->
+        app.selectedPlaylist = null
+        Backbone.Mediator.publish 'offScreenNav:newPlaylistSelected', null

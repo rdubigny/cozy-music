@@ -1252,6 +1252,7 @@ window.require.register("views/player/player", function(exports, require, module
       this.updateProgressDisplay = __bind(this.updateProgressDisplay, this);
       this.printLoadingInfo = __bind(this.printLoadingInfo, this);
       this.onToggleMute = __bind(this.onToggleMute, this);
+      this.volumeFilter = __bind(this.volumeFilter, this);
       this.onVolumeChange = __bind(this.onVolumeChange, this);
       this.stopTrack = __bind(this.stopTrack, this);
       this.onPlayFinish = __bind(this.onPlayFinish, this);
@@ -1505,7 +1506,7 @@ window.require.register("views/player/player", function(exports, require, module
         id: "sound-" + (track.get('id')),
         url: "tracks/" + (track.get('id')) + "/attach/" + (track.get('slug')),
         usePolicyFile: true,
-        volume: this.volume,
+        volume: this.volumeFilter(this.volume),
         autoPlay: true,
         onfinish: this.onPlayFinish,
         onstop: this.stopTrack,
@@ -1551,8 +1552,17 @@ window.require.register("views/player/player", function(exports, require, module
       this.volume = volume;
       Cookies.set('defaultVolume', volume);
       if (this.currentSound != null) {
-        return this.currentSound.setVolume(volume);
+        return this.currentSound.setVolume(this.volumeFilter(volume));
       }
+    };
+
+    Player.prototype.volumeFilter = function(volume) {
+      var newVol;
+      newVol = volume * 0.01;
+      newVol = newVol * newVol;
+      newVol = newVol * 100 + 1;
+      console.log(newVol);
+      return newVol;
     };
 
     Player.prototype.onToggleMute = function() {

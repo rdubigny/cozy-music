@@ -220,7 +220,7 @@ module.exports = class Player extends BaseView
             id: "sound-#{track.get('id')}"
             url: "tracks/#{track.get('id')}/attach/#{track.get('slug')}"
             usePolicyFile: true
-            volume: @volume
+            volume: @volumeFilter(@volume)
             #muted: @isMuted # doesn't seem to work
             autoPlay: true
             onfinish: @onPlayFinish
@@ -268,7 +268,16 @@ module.exports = class Player extends BaseView
         @volume = volume
         Cookies.set 'defaultVolume', volume
         if @currentSound?
-            @currentSound.setVolume volume
+            @currentSound.setVolume @volumeFilter(volume)
+
+    # volume change should be more significant with that
+    volumeFilter: (volume)=>
+        # the formula is x->(x*0.01)^2*100+1
+        newVol = volume*0.01
+        newVol = newVol*newVol # turn linear into quadratic
+        newVol = newVol*100 + 1 # so the volume can't be 0
+        console.log newVol
+        return newVol
 
     # on mute handler, same thing but for the muted value
     onToggleMute: =>

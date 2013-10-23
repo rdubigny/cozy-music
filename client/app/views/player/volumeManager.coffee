@@ -1,10 +1,10 @@
-BaseView = require '../../lib/base_view'
+BaseView = require 'lib/base_view'
 
 module.exports = class VolumeManager extends BaseView
 
     className: 'volume'
     tagName: 'div'
-    template: require('../templates/player/volumeManager')
+    template: require('views/templates/player/volumeManager')
 
     events:
         'mousedown .slider': 'onMouseDownSlider'

@@ -1,16 +1,24 @@
 ###
-    added for this list :
-        - sort
-        - auto fill with blank tracks
+    Inherited from tracklist
+
+    Features :
+    - sort by title, artist or album
+    - navigate amongst files with arrows
+    - tracks are highlighted in playlist edition mode
+    - queue albums and titles
+    - add to playlist
+    - delete tracks
+    - metadata edition
+    - auto fill with blank tracks
 ###
 
-app = require '../application'
-TrackView = require './tracks_item'
-TrackListView = require './tracklist'
+app = require 'application'
+TrackView = require 'views/lists/tracks_item'
+TrackListView = require 'views/lists/tracklist'
 
 module.exports = class TracksView extends TrackListView
 
-    template: require('./templates/tracks')
+    template: require('views/templates/tracks')
     itemview: TrackView
 
     # Register listener

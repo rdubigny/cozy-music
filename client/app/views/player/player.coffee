@@ -1,15 +1,15 @@
 ###
-Here is the player with some freaking awesome features like play and pause...
+    Here is the player. This is the bridge beetween Soundmanager2 and Cozic.
 ###
-BaseView = require '../../lib/base_view'
+BaseView = require 'lib/base_view'
 VolumeManager = require './volumeManager'
-app = require '../../application'
+app = require 'application'
 
 module.exports = class Player extends BaseView
 
     className: 'player'
     tagName: 'div'
-    template: require('../templates/player/player')
+    template: require('views/templates/player/player')
 
     events:
         'click #play-button': 'onClickPlay'

@@ -1,4 +1,4 @@
-BaseView = require '../lib/base_view'
+BaseView = require 'lib/base_view'
 
 module.exports = class TrackListItemView extends BaseView
 
@@ -9,4 +9,4 @@ module.exports = class TrackListItemView extends BaseView
     tagName: 'tr'
 
     # The template render the bookmark with data given by the model
-    template: require './templates/tracklist_item'
+    template: require 'views/templates/tracklist_item'

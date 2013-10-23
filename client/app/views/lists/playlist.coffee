@@ -1,11 +1,19 @@
-Tracklist = require './tracklist'
-PlayQueueView = require './playqueue'
+###
+    Inherited from playqueue (for the drag and drop feature)
+
+    Features :
+    - queue the entire list
+    - list backed up on server side
+###
+
+Tracklist = require 'views/lists/tracklist'
+PlayQueueView = require 'views/lists/playqueue'
 BaseView = require 'lib/base_view'
-TrackView = require './playlist_item'
+TrackView = require 'views/lists/playlist_item'
 
 module.exports = class PlayListView extends PlayQueueView
 
-    template: require('./templates/playlist')
+    template: require('views/templates/playlist')
     itemview: TrackView
 
     events:

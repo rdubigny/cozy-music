@@ -1,26 +1,26 @@
-BaseView = require '../lib/base_view'
-Uploader = require './uploader'
-Tracks = require './tracks'
-PlayQueue = require './playqueue'
-Playlist = require './playlist'
-Player = require './player/player'
-OffScreenNav = require './off_screen_nav'
+BaseView = require 'lib/base_view'
+TopNav = require 'views/top_nav'
+Tracks = require 'views/lists/tracks'
+PlayQueue = require 'views/lists/playqueue'
+Playlist = require 'views/lists/playlist'
+Player = require 'views/player/player'
+OffScreenNav = require 'views/off_screen_nav'
 app = require 'application'
 PlaylistCollection = require 'collections/playlist_collection'
 
 module.exports = class AppView extends BaseView
 
     el: 'body.application'
-    template: require('./templates/home')
+    template: require('views/templates/home')
 
     events:
         'drop #content': (e) ->
             return unless e.originalEvent?.dataTransfer?
-            @uploader.onFilesDropped e
+            @topNav.onFilesDropped e
         'dragover' : (e) ->
-            @uploader.onDragOver e
+            @topNav.onDragOver e
         'mouseover': (e) ->
-            @uploader.onDragOut e
+            @topNav.onDragOut e
 
     initialize: ->
         super
@@ -31,10 +31,10 @@ module.exports = class AppView extends BaseView
 
     afterRender: ->
         super
-        # header used as uploader
-        @uploader = new Uploader
-        @$('#uploader').append @uploader.$el
-        @uploader.render()
+        # header
+        @topNav = new TopNav
+        @$('#top-nav').append @topNav.$el
+        @topNav.render()
 
         @player = new Player()
         @$('#player').append @player.$el
@@ -83,9 +83,9 @@ module.exports = class AppView extends BaseView
         @$('#tracks-display').append @tracklist.$el
         @tracklist.render()
         # update header and nav display
-        unless $('#header-nav-title-home').hasClass 'activated'
-            $('#header-nav-title-home').addClass 'activated'
-        $('#header-nav-title-list').removeClass 'activated'
+        unless $('#top-nav-title-home').hasClass 'activated'
+            $('#top-nav-title-home').addClass 'activated'
+        $('#top-nav-title-list').removeClass 'activated'
         @offScreenNav?.$('li.activated').removeClass 'activated'
 
     showPlayQueue: =>
@@ -102,9 +102,9 @@ module.exports = class AppView extends BaseView
         @$('#tracks-display').append @queueList.$el
         @queueList.render()
         # update header and nav display
-        unless $('#header-nav-title-list').hasClass 'activated'
-            $('#header-nav-title-list').addClass 'activated'
-        $('#header-nav-title-home').removeClass 'activated'
+        unless $('#top-nav-title-list').hasClass 'activated'
+            $('#top-nav-title-list').addClass 'activated'
+        $('#top-nav-title-home').removeClass 'activated'
         @offScreenNav?.$('li.activated').removeClass 'activated'
 
     showPlayList: (id)=>
@@ -135,8 +135,8 @@ module.exports = class AppView extends BaseView
                     app.router.navigate '', true
 
         # update header and nav display
-        $('#header-nav-title-list').removeClass 'activated'
-        $('#header-nav-title-home').removeClass 'activated'
+        $('#top-nav-title-list').removeClass 'activated'
+        $('#top-nav-title-home').removeClass 'activated'
 
     appendPlaylist: (playlistModel)->
         unless @playList[@currentPlaylistId]?

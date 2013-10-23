@@ -2310,7 +2310,7 @@ a {
   color: inherit;
   text-decoration: none;
 }
-.uploader {
+.top-nav {
   display: block;
   position: absolute;
   top: 0;
@@ -2327,7 +2327,7 @@ a {
   width: 100%;
   text-align: left;
 }
-.uploader .header-nav-title {
+.top-nav .top-nav-title {
   text-shadow: 1px 1px 1px #000;
   color: #fff;
   font-size: 1em;
@@ -2338,7 +2338,7 @@ a {
   border-right: 1px solid #333;
   cursor: pointer;
 }
-.uploader .header-nav-title:hover {
+.top-nav .top-nav-title:hover {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #444), color-stop(1, #333));
   background: -webkit-linear-gradient(top, #444 0%, #333 100%);
   background: -moz-linear-gradient(top, #444 0%, #333 100%);
@@ -2346,7 +2346,7 @@ a {
   background: -ms-linear-gradient(top, #444 0%, #333 100%);
   background: linear-gradient(top, #444 0%, #333 100%);
 }
-.uploader .header-nav-title.activated {
+.top-nav .top-nav-title.activated {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #222), color-stop(1, #333));
   background: -webkit-linear-gradient(top, #222 0%, #333 100%);
   background: -moz-linear-gradient(top, #222 0%, #333 100%);
@@ -2354,20 +2354,20 @@ a {
   background: -ms-linear-gradient(top, #222 0%, #333 100%);
   background: linear-gradient(top, #222 0%, #333 100%);
 }
-.uploader .header-nav-title [class^="icon-"] {
+.top-nav .top-nav-title [class^="icon-"] {
   text-align: inherit;
   line-height: inherit;
   color: inherit;
   text-shadow: inherit;
 }
-.uploader .header-nav-title [class^="icon-"]:hover {
+.top-nav .top-nav-title [class^="icon-"]:hover {
   color: inherit;
   text-shadow: inherit;
 }
-.uploader.dragover .header-nav-title {
+.top-nav.dragover .top-nav-title {
   border-right: 1px solid #e00;
 }
-.uploader.dragover .header-nav-title.activated {
+.top-nav.dragover .top-nav-title.activated {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #800), color-stop(1, #f00));
   background: -webkit-linear-gradient(top, #800 0%, #f00 100%);
   background: -moz-linear-gradient(top, #800 0%, #f00 100%);
@@ -2520,6 +2520,7 @@ a {
 }
 #content #tracks-display table tbody tr.track.in-playlist {
   background-color: #99d6eb;
+  color: #333;
 }
 #content #tracks-display table tbody tr.track.selected {
   background-color: #c8c8c8;

@@ -1,12 +1,20 @@
-Track = require '../models/track'
-ViewCollection = require '../lib/view_collection'
-TrackView = require './tracklist_item'
+###
+    Basic track list.
+
+    Features :
+    - scrolling with "nicescroll"
+    - scroll bar management
+###
+
+Track = require 'models/track'
+ViewCollection = require 'lib/view_collection'
+TrackView = require 'views/lists/tracklist_item'
 
 module.exports = class TrackListView extends ViewCollection
 
     className: 'tracks-display'
     tagName: 'div'
-    template: require('./templates/tracklist')
+    template: require('views/templates/tracklist')
     collectionEl: '#track-list'
     itemview: TrackView
 

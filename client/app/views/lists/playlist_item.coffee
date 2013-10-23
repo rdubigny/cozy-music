@@ -1,4 +1,4 @@
-TrackListItemView = require './tracklist_item'
+TrackListItemView = require 'views/lists/tracklist_item'
 
 module.exports = class PlayListItemView extends TrackListItemView
 

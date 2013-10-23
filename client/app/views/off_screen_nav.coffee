@@ -1,17 +1,17 @@
 ###
   Off screen nav view
 ###
-app = require '../application'
-BaseView = require '../../lib/base_view'
-Playlist = require '../models/playlist'
-PlaylistNavView = require './playlist_nav_view'
-ViewCollection = require '../lib/view_collection'
+app = require 'application'
+BaseView = require 'lib/base_view'
+Playlist = require 'models/playlist'
+PlaylistNavView = require 'views/playlist_nav_view'
+ViewCollection = require 'lib/view_collection'
 
 module.exports = class OffScreenNav extends ViewCollection
 
     className: 'off-screen-nav'
     tagName: 'div'
-    template: require('./templates/off_screen_nav')
+    template: require('views/templates/off_screen_nav')
 
     itemview: PlaylistNavView
     collectionEl: '#playlist-list'

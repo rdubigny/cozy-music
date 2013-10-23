@@ -1,15 +1,19 @@
 ###
-    added for this list :
-        - drag and drop
+    Inherited from tracklist
+
+    Features :
+    - drag and drop
+    - remove tracks from list
+    - maintain a pointer on the track at play
 ###
 
-TrackView = require './playqueue_item'
-TrackListView = require './tracklist'
+TrackView = require 'views/lists/playqueue_item'
+TrackListView = require 'views/lists/tracklist'
 
 module.exports = class PlayQueueView extends TrackListView
 
     itemview: TrackView
-    template: require('./templates/playqueue')
+    template: require('views/templates/playqueue')
 
     events:
         'update-sort': 'updateSort'

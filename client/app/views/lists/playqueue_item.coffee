@@ -1,8 +1,8 @@
-TrackListItemView = require './tracklist_item'
+TrackListItemView = require 'views/lists/tracklist_item'
 
 module.exports = class PlayQueueItemView extends TrackListItemView
 
-    template: require './templates/playqueue_item'
+    template: require 'views/templates/playqueue_item'
 
     events:
         'click #mini-play-button': 'onPlayClick'

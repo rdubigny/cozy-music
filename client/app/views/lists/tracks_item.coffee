@@ -1,9 +1,9 @@
-TrackListItemView = require './tracklist_item'
+TrackListItemView = require 'views/lists/tracklist_item'
 app = require 'application'
 
 module.exports = class TracksItemView extends TrackListItemView
 
-    template: require './templates/tracks_item'
+    template: require 'views/templates/tracks_item'
 
     events:
         'click #delete-button': 'onDeleteClick'

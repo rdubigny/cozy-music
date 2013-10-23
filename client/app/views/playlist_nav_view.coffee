@@ -1,5 +1,5 @@
-BaseView = require '../lib/base_view'
-PlaylistTrackCollection = require '../collections/playlist'
+BaseView = require 'lib/base_view'
+PlaylistTrackCollection = require 'collections/playlist'
 
 module.exports = class PlaylistNavView extends BaseView
 
@@ -10,7 +10,7 @@ module.exports = class PlaylistNavView extends BaseView
     tagName: 'div'
 
     # The template render the bookmark with data given by the model
-    template: require './templates/playlist_nav'
+    template: require 'views/templates/playlist_nav'
 
     events:
         'click .select-playlist-button': 'onSelectClick'

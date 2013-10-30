@@ -336,10 +336,6 @@ a
                 display: block
                 font-weight: bold
 
-                &:hover
-                    .add-playlist-button
-                        display: inline-block
-
             ul#playlist-list
                 position: absolute
                 top: 40px
@@ -392,7 +388,13 @@ a
                 background-image: url("../images/glyphicons-halflings-white.png")
 
                 &.add-playlist-button
+                    background-image: url("../images/glyphicons-halflings-white.png")
+                    display: inline-block
+                    opacity: 0.4
                     background-position: -408px -96px
+                    &:hover
+                        opacity: 1
+                        background-image: url("../images/glyphicons-halflings-white.png")
 
                 &.delete-playlist-button
                     background-position: -312px 0px

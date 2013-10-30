@@ -2721,9 +2721,6 @@ a {
   display: block;
   font-weight: bold;
 }
-#content #off-screen-nav .off-screen-nav-content .off-screen-nav-title:hover .add-playlist-button {
-  display: inline-block;
-}
 #content #off-screen-nav .off-screen-nav-content ul#playlist-list {
   position: absolute;
   top: 40px;
@@ -2783,7 +2780,18 @@ a {
   background-image: url("../images/glyphicons-halflings-white.png");
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.add-playlist-button {
+  background-image: url("../images/glyphicons-halflings-white.png");
+  display: inline-block;
+  opacity: 0.4;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+  filter: alpha(opacity=40);
   background-position: -408px -96px;
+}
+#content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.add-playlist-button:hover {
+  opacity: 1;
+  -ms-filter: none;
+  filter: none;
+  background-image: url("../images/glyphicons-halflings-white.png");
 }
 #content #off-screen-nav .off-screen-nav-content .off-screen-nav-button.delete-playlist-button {
   background-position: -312px 0px;

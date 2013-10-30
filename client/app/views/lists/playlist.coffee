@@ -25,9 +25,15 @@ module.exports = class PlayListView extends PlayQueueView
     onClickPlay: (event)->
         event.preventDefault()
         event.stopPropagation()
+        # clear the queue
+        app = require 'application'
+        app.playQueue.deleteFromIndexToEnd 0
+        # queue the songs
         @collection.forEach (track)=>
             if track.attributes.state is 'server'
                 Backbone.Mediator.publish 'track:queue', track
+        # go to "up next"
+        app.router.navigate "playqueue", true
 
     updateSort: (event, track, newPosition) ->
         @collection.move newPosition, track

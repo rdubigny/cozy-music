@@ -1308,14 +1308,18 @@ window.require.register("views/lists/playlist", function(exports, require, modul
     };
 
     PlayListView.prototype.onClickPlay = function(event) {
-      var _this = this;
+      var app,
+        _this = this;
       event.preventDefault();
       event.stopPropagation();
-      return this.collection.forEach(function(track) {
+      app = require('application');
+      app.playQueue.deleteFromIndexToEnd(0);
+      this.collection.forEach(function(track) {
         if (track.attributes.state === 'server') {
           return Backbone.Mediator.publish('track:queue', track);
         }
       });
+      return app.router.navigate("playqueue", true);
     };
 
     PlayListView.prototype.updateSort = function(event, track, newPosition) {

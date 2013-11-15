@@ -6,12 +6,15 @@ td.left#state
 td.field.title
     input.mousetrap(type="text", value="#{model.title}", readonly)
     //-span.info #{model.title}
+td.field.plays #{model.plays}
 td.field.artist
     input.mousetrap(type="text", value="#{model.artist}", readonly)
 td.field.album
     input.mousetrap(type="text", value="#{model.album}", readonly)
     #play-album-button.player-button.size-20(title="queue this album")
         i.icon-share
+//- td.field #{model.track}
+//- td.field #{model.track}
 td.field.num #{model.track}
 td.right
     #delete-button.player-button.size-20.signal-button(title="delete definitively")

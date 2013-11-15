@@ -1857,16 +1857,26 @@ a .icon-flip-vertical:before {
   #content #tracks-display table .album {
     width: 0%;
   }
-  #content #tracks-display table .num {
-    width: 0%;
-  }
 }
 @media (min-width: 350px) {
   #content #tracks-display table .artist,
   #content #tracks-display table .album {
     width: 20%;
   }
-  #content #tracks-display table .num {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
+    width: 30px;
+  }
+}
+@media (max-width: 490px) {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
+    width: 0%;
+  }
+}
+@media (min-width: 490px) {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
     width: 30px;
   }
 }
@@ -2413,7 +2423,8 @@ a {
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
 }
-#content #tracks-display table .field.num {
+#content #tracks-display table .field.num,
+#content #tracks-display table .field.plays {
   -o-text-overflow: clip;
   text-overflow: clip;
 }
@@ -3196,16 +3207,26 @@ Da damn bear-killer player style
   #content #tracks-display table .album {
     width: 0%;
   }
-  #content #tracks-display table .num {
-    width: 0%;
-  }
 }
 @media (min-width: 350px) {
   #content #tracks-display table .artist,
   #content #tracks-display table .album {
     width: 20%;
   }
-  #content #tracks-display table .num {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
+    width: 30px;
+  }
+}
+@media (max-width: 490px) {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
+    width: 0%;
+  }
+}
+@media (min-width: 490px) {
+  #content #tracks-display table .num,
+  #content #tracks-display table .plays {
     width: 30px;
   }
 }

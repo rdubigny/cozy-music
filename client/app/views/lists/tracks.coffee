@@ -197,7 +197,7 @@ module.exports = class TracksView extends TrackListView
     appendBlanckTrack: =>
         blankTrack = $(document.createElement('tr'))
         blankTrack.addClass "track blank"
-        blankTrack.html "<td colspan=\"6\"></td>"
+        blankTrack.html "<td colspan=\"7\"></td>"
         @$collectionEl.append blankTrack
 
     highlightTracks: (playlist) ->

@@ -1956,7 +1956,7 @@ window.require.register("views/lists/tracks", function(exports, require, module)
       var blankTrack;
       blankTrack = $(document.createElement('tr'));
       blankTrack.addClass("track blank");
-      blankTrack.html("<td colspan=\"6\"></td>");
+      blankTrack.html("<td colspan=\"7\"></td>");
       return this.$collectionEl.append(blankTrack);
     };
 
@@ -3427,7 +3427,7 @@ window.require.register("views/templates/tracks", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title clickable-cell">Title</th><th class="field artist clickable-cell">Artist</th><th class="field album clickable-cell">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
+  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title clickable-cell">Title</th><th class="field plays">#</th><th class="field artist clickable-cell">Artist</th><th class="field album clickable-cell">Album</th><th class="field num"></th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
   }
   return buf.join("");
   };
@@ -3440,7 +3440,7 @@ window.require.register("views/templates/tracks_item", function(exports, require
   var interp;
   buf.push('<td id="state" class="left"><div id="add-to-button" title="add to playlist" class="player-button size-20"><i class="icon-plus"></i></div><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-share-alt"></i></div></td><td class="field title"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.title) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
-  buf.push('/></td><td class="field artist"><input');
+  buf.push('/></td><td class="field plays">' + escape((interp = model.plays) == null ? '' : interp) + '</td><td class="field artist"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.artist) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));
   buf.push('/></td><td class="field album"><input');
   buf.push(attrs({ 'type':("text"), 'value':("" + (model.album) + ""), 'readonly':(true), "class": ('mousetrap') }, {"type":true,"value":true,"readonly":true}));

@@ -1818,6 +1818,9 @@ window.require.register("views/lists/tracks", function(exports, require, module)
       'click th.field.album': function(event) {
         return this.onClickTableHead(event, 'album');
       },
+      'click th.field.plays': function(event) {
+        return this.onClickTableHead(event, 'plays');
+      },
       'album:queue': 'queueAlbum',
       'album:pushNext': 'pushNextAlbum',
       'click-track': 'onClickTrack'
@@ -2022,14 +2025,16 @@ window.require.register("views/lists/tracks", function(exports, require, module)
         elementArray = ['artist', 'album', 'track', 'title'];
       } else if (element === 'album') {
         elementArray = ['album', 'track', 'title', 'artist'];
+      } else if (element === 'plays') {
+        elementArray = ['plays', 'title', 'artist', 'album'];
       } else {
         elementArray = [element, null, null, null];
       }
       compare = function(t1, t2) {
         var field1, field2, i, _i;
         for (i = _i = 0; _i <= 3; i = ++_i) {
-          field1 = t1.get(elementArray[i]);
-          field2 = t2.get(elementArray[i]);
+          field1 = t1.get(elementArray[i]).toString();
+          field2 = t2.get(elementArray[i]).toString();
           if (((field1.match(/^[0-9]+$/)) != null) && ((field2.match(/^[0-9]+$/)) != null)) {
             field1 = parseInt(field1);
             field2 = parseInt(field2);
@@ -3427,7 +3432,7 @@ window.require.register("views/templates/tracks", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title clickable-cell">Title</th><th class="field plays">#</th><th class="field artist clickable-cell">Artist</th><th class="field album clickable-cell">Album</th><th class="field num"></th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
+  buf.push('<div class="viewport"><table><thead><tr><th class="left"></th><th class="field title clickable-cell">Title</th><th title="plays counter" class="field plays clickable-cell">#</th><th class="field artist clickable-cell">Artist</th><th class="field album clickable-cell">Album</th><th title="track number" class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
   }
   return buf.join("");
   };

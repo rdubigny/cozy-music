@@ -29,6 +29,8 @@ module.exports = class TracksView extends TrackListView
             @onClickTableHead event, 'artist'
         'click th.field.album': (event)->
             @onClickTableHead event, 'album'
+        'click th.field.plays': (event)->
+            @onClickTableHead event, 'plays'
 
         'album:queue': 'queueAlbum'
         'album:pushNext': 'pushNextAlbum'
@@ -221,7 +223,7 @@ module.exports = class TracksView extends TrackListView
         # remove old arrow
         @$('.sortArrow').remove()
 
-        # if elementSort is null, don't display sorting
+        # if elementSort is null, don't display sort arrows
         if @elementSort?
             # create a new arrow
             newArrow = $(document.createElement('div'))
@@ -257,14 +259,16 @@ module.exports = class TracksView extends TrackListView
             elementArray = ['artist', 'album', 'track', 'title']
         else if element is 'album'
             elementArray = ['album', 'track', 'title', 'artist']
+        else if element is 'plays'
+            elementArray = ['plays', 'title', 'artist', 'album']
         else
             elementArray = [element, null, null, null]
 
         # override the comparator function
         compare = (t1, t2)->
             for i in [0..3]
-                field1 = t1.get(elementArray[i])
-                field2 = t2.get(elementArray[i])
+                field1 = t1.get(elementArray[i]).toString()
+                field2 = t2.get(elementArray[i]).toString()
                 if (field1.match(/^[0-9]+$/))? and (field2.match(/^[0-9]+$/))?
                     field1 = parseInt(field1)
                     field2 = parseInt(field2)

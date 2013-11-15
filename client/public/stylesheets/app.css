@@ -1875,9 +1875,11 @@ a .icon-flip-vertical:before {
   }
 }
 @media (min-width: 490px) {
-  #content #tracks-display table .num,
+  #content #tracks-display table .num {
+    width: 35px;
+  }
   #content #tracks-display table .plays {
-    width: 30px;
+    width: 25px;
   }
 }
 @media (max-width: 590px) {
@@ -3225,9 +3227,11 @@ Da damn bear-killer player style
   }
 }
 @media (min-width: 490px) {
-  #content #tracks-display table .num,
+  #content #tracks-display table .num {
+    width: 35px;
+  }
   #content #tracks-display table .plays {
-    width: 30px;
+    width: 25px;
   }
 }
 @media (max-width: 590px) {

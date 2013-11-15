@@ -340,18 +340,30 @@ window.require.register("collections/playqueue", function(exports, require, modu
     };
 
     PlayQueue.prototype.queue = function(track) {
-      return this.push(track, {
-        sort: false
-      });
+      if (!this.get(track.id)) {
+        return this.push(track, {
+          sort: false
+        });
+      } else {
+        return this.moveItem(track, this.size() - 1);
+      }
     };
 
     PlayQueue.prototype.pushNext = function(track) {
-      if (this.length > 0) {
-        return this.add(track, {
-          at: this.atPlay + 1
-        });
+      if (!this.get(track.id)) {
+        if (this.length > 0) {
+          return this.add(track, {
+            at: this.atPlay + 1
+          });
+        } else {
+          return this.add(track);
+        }
       } else {
-        return this.add(track);
+        if (this.indexOf(track) < this.atPlay) {
+          return this.moveItem(track, this.atPlay);
+        } else {
+          return this.moveItem(track, this.atPlay + 1);
+        }
       }
     };
 
@@ -1308,17 +1320,15 @@ window.require.register("views/lists/playlist", function(exports, require, modul
     };
 
     PlayListView.prototype.onClickPlay = function(event) {
-      var app,
-        _this = this;
+      var app, filteredCollection;
       event.preventDefault();
       event.stopPropagation();
       app = require('application');
       app.playQueue.deleteFromIndexToEnd(0);
-      this.collection.forEach(function(track) {
-        if (track.attributes.state === 'server') {
-          return Backbone.Mediator.publish('track:queue', track);
-        }
+      filteredCollection = this.collection.filter(function(track) {
+        return track.attributes.state === 'server';
       });
+      Backbone.Mediator.publish('tracks:queue', filteredCollection);
       return app.router.navigate("playqueue", true);
     };
 
@@ -2857,6 +2867,10 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onQueueTrack = function(track) {
+      var _ref1;
+      if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === ("sound-" + (track.get('id')))) {
+        return;
+      }
       app.playQueue.queue(track);
       if (app.playQueue.length === 1) {
         return this.onPlayTrack(app.playQueue.getCurrentTrack());
@@ -2876,6 +2890,10 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onPushNext = function(track) {
+      var _ref1;
+      if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === ("sound-" + (track.get('id')))) {
+        return;
+      }
       app.playQueue.pushNext(track);
       if (app.playQueue.length === 1) {
         return this.onPlayTrack(app.playQueue.getCurrentTrack());
@@ -2900,12 +2918,16 @@ window.require.register("views/player/player", function(exports, require, module
     };
 
     Player.prototype.onPlayImmediate = function(track) {
-      var nextTrack;
-      app.playQueue.pushNext(track);
-      if (app.playQueue.length === 1) {
-        nextTrack = app.playQueue.getCurrentTrack();
+      var nextTrack, _ref1;
+      if (((_ref1 = this.currentSound) != null ? _ref1.id : void 0) === ("sound-" + (track.get('id')))) {
+        nextTrack = track;
       } else {
-        nextTrack = app.playQueue.getNextTrack();
+        app.playQueue.pushNext(track);
+        if (app.playQueue.length === 1) {
+          nextTrack = app.playQueue.getCurrentTrack();
+        } else {
+          nextTrack = app.playQueue.getNextTrack();
+        }
       }
       return this.onPlayTrack(nextTrack);
     };

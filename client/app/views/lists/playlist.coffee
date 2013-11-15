@@ -29,9 +29,9 @@ module.exports = class PlayListView extends PlayQueueView
         app = require 'application'
         app.playQueue.deleteFromIndexToEnd 0
         # queue the songs
-        @collection.forEach (track)=>
-            if track.attributes.state is 'server'
-                Backbone.Mediator.publish 'track:queue', track
+        filteredCollection = @collection.filter (track) ->
+            track.attributes.state is 'server'
+        Backbone.Mediator.publish 'tracks:queue', filteredCollection
         # go to "up next"
         app.router.navigate "playqueue", true
 

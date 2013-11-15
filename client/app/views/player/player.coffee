@@ -157,6 +157,9 @@ module.exports = class Player extends BaseView
                 @updateProgressDisplay()
 
     onQueueTrack: (track)=>
+        # if it's the current sound do nothing
+        if @currentSound?.id is "sound-#{track.get('id')}"
+            return
         app.playQueue.queue track
         # autoplay
         if app.playQueue.length is 1
@@ -170,6 +173,9 @@ module.exports = class Player extends BaseView
             @onQueueTrack track
 
     onPushNext: (track)=>
+        # if it's the current sound do nothing
+        if @currentSound?.id is "sound-#{track.get('id')}"
+            return
         app.playQueue.pushNext track
         # autoplay
         if app.playQueue.length is 1
@@ -189,13 +195,18 @@ module.exports = class Player extends BaseView
             @onPushNext track
 
     onPlayImmediate: (track)=>
-        app.playQueue.pushNext track
-        # if the queue was empty before the above instruction
-        if app.playQueue.length is 1
-            nextTrack = app.playQueue.getCurrentTrack()
+        # if it's the current sound just call playTrack on it
+        if @currentSound?.id is "sound-#{track.get('id')}"
+            nextTrack = track
+        # else fetch the playqueue
         else
-            nextTrack = app.playQueue.getNextTrack()
-        # launch newTrack
+            app.playQueue.pushNext track
+            # if the queue was empty before the above instruction
+            if app.playQueue.length is 1
+                nextTrack = app.playQueue.getCurrentTrack()
+            else
+                nextTrack = app.playQueue.getNextTrack()
+            # launch newTrack
         @onPlayTrack nextTrack
 
 

@@ -60,16 +60,29 @@ module.exports = class PlayQueue extends Backbone.Collection
 
     # add the track at the end of the collection
     queue: (track)->
-        @push track,
-            sort: false
+        unless @get(track.id)
+            @push track,
+                sort: false
+        # if the track is in the playlist already,
+        # just move it to its new position
+        else
+            @moveItem track, @size()-1
 
     # add the track at the index atPlay+1
     pushNext: (track)->
-        if @length > 0
-            @add track,
-                at : @atPlay+1
+        unless @get(track.id)
+            if @length > 0
+                @add track,
+                    at : @atPlay+1
+            else
+                @add track
+        # if the track is in the playlist already,
+        # just move it to its new position
         else
-            @add track
+            if @indexOf(track) < @atPlay
+                @moveItem track, @atPlay
+            else
+                @moveItem track, @atPlay+1
 
     moveItem: (track, position)->
         # first : update atPlay value
@@ -80,6 +93,7 @@ module.exports = class PlayQueue extends Backbone.Collection
                 @setAtPlay @atPlay-1
             if position <= @atPlay
                 @setAtPlay @atPlay+1
+        # then : move the track
         @remove track, false
         @add track,
             at: position

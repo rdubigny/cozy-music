@@ -1883,10 +1883,10 @@ a .icon-flip-vertical:before {
   }
 }
 @media (max-width: 590px) {
-  .header-nav-text {
+  .top-nav-text {
     display: none;
   }
-  .header-nav-title {
+  .top-nav-title {
     max-width: 60px;
   }
 }
@@ -3235,10 +3235,10 @@ Da damn bear-killer player style
   }
 }
 @media (max-width: 590px) {
-  .header-nav-text {
+  .top-nav-text {
     display: none;
   }
-  .header-nav-title {
+  .top-nav-title {
     max-width: 60px;
   }
 }

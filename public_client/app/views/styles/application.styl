@@ -1,0 +1,33 @@
+@import 'nib'
+
+// Base Styles
+*
+  box-sizing: border-box
+
+body
+    text-rendering optimizeLegibility
+    color white
+    font 300 16px Geneva, Verdana, "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif
+    line-height 1.2
+
+    background-color #222
+    overflow-x hidden
+    user-select none
+    margin-top 40px
+    margin-left 40px
+
+h2
+    margin-left 5px
+
+#mute-button
+    text-align: center
+    width 150px
+    cursor pointer
+    color #ddd
+    background-color #111
+    box-shadow: 1px 1px 0 #333
+    border-radius 2px
+    &:active
+        background-color #000
+    &:hover
+        color #fff

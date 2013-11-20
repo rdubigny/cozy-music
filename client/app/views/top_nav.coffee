@@ -12,6 +12,7 @@ module.exports = class TopNav extends BaseView
     events:
         'click #upload-form' : 'onClick'
         'click #youtube-import' : 'onClickYoutube'
+        'click #broadcast' : 'onClickBroadcast'
 
 
     subscriptions:
@@ -86,7 +87,9 @@ module.exports = class TopNav extends BaseView
 
         uploader.process files
 
-    onClickYoutube: (e) =>
+    onClickYoutube: (event) =>
+        event.preventDefault()
+        event.stopPropagation()
         defaultMsg = "Please enter a youtube url :"
         defaultVal = "http://www.youtube.com/watch?v=KMU0tzLwhbE"
         isValidInput = false
@@ -116,3 +119,27 @@ module.exports = class TopNav extends BaseView
             app.router.navigate '', true
 
         uploader.processYoutube youId
+
+    onClickBroadcast: (event)->
+        event.preventDefault()
+        event.stopPropagation()
+        @$('#broadcast').toggleClass 'activated'
+        if @$('#broadcast').hasClass 'activated'
+            url = document.URL
+            alert """
+                Your friends can now listen your current mix at
+                #{url.replace(/\/#?apps\/cozic\/.*$/, '')}/public/cozic/
+            """
+            app.isBroadcastEnabled = true
+            # signal server
+            $.ajax "broadcast",
+                type: 'GET'
+                error: (jqXHR, textStatus, errorThrown)->
+                    console.log "ajax fail : #{textStatus}"
+        else
+            app.isBroadcastEnabled = false
+            # signal server
+            $.ajax "broadcast",
+                type: 'DELETE'
+                error: (jqXHR, textStatus, errorThrown)->
+                    console.log "ajax fail : #{textStatus}"

@@ -227,9 +227,10 @@ module.exports = class Player extends BaseView
 
         # here @currentSound must be null so we can proceed the track loading
         # loading the track
+        url = "tracks/#{track.get('id')}/attach/#{track.get('slug')}"
         @currentSound = app.soundManager.createSound
             id: "sound-#{track.get('id')}"
-            url: "tracks/#{track.get('id')}/attach/#{track.get('slug')}"
+            url: url
             usePolicyFile: true
             volume: @volumeFilter(@volume)
             #muted: @isMuted # doesn't seem to work
@@ -247,8 +248,19 @@ module.exports = class Player extends BaseView
         @isStopped = false
         @isPaused = false
         @updatePlayButtonDisplay()
-        nfo = "#{track.get('title')} - <i>#{track.get('artist')}</i>"
+        title = track.get 'title'
+        artist = track.get 'artist'
+        nfo = "#{title} - <i>#{artist}</i>"
         @$('.id3-info').html nfo
+
+        # if artist or title are empty string fille with a space
+        # for the router to identify the route correctly
+        encT = if title is "" then "%20" else encodeURIComponent(title)
+        encA = if artist is "" then "%20" else encodeURIComponent(artist)
+        $.ajax "broadcast/#{encodeURIComponent(url)}/#{encT}/#{encA}",
+            type: 'PUT'
+            error: (jqXHR, textStatus, errorThrown)->
+                console.log "ajax fail : #{textStatus}"
 
     # at the end of track, play next track
     onPlayFinish: =>
@@ -273,6 +285,13 @@ module.exports = class Player extends BaseView
         @elapsedTime.html "&nbsp;0:00"
         @remainingTime.html "&nbsp;0:00"
         @$('.id3-info').html "-"
+
+        # if broadcast is enabled then stop it too
+        if app.isBroadcastEnabled
+            $.ajax "broadcast",
+                type: 'DELETE'
+                error: (jqXHR, textStatus, errorThrown)->
+                    console.log "ajax fail : #{textStatus}"
 
     # volumeChange handler, it just tells soundManager the new volume value
     onVolumeChange: (volume)=>

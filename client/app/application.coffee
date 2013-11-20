@@ -8,6 +8,7 @@ module.exports =
         Router = require 'router'
         @router = new Router()
 
+        # create main track collection
         TrackCollection = require 'collections/track_collection'
         @tracks = new TrackCollection()
         @tracks.fetch
@@ -21,6 +22,15 @@ module.exports =
 
         @selectedPlaylist = null
 
+        # initialize broadcast
+        @isBroadcastEnabled = false
+        # make sure the broadcast is disabled by defaut
+        $.ajax "broadcast",
+            type: 'DELETE'
+            error: (jqXHR, textStatus, errorThrown)->
+                console.log "ajax fail : #{textStatus}"
+
+        # initialize soundmanager
         @soundManager = soundManager
 
         @soundManager.setup

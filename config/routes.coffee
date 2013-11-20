@@ -16,3 +16,11 @@ exports.routes = (map) ->
     map.put 'playlists/:playlistid/:id/:lastWeight', 'tracks#add'
     map.del 'playlists/:playlistid/:id', 'tracks#remove'
     map.put 'playlists/:playlistid/prev/:prevWeight/next/:nextWeight/:id', 'tracks#move'
+
+    map.get 'public/tracks/:id/attach/:fileName', 'tracks#getAttachment'
+
+    # broadcast
+    map.get 'public/broadcast', 'broadcast#readUrl'
+    map.put 'broadcast/:url/:title/:artist', 'broadcast#writeUrl'
+    map.get 'broadcast', 'broadcast#enableBroadcast'
+    map.del 'broadcast', 'broadcast#disableBroadcast'

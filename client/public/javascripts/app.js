@@ -3015,12 +3015,20 @@ module.exports = Player = (function(_super) {
     this.$('.id3-info').html(nfo);
     encT = title === "" ? "%20" : encodeURIComponent(title);
     encA = artist === "" ? "%20" : encodeURIComponent(artist);
-    return $.ajax("broadcast/" + (encodeURIComponent(url)) + "/" + encT + "/" + encA, {
+    $.ajax("broadcast/" + (encodeURIComponent(url)) + "/" + encT + "/" + encA, {
       type: 'PUT',
       error: function(jqXHR, textStatus, errorThrown) {
         return console.log("ajax fail : " + textStatus);
       }
     });
+    if (app.isBroadcastEnabled) {
+      return $.ajax("broadcast", {
+        type: 'GET',
+        error: function(jqXHR, textStatus, errorThrown) {
+          return console.log("ajax fail : " + textStatus);
+        }
+      });
+    }
   };
 
   Player.prototype.onPlayFinish = function() {

@@ -262,6 +262,13 @@ module.exports = class Player extends BaseView
             error: (jqXHR, textStatus, errorThrown)->
                 console.log "ajax fail : #{textStatus}"
 
+        # if broadcast is enabled then signal server
+        if app.isBroadcastEnabled
+            $.ajax "broadcast",
+                type: 'GET'
+                error: (jqXHR, textStatus, errorThrown)->
+                    console.log "ajax fail : #{textStatus}"
+
     # at the end of track, play next track
     onPlayFinish: =>
         nextTrack = app.playQueue.getNextTrack()

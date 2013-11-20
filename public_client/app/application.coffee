@@ -1,6 +1,6 @@
 module.exports = class Application
 
-    defaultVolume: 100
+    defaultVolume: 70
 
     initialize: =>
         # generate titles

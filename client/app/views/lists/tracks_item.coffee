@@ -205,7 +205,6 @@ module.exports = class TracksItemView extends TrackListItemView
         if @model.attributes.state is 'server'
             Backbone.Mediator.publish 'track:playImmediate', @model
 
-
     onQueueTrack: (event)->
         event.preventDefault()
         event.stopPropagation()

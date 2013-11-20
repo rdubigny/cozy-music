@@ -1389,7 +1389,16 @@ module.exports = PlayListItemView = (function(_super) {
     return _ref;
   }
 
+  PlayListItemView.prototype.template = require('views/templates/playlist_item');
+
   PlayListItemView.prototype.events = {
+    'click #play-track-button': function(e) {
+      if (e.ctrlKey || e.metaKey) {
+        return this.onPlayNextTrack(e);
+      } else {
+        return this.onQueueTrack(e);
+      }
+    },
     'click #delete-button': 'onDeleteClick',
     'drop': 'drop'
   };
@@ -1410,6 +1419,22 @@ module.exports = PlayListItemView = (function(_super) {
     return this.listenTo(this.model, 'change:track', function(event) {
       return _this.$('td.field.num').html(_this.model.attributes.track);
     });
+  };
+
+  PlayListItemView.prototype.onQueueTrack = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.model.attributes.state === 'server') {
+      return Backbone.Mediator.publish('track:queue', this.model);
+    }
+  };
+
+  PlayListItemView.prototype.onPlayNextTrack = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.model.attributes.state === 'server') {
+      return Backbone.Mediator.publish('track:pushNext', this.model);
+    }
   };
 
   PlayListItemView.prototype.onDeleteClick = function(event) {
@@ -3427,6 +3452,18 @@ var buf = [];
 with (locals || {}) {
 var interp;
 buf.push('<div class="viewport"><table><thead><tr><th id="playlist-play" title="push playlist in the play queue" class="left"><i class="icon-play"></i></th><th class="field title">Title</th><th class="field artist">Artist</th><th class="field album">Album</th><th class="field num">#</th><th class="right"></th></tr></thead><tbody id="track-list"></tbody></table></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/playlist_item", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<td id="state" class="left"><div id="play-track-button" title="queue this song" class="player-button size-20"><i class="icon-share-alt"></i></div></td><td class="field title">' + escape((interp = model.title) == null ? '' : interp) + '</td><td class="field artist">' + escape((interp = model.artist) == null ? '' : interp) + '</td><td class="field album">' + escape((interp = model.album) == null ? '' : interp) + '</td><td class="field num">' + escape((interp = model.track) == null ? '' : interp) + '</td><td class="right"><div id="delete-button" title="remove" class="player-button size-20 signal-button"><i class="icon-remove"></i></div></td>');
 }
 return buf.join("");
 };

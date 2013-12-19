@@ -105,7 +105,7 @@ module.exports = Application = (function() {
     this.initialize = __bind(this.initialize, this);
   }
 
-  Application.prototype.defaultVolume = 100;
+  Application.prototype.defaultVolume = 70;
 
   Application.prototype.initialize = function() {
     var title,

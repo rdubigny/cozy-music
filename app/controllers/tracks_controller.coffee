@@ -178,9 +178,20 @@ action 'youtube', ->
 
     , false
 
+    cc = (a) ->
+        # used on youtube-mp3.org to generate a kind of hand made hash sequence
+        # I don't know what it is about
+        AM = 65521 # the largest prime less than 2^16...
+        c = 1
+        b = 0
+        for e in [0..a.length-1]
+            d = a.charCodeAt(e)
+            c = (c+d)%AM
+            b = (b+c)%AM
+        return b<<16|c
+
     # then generate download link and download the mp3 file
     onInfos = (infoJson, videoId)->
-
         if infoJson.toString() is "pushItemYTError();"
             msg = "There was an error caused by YouTube, this video can't be delivered! Check copyright issues or video URL. Video longer than 20 minutes aren't supported"
             return send error: true, msg: msg
@@ -196,17 +207,18 @@ action 'youtube', ->
         msg = "Youtube-mp3.org didn't delivered any mp3 downloadable link"
         return send error: true, msg: msg, 500 if info.status isnt "serving"
 
-        # here it becomes dirty
-        # I didn't want to use a dependency just for this
+        # generate the audio file URL
         title = "#{info.title}.mp3"
-        path = "get?video_id=#{videoId}&h=#{info.h}&r=#{Date.now()}"
+        dateNow = Date.now().toString()
+        ccRes = cc(videoId+dateNow)
+        path = "get?ab=128&video_id=#{videoId}&h=#{info.h}&r=#{dateNow}.#{ccRes}"
         destFile = "/tmp/#{title}"
         stream = client.saveFileAsStream path, (err, res, body) ->
             if err
                 console.log "Error occured while saving file"
                 console.log err
 
-        # TODO parse title to extract artist name and track name.
+        # store the audio file in the database
         req.body.slug = title
         req.body.title = title
         req.body.artist = ""

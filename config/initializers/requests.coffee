@@ -6,7 +6,7 @@ module.exports = (compound) ->
         # That means retrieve all docs and order them by title.
         emit doc.title, doc
 
-    Track.defineRequest "all", all, (err) ->
+    Track.defineRequest "byTitle", all, (err) ->
         if err
             compound.logger.write "Track.All requests, cannot be created"
             compound.logger.write err
@@ -23,7 +23,7 @@ module.exports = (compound) ->
 
     Playlist = compound.models.Playlist
 
-    Playlist.defineRequest "all", all, (err) ->
+    Playlist.defineRequest "byTitle", all, (err) ->
         if err
             compound.logger.write "Playlist.All requests, cannot be created"
             compound.logger.write err

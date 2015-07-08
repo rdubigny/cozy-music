@@ -2,7 +2,7 @@ module.exports = (compound, Playlist) ->
     Playlist.all = (params, callback) ->
         # Here we use the Data System API, We retrieve our data through a request
         # defined at application initialization.
-        Playlist.request "all", params, callback
+        Playlist.request "byTitle", params, callback
 
     # bind playlist prototype
     Playlist::tracks = (callback) ->

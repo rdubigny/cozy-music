@@ -1,3 +1,7 @@
+#### This project is not maintained anymore
+
+Please refer to https://github.com/cozy-labs/cozy-music.
+
 # Description
 
 Cozic is a music player developed to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript library. 

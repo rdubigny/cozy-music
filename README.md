@@ -1,12 +1,11 @@
-#### This project is not maintained anymore
+# :warning: This project is not maintained anymore
 
-Please refer to https://github.com/cozy-labs/cozy-music.
+This is an application for the old, now deprecated, version 2 of CozyCloud, a personal cloud server.
+It is not compatible with the new CozyCloud V3.
 
 # Description
 
 Cozic is a music player developed to fill my needs for my Cozy Cloud. It uses SoundManager2 javascript library. 
-
-If you want to test it go to https://demo.cozycloud.cc/#apps/cozic/ .
 
 shortcuts enabled :
 - spacebar : play/pause
